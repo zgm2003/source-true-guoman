@@ -23,7 +23,7 @@ GPT-image-2，16:9，3D国漫，国风仙侠，轻喜剧反差，角色表演夸
 5 ...
 
 上传参考图：资产名 = 图片N；资产名 = 图片N
-音色：按本组必要对白匹配角色年龄、身份和情绪；没有对白的组不要新增旁白。对白必须从原文摘取，不改写、不补写、不提前挪用；默认不主动删减原文内容，太长就拆镜头或拆成下一组。
+音色：按本组必要对白匹配角色年龄、身份和情绪；没有对白的组不要新增旁白。对白必须从原文摘取，不改写、不补写、不提前挪用；原作多少字就保留多少字；15秒对白字数上限100字，太长就拆镜头或拆成下一组，不压缩、不删上下文。
 音色资产：角色音色=角色.mp3。
 统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。
 ```
@@ -32,11 +32,11 @@ Each 15-second group may use 3-7 lines: use 3-4 for dense dialogue or pauses, 5 
 
 15秒组必须承载剧情推进. 不要整组只做空定场、氛围、人物坐着、群像压迫. 开场定场最多占1个短镜头; 第一组应尽快进入原文事件或对白, such as a source event, source dialogue, conflict, system prompt, or visible decision.
 
-Spoken dialogue density is a pacing judgment, not a hard low character budget. A normal 15-second group can carry one full source report plus a reaction when the line is important and readable. 不要用过低对白字数预算把一句完整汇报拆成多组; split only when the actual spoken load is too long for the target model, not because the line looks long in text.
+Spoken dialogue density is a pacing judgment with a 100-character ceiling per 15-second group. A normal 15-second group can carry one full source report plus a reaction when the exact spoken load stays within 100 Chinese characters and remains readable. 不要用过低对白字数预算把一句完整汇报拆成多组; split only when the actual spoken load exceeds 100 characters or needs breathing room, not because the line looks long in text.
 
-Default stance: 默认不主动删减原文内容. 把删减权留给用户; output the source-faithful draft in enough groups so the user can trim later. 只有用户明确要求压缩版, 精简版, or a shorter target duration may you intentionally remove non-load-bearing source material.
+Default stance: 原作多少字就保留多少字. 把删减权留给用户; output the source-faithful draft in enough groups so the user can trim later. 不得由 AI 帮用户压缩、概括、改短、润色原作对白或剧情；压缩请求只能输出原文切点、分组建议, or tell the user which exact source spans they may manually remove.
 
-Dialogue must be exact source excerpts. Do not rewrite, polish, invent, or move later dialogue into an earlier beat. If an exact line is too long, use fewer shots inside the current group or split the beat into another group. 不得用减少总组数解决对白变长.
+Dialogue must be exact source excerpts. Do not rewrite, polish, invent, shorten, or move later dialogue into an earlier beat. If exact source dialogue/OS/system text exceeds 100 Chinese characters in one 15-second group, use fewer shots inside the current group or split the beat into another group. 15秒对白字数上限100字; 超过100字就拆镜头或拆下一组; 上限是分组边界，不是删改许可; 不压缩、不改写、不删上下文. 不得用减少总组数解决对白变长.
 
 For multi-chapter work, make a private beat ledger first and run a 多章覆盖审计 before delivery. A 15-second group normally covers one small beat; exact dialogue and dense events should add groups, not erase chapter beats. 十章不得压成十几组 unless the user explicitly asks for a short synopsis. Avoid broad `第1-2章` group titles except for clean transitions.
 

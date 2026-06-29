@@ -106,7 +106,7 @@ class SkillTextRulesTests(unittest.TestCase):
             self.assertIn("多章覆盖审计", text)
             self.assertIn("十章不得压成十几组", text)
 
-    def test_default_mode_preserves_source_content_for_manual_trimming(self) -> None:
+    def test_default_mode_preserves_source_content_for_manual_trimming_without_ai_compression(self) -> None:
         root = Path(__file__).resolve().parents[1]
         skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
         format_text = root.joinpath("references", "format.md").read_text(
@@ -114,9 +114,25 @@ class SkillTextRulesTests(unittest.TestCase):
         )
 
         for text in (skill_text, format_text):
-            self.assertIn("默认不主动删减原文内容", text)
+            self.assertIn("原作多少字就保留多少字", text)
             self.assertIn("把删减权留给用户", text)
-            self.assertIn("只有用户明确要求压缩版", text)
+            self.assertIn("不得由 AI 帮用户压缩", text)
+            self.assertIn("压缩请求只能输出原文切点", text)
+            self.assertNotIn("may you intentionally trim", text)
+            self.assertNotIn("只有用户明确要求压缩版", text)
+
+    def test_15_second_dialogue_limit_is_100_chars_without_shortening(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
+        format_text = root.joinpath("references", "format.md").read_text(
+            encoding="utf-8"
+        )
+
+        for text in (skill_text, format_text):
+            self.assertIn("15秒对白字数上限100字", text)
+            self.assertIn("超过100字就拆镜头或拆下一组", text)
+            self.assertIn("上限是分组边界，不是删改许可", text)
+            self.assertIn("不压缩、不改写", text)
 
     def test_female_assets_allow_tasteful_leg_visibility(self) -> None:
         root = Path(__file__).resolve().parents[1]
