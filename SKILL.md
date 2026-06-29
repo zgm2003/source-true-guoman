@@ -46,6 +46,14 @@ Priority order:
 4. key reveals and chapter hook
 5. load-bearing dialogue
 
+Source text anomalies:
+
+- Read the source first, then detect likely typos, OCR/ASR mistakes, machine-translation artifacts, repeated fragments, or near-homophone name drift internally.
+- Do not treat obvious mistakes as new lore, new names, new factions, new realms, or relationship changes.
+- If a correction is obvious from nearby context, preserve the intended meaning in the feed while keeping source terms stable.
+- If a term affects plot, identity, realm, faction, prop, or reveal and is not clearly a typo, keep the original wording and mark the ambiguity privately; do not silently rewrite it.
+- If the user asks for exact source dialogue/OS, keep the text exact unless they explicitly allow cleanup.
+
 Dialogue compression:
 
 - Keep short source dialogue exact when it carries plot, identity, threat, comedy, or hook.
@@ -81,6 +89,16 @@ Use assets to stabilize identity, not to decorate every object.
 ## Shot writing rules
 
 Final video lines must describe what is visible in the frame. Keep them light.
+
+15-second grouping:
+
+- Treat one video group as roughly 15 seconds. Default to 5 lines, but adjust between 3-7 lines based on density.
+- Use 3-4 lines when dialogue, OS, system prompts, exposition, emotional pauses, or complex actions need breathing room.
+- Use 5 lines for normal plot beats: one clear action or emotion per line, about 3 seconds each.
+- Use 6-7 lines only when shots are light, mostly visual, low-dialogue, and made of quick micro-actions.
+- Do not exceed 7 lines per 15-second group; split the group instead.
+- Spoken Chinese text per 15-second group should usually stay around 20-32 chars; 33-40 chars is crowded; 40+ chars should trigger fewer lines, dialogue compression, or another group.
+- If one line contains multiple main actions, split the action or reduce the group line count.
 
 Use this line shape:
 
@@ -121,7 +139,9 @@ If there is no dialogue in the group, omit `音色资产`.
 | --- | --- |
 | Final feed reads like production guidelines | Move reasoning internal; output lighter video lines |
 | Dialogue gets “cleaned” until source flavor disappears | Preserve source names, target, result, threat/comedy clause |
+| Obvious typo becomes new lore | Treat source anomalies as private notes; do not invent new terms from likely errors |
 | Every shot overuses positioning rules | Use position only when it prevents a real generation error |
+| 15-second group is forced to exactly 5 lines | Use 3-7 lines based on dialogue density, pauses, and action complexity |
 | Phone flips to back camera | Specify `屏幕正面朝镜头` and avoid mixed front/back asset prompts |
 | Non-library camera word appears | Replace with exact Xiaoyunque tag from `references/xiaoyunque-tags.md` |
 | Long script treats early NPCs as disposable | Pre-scan later scenes; upgrade any later-named or recurring role into one reusable asset |
