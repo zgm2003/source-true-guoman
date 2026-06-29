@@ -22,13 +22,15 @@ Default style: `3D国漫，国风仙侠，轻喜剧反差，角色表演夸张�
 ## Workflow
 
 1. Read only the requested source scope.
-2. Build a private source fact sheet: characters, locations, event order, cause-effect, source terms, key dialogue, reveal order, hook.
-3. Build an asset ledger: existing reusable assets first, new assets only when they drive identity, setting, conflict, action, interface, or repeated continuity.
-4. Draft shots internally: one video line = one visible action target, one main emotion or beat, one camera movement.
-5. Emit only the final package:
+2. For long scripts or multi-scene excerpts, pre-scan the whole requested scope before writing assets. Track recurring characters, locations, props, interfaces, mounts/beasts, and speaking roles across early and later scenes.
+3. Build a private source fact sheet: characters, locations, event order, cause-effect, source terms, key dialogue, reveal order, hook.
+4. Build an asset ledger: existing reusable assets first, new assets only when they drive identity, setting, conflict, action, interface, or repeated continuity.
+5. Reconcile early anonymous roles with later named roles before emitting assets. If a “路人/NPC/弟子/店小二/黑衣人/侍女/守卫” later gets a name, repeated appearances, dialogue, or plot function, upgrade it to one stable reusable asset and bind all appearances to that identity.
+6. Draft shots internally: one video line = one visible action target, one main emotion or beat, one camera movement.
+7. Emit only the final package:
    - `## 资产提示词`
    - `## 视频投喂块`
-6. Before delivery, check source fidelity, dialogue load, asset reuse, Xiaoyunque raw tags, and line weight.
+8. Before delivery, check source fidelity, dialogue load, asset reuse, Xiaoyunque raw tags, and line weight.
 
 Read `references/format.md` before writing final feed blocks. Read `references/xiaoyunque-tags.md` whenever choosing the `运镜` field.
 
@@ -54,10 +56,13 @@ Dialogue compression:
 
 Use assets to stabilize identity, not to decorate every object.
 
+- Long-script reuse: decide asset value from the whole requested script, not from first appearance. Early background roles may need named reusable assets if later scenes reveal identity or importance.
 - Character: one white/light-gray background tri-view image; far-left upper-body + head detail, plus front/side/back full body. Lock one face, hairstyle, body, costume, and identity marks.
+- Anonymous-to-named character: when a role first appears only as `某弟子`, `黑衣人`, `守卫`, `侍女`, `路人`, or another generic label but later has a name, dialogue, repeated action, relationship, faction, or plot effect, merge those mentions into one character asset. Do not generate a disposable NPC face first and a separate named face later.
 - Female character assets: 女角色统一按成年成熟女修处理，除非原文明确她真的是小孩。国漫仙侠、高级好看、性感但克制，吸引力来自脸、发型、肩颈锁骨、腰线、衣料层次、剪裁和气质，不靠露腿卖点。裙装、旗袍、JK、舞服必须有完整衣料结构：内衬、里裙、安全短裤或不透明下摆要明确写出；可以有小开衩、走动时露出少量腿部轮廓，但禁止高开衩、整条腿暴露、同时露出双腿、低机位扫腿、腿部特写、胸臀腿特写、透明无遮挡。薄纱只能作为外层装饰，不能替代遮挡。禁止幼态、低俗裸露、夜店风、泳装化、内衣化。
 - Child character assets: 只有当前角色真的是小孩时，才使用单独的儿童/少年角色提示词。儿童角色必须完整保守、非性感化，不套用成年成熟女修模板。
 - Scene: empty location reference. Separate interior/exterior and materially different rooms; do not reuse an exterior for an interior shot.
+- Scene/prop reuse: if the same place, weapon, token, phone/interface, beast, vehicle, or signature object appears across distant scenes, create or bind one reusable asset instead of renaming or redesigning it per group.
 - Prop/interface: create a clean single-subject product shot only for high-value props or interfaces. If phone orientation matters, make the prompt explicitly `正面屏幕朝镜头` or create a separate front-screen reference; do not force one asset to solve both front and back.
 - Voice: bind voice assets only for characters who speak in that group.
 - Reuse: when the user provides existing images or earlier generated assets, write `沿用图片N` or bind the existing filename; do not regenerate identity assets unless asked.
@@ -108,3 +113,4 @@ If there is no dialogue in the group, omit `音色资产`.
 | Every shot overuses positioning rules | Use position only when it prevents a real generation error |
 | Phone flips to back camera | Specify `屏幕正面朝镜头` and avoid mixed front/back asset prompts |
 | Non-library camera word appears | Replace with exact Xiaoyunque tag from `references/xiaoyunque-tags.md` |
+| Long script treats early NPCs as disposable | Pre-scan later scenes; upgrade any later-named or recurring role into one reusable asset |
