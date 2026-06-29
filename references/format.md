@@ -7,7 +7,10 @@ Use this file when producing final user-facing output.
 ```text
 ## 资产提示词
 
-### 图片1 = 资产名
+### 图片1 = 林夜_黑袍造型
+GPT-image-2，16:9，3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续。...
+
+### 图片2 = 青云宗主殿_母图
 GPT-image-2，16:9，3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续。...
 
 ## 视频投喂块
@@ -24,6 +27,8 @@ GPT-image-2，16:9，3D国漫，国风仙侠，轻喜剧反差，角色表演夸
 音色资产：角色音色=角色.mp3。
 统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。
 ```
+
+Name assets by reusable source identity and version: `角色名_造型/状态`, `场景名_母图/局部_用途`, `道具名_用途`, `界面名_状态`. Use crowd templates for repeated nameless groups, e.g. `青云宗外门弟子_群像模板`, instead of generating separate assets for one-off background people.
 
 When a new asset depends on an older image, include both in `上传参考图` with purpose labels:
 
