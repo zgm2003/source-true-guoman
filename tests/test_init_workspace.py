@@ -118,6 +118,22 @@ class SkillTextRulesTests(unittest.TestCase):
             self.assertIn("把删减权留给用户", text)
             self.assertIn("只有用户明确要求压缩版", text)
 
+    def test_female_assets_allow_tasteful_leg_visibility(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
+        format_text = root.joinpath("references", "format.md").read_text(
+            encoding="utf-8"
+        )
+
+        for text in (skill_text, format_text):
+            self.assertIn("成年女修可以适度露腿", text)
+            self.assertIn("可露小腿、膝盖、膝上自然腿部线条", text)
+            self.assertIn("正常双腿可见不算违规", text)
+            self.assertIn("禁止低机位扫腿", text)
+            self.assertNotIn("不靠露腿卖点", text)
+            self.assertNotIn("同时露出双腿", text)
+            self.assertNotIn("整条腿暴露", text)
+
 
 if __name__ == "__main__":
     unittest.main()
