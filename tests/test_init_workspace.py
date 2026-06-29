@@ -179,6 +179,20 @@ class SkillTextRulesTests(unittest.TestCase):
         self.assertIn("正面半身", format_text)
         self.assertNotIn("半身侧面 + 左侧席位 + 王座远处可见", format_text)
 
+    def test_character_assets_must_not_include_shot_staging(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
+        format_text = root.joinpath("references", "format.md").read_text(
+            encoding="utf-8"
+        )
+
+        for text in (skill_text, format_text):
+            self.assertIn("人设资产只写身份、脸、体型、服装和气质", text)
+            self.assertIn("不要把坐在左侧第二位、站在席位前、当前镜头姿态写进三视图人设", text)
+            self.assertIn("席位、站位、坐姿、当前动作属于视频行", text)
+            self.assertIn("骨灵教老者_骨纹法袍造型", text)
+            self.assertNotIn("骨灵教老者_左侧第二席造型", text)
+
 
 if __name__ == "__main__":
     unittest.main()
