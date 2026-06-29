@@ -1,0 +1,7 @@
+interface:
+  display_name: "Source True Guoman"
+  short_description: "原著保真3D国漫短剧资产提示词与视频轻量投喂"
+  default_prompt: "Use $source-true-guoman to turn this novel chapter into source-faithful 3D guoman asset prompts and lightweight video feed blocks."
+
+policy:
+  allow_implicit_invocation: true
