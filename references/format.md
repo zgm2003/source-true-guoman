@@ -31,6 +31,12 @@ When a new asset depends on an older image, include both in `上传参考图` wi
 上传参考图：林夜第一章黑袍造型 = 图片1（人脸身份参考）；林夜第二章宗门礼服 = 图片2（新造型参考）；青云宗主殿母图 = 图片3（场景母图参考）；主殿左侧丹炉区 = 图片4（局部场景参考）
 ```
 
+For similar important characters, use reference labels that preserve shared sect style while separating faces:
+
+```text
+上传参考图：沈照青云宗弟子服 = 图片1（同门服制参考、避撞脸参考）；陆衡青云宗弟子服 = 图片2（人物参考，要求不同脸型、眉眼、发型轮廓和体态）
+```
+
 ## Video line shape
 
 ```text
