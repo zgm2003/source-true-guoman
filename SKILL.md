@@ -1,6 +1,6 @@
 ---
 name: source-true-guoman
-description: Use when turning Chinese web-novel chapters, excerpts, scripts, or rough story material into source-faithful 3D国漫 short-video production text, especially when the output needs reusable character/scene/prop/voice assets, lightweight feed blocks, original dialogue preservation, Xiaoyunque camera tags, and no Canvas, keyframe, segment, or MP4 workflow.
+description: Use when turning Chinese web-novel chapters, excerpts, scripts, or rough story material into source-faithful 3D国漫 short-video production text, initializing such project workspaces, especially when the output needs reusable character/scene/prop/voice assets, lightweight feed blocks, original dialogue preservation, Xiaoyunque camera tags, and no Canvas, keyframe, segment, or MP4 workflow.
 ---
 
 # Source True Guoman
@@ -21,21 +21,44 @@ Default style: `3D国漫，国风仙侠，轻喜剧反差，角色表演夸张�
 
 ## Workflow
 
-1. Read only the requested source scope.
-2. For long scripts or multi-scene excerpts, pre-scan the whole requested scope before writing assets. Track recurring characters, locations, props, interfaces, mounts/beasts, and speaking roles across early and later scenes.
-3. Build a private source fact sheet: characters, locations, event order, cause-effect, source terms, key dialogue, reveal order, hook.
-4. For long scripts or multi-chapter projects, create or update a lightweight working-directory source index when it helps continuity. Treat it as internal evidence, not final output.
-5. Build an asset ledger: existing reusable assets first, new assets only when they drive identity, setting, conflict, action, interface, or repeated continuity. Track parent-child reference relationships, such as same character new outfit or main scene to sub-location. Also track similar-character collision risk when multiple important roles share sect, uniform, age, gender, or protagonist-like styling.
-6. Name assets with stable reusable names before writing prompts. Prefer `角色名_造型/状态`, `场景名_母图/局部_用途`, `道具名_用途`, and `界面名_状态`; keep names short, source-grounded, and reusable across chapters.
-7. Reconcile early anonymous roles with later named roles before emitting assets. If a “路人/NPC/弟子/店小二/黑衣人/侍女/守卫” later gets a name, repeated appearances, dialogue, or plot function, upgrade it to one stable reusable asset and bind all appearances to that identity.
-8. If identity is plausible but not confirmed, mark it privately as a suspected same asset. Do not invent confirmation, do not merge faces in output, and do not create strong contradictions; wait for source evidence or user confirmation.
-9. Draft shots internally: one video line = one visible action target, one main emotion or beat, one camera movement.
-10. Emit only the final package:
+1. If the user is starting from a project/workspace directory, initialize it before processing: create `场景资产`, `道具资产`, `剧本资产`, `人设资产`, `生产资产`, `视频资产`, and `音色资产`. Use `scripts/init_workspace.py <workspace>` when available. This is non-destructive: create missing folders only; do not move, rename, delete, or overwrite an existing script unless the user explicitly asks.
+2. Read only the requested source scope.
+3. For long scripts or multi-scene excerpts, pre-scan the whole requested scope before writing assets. Track recurring characters, locations, props, interfaces, mounts/beasts, and speaking roles across early and later scenes.
+4. Build a private source fact sheet: characters, locations, event order, cause-effect, source terms, key dialogue, reveal order, hook.
+5. For long scripts or multi-chapter projects, create or update a lightweight working-directory source index when it helps continuity. Treat it as internal evidence, not final output.
+6. Build an asset ledger: existing reusable assets first, new assets only when they drive identity, setting, conflict, action, interface, or repeated continuity. Track parent-child reference relationships, such as same character new outfit or main scene to sub-location. Also track similar-character collision risk when multiple important roles share sect, uniform, age, gender, or protagonist-like styling.
+7. Name assets with stable reusable names before writing prompts. Prefer `角色名_造型/状态`, `场景名_母图/局部_用途`, `道具名_用途`, and `界面名_状态`; keep names short, source-grounded, and reusable across chapters.
+8. Reconcile early anonymous roles with later named roles before emitting assets. If a “路人/NPC/弟子/店小二/黑衣人/侍女/守卫” later gets a name, repeated appearances, dialogue, or plot function, upgrade it to one stable reusable asset and bind all appearances to that identity.
+9. If identity is plausible but not confirmed, mark it privately as a suspected same asset. Do not invent confirmation, do not merge faces in output, and do not create strong contradictions; wait for source evidence or user confirmation.
+10. Draft shots internally: one video line = one visible action target, one main emotion or beat, one camera movement.
+11. Emit only the final package:
    - `## 资产提示词`
    - `## 视频投喂块`
-11. Before delivery, check source fidelity, dialogue load, asset reuse, Xiaoyunque raw tags, and line weight.
+12. Before delivery, check source fidelity, dialogue load, asset reuse, Xiaoyunque raw tags, and line weight.
 
 Read `references/format.md` before writing final feed blocks. Read `references/xiaoyunque-tags.md` whenever choosing the `运镜` field.
+
+## Workspace initialization
+
+Use this when the user points to a new project directory, such as a workspace that only contains one script file.
+
+Run:
+
+```bash
+python scripts/init_workspace.py <workspace>
+```
+
+Create exactly these top-level folders when missing:
+
+- `场景资产`
+- `道具资产`
+- `剧本资产`
+- `人设资产`
+- `生产资产`
+- `视频资产`
+- `音色资产`
+
+Initialization is non-destructive. Do not move the existing script into `剧本资产`, rename files, delete folders, or overwrite assets unless the user explicitly asks for that organization step.
 
 ## Lightweight source index
 
