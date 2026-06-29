@@ -26,15 +26,16 @@ Default style: `3D国漫，国风仙侠，轻喜剧反差，角色表演夸张�
 3. For long scripts or multi-scene excerpts, pre-scan the whole requested scope before writing assets. Track recurring characters, locations, props, interfaces, mounts/beasts, and speaking roles across early and later scenes.
 4. Build a private source fact sheet: characters, locations, event order, cause-effect, source terms, key dialogue, reveal order, hook.
 5. For long scripts or multi-chapter projects, create or update a lightweight working-directory source index when it helps continuity. Treat it as internal evidence, not final output.
-6. Build an asset ledger: existing reusable assets first, new assets only when they drive identity, setting, conflict, action, interface, or repeated continuity. Track parent-child reference relationships, such as same character new outfit or main scene to sub-location. Also track similar-character collision risk when multiple important roles share sect, uniform, age, gender, or protagonist-like styling.
-7. Name assets with stable reusable names before writing prompts. Prefer `角色名_造型/状态`, `场景名_母图/局部_用途`, `道具名_用途`, and `界面名_状态`; keep names short, source-grounded, and reusable across chapters.
-8. Reconcile early anonymous roles with later named roles before emitting assets. If a “路人/NPC/弟子/店小二/黑衣人/侍女/守卫” later gets a name, repeated appearances, dialogue, or plot function, upgrade it to one stable reusable asset and bind all appearances to that identity.
-9. If identity is plausible but not confirmed, mark it privately as a suspected same asset. Do not invent confirmation, do not merge faces in output, and do not create strong contradictions; wait for source evidence or user confirmation.
-10. Draft shots internally: one video line = one visible action target, one main emotion or beat, one camera movement.
-11. Emit only the final package:
+6. For multi-chapter projects, make a private chapter beat ledger and group budget before drafting. Preserve the requested story coverage; exact dialogue should expand or split groups, not shrink the scope.
+7. Build an asset ledger: existing reusable assets first, new assets only when they drive identity, setting, conflict, action, interface, or repeated continuity. Track parent-child reference relationships, such as same character new outfit or main scene to sub-location. Also track similar-character collision risk when multiple important roles share sect, uniform, age, gender, protagonist-like styling.
+8. Name assets with stable reusable names before writing prompts. Prefer `角色名_造型/状态`, `场景名_母图/局部_用途`, `道具名_用途`, and `界面名_状态`; keep names short, source-grounded, and reusable across chapters.
+9. Reconcile early anonymous roles with later named roles before emitting assets. If a “路人/NPC/弟子/店小二/黑衣人/侍女/守卫” later gets a name, repeated appearances, dialogue, or plot function, upgrade it to one stable reusable asset and bind all appearances to that identity.
+10. If identity is plausible but not confirmed, mark it privately as a suspected same asset. Do not invent confirmation, do not merge faces in output, and do not create strong contradictions; wait for source evidence or user confirmation.
+11. Draft shots internally: one video line = one visible action target, one main emotion or beat, one camera movement.
+12. Emit only the final package:
    - `## 资产提示词`
    - `## 视频投喂块`
-12. Before delivery, check source fidelity, dialogue load, asset reuse, Xiaoyunque raw tags, and line weight.
+13. Before delivery, check source fidelity, dialogue load, asset reuse, Xiaoyunque raw tags, line weight, and multi-chapter coverage.
 
 Read `references/format.md` before writing final feed blocks. Read `references/xiaoyunque-tags.md` whenever choosing the `运镜` field.
 
@@ -76,6 +77,16 @@ Use a local source index for long scripts, multi-chapter work, or any task where
 - Update the index when later text upgrades an early NPC, introduces a named recurrence, changes a character state/outfit, revisits a scene, or resolves a previous doubt.
 - Do not mention vector databases, embeddings, retrieval services, or implementation architecture in normal feed output; that belongs to a future engineering mode, not this lightweight skill.
 
+## Long-scope coverage
+
+For multi-chapter or long-script output, preserve source coverage before optimizing line weight.
+
+- Make a private beat ledger per chapter before writing video groups: opening state, key conflict, source dialogue anchor, action turn, result, and chapter hook when present.
+- Estimate group count from source beats. A 15-second group usually covers one small beat; a dense chapter often needs several groups. Ten requested chapters should normally become dozens of groups; 十章不得压成十几组 unless the user explicitly asks for a short synopsis.
+- Exact dialogue preservation is not permission to skip beats. 不得用减少总组数解决对白变长; split the beat, reduce lines inside the current group, or add another group.
+- Avoid broad cross-chapter group titles such as `第1-2章` unless the group is only a clean transition or recap. If one group contains plot turns from two chapters, it is usually under-covered and should be split.
+- Run a 多章覆盖审计 before delivery: compare the draft groups against the chapter beat ledger and source index. Every requested chapter needs its setup, turning point, result, and hook represented by at least one visible group; if an anchor is missing, add groups before final output.
+
 ## Source fidelity
 
 Priority order:
@@ -99,6 +110,7 @@ Dialogue handling:
 - 对白必须从原文摘取：不改写，不补写，不把旁白改成角色台词，不把角色口吻润色成“更顺”的新句。
 - Keep source dialogue in source order and local context. Do not提前挪用 later lines into an earlier beat, and do not leave a reaction line without the source setup that makes it make sense.
 - If source dialogue is long, delete whole non-load-bearing clauses or choose a shorter exact sentence. Do not paraphrase. 太长就拆镜头, reduce group line count, or split into another 15-second group.
+- Reducing line count means reducing lines inside the current group, not reducing total coverage. 不得用减少总组数解决对白变长.
 - Keep short source dialogue exact when it carries plot, identity, threat, comedy, or hook.
 - For long dialogue, preserve the source subject, action object, result, special terms, and strongest conflict clause.
 - Do not compress dialogue into a dangling 孤句. A line like `神魂也收入到了万魂幡中。` is too isolated if the source point depends on who was captured, what happened before, and where the body or artifact goes next. Preserve enough 前因, 动作对象, and 结果 for the viewer to understand the beat without reading the source.
@@ -140,6 +152,7 @@ Final video lines must describe what is visible in the frame. Keep them light.
 - Use 6-7 lines only when shots are light, mostly visual, low-dialogue, and made of quick micro-actions.
 - Do not exceed 7 lines per 15-second group; split the group instead.
 - Spoken Chinese text per 15-second group should usually stay around 20-32 chars; 33-40 chars is crowded; 40+ chars should trigger fewer lines, fewer shots, or another group. Do not solve length by rewriting dialogue.
+- For multi-chapter output, the group count is elastic. Exact source dialogue and dense events should create more groups, not broader summaries. Run the 多章覆盖审计 when the requested scope spans more than one chapter.
 - If one line contains multiple main actions, split the action or reduce the group line count.
 
 Use this line shape:
@@ -183,6 +196,7 @@ If there is no dialogue in the group, omit `音色资产`.
 | Dialogue gets “cleaned” until source flavor disappears | Extract exact source dialogue; do not rewrite, polish, or invent |
 | Dialogue compression creates a 孤句 like `神魂也收入到了万魂幡中。` | Restore the 前因, 动作对象, and 结果, or keep the fuller original line |
 | A later reaction line appears without setup, e.g. `宗主哥哥，你怎么也不夸夸奴家？` | Keep source order and include the setup, or omit that dialogue |
+| Exact dialogue causes a ten-chapter feed to shrink to 14 groups | Do a 多章覆盖审计, restore missing chapter beats, and add groups. 十章不得压成十几组; 不得用减少总组数解决对白变长 |
 | Obvious typo becomes new lore | Treat source anomalies as private notes; do not invent new terms from likely errors |
 | Every shot overuses positioning rules | Use position only when it prevents a real generation error |
 | 15-second group is forced to exactly 5 lines | Use 3-7 lines based on dialogue density, pauses, and action complexity |

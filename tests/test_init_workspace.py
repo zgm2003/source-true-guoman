@@ -94,6 +94,18 @@ class SkillTextRulesTests(unittest.TestCase):
             self.assertIn("不提前挪用", text)
             self.assertIn("太长就拆镜头", text)
 
+    def test_long_scope_coverage_forbids_solving_dialogue_by_reducing_groups(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
+        format_text = root.joinpath("references", "format.md").read_text(
+            encoding="utf-8"
+        )
+
+        for text in (skill_text, format_text):
+            self.assertIn("不得用减少总组数解决对白变长", text)
+            self.assertIn("多章覆盖审计", text)
+            self.assertIn("十章不得压成十几组", text)
+
 
 if __name__ == "__main__":
     unittest.main()

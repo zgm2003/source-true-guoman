@@ -30,7 +30,9 @@ GPT-image-2，16:9，3D国漫，国风仙侠，轻喜剧反差，角色表演夸
 
 Each 15-second group may use 3-7 lines: use 3-4 for dense dialogue or pauses, 5 for normal beats, and 6-7 only for light low-dialogue micro-actions.
 
-Dialogue must be exact source excerpts. Do not rewrite, polish, invent, or move later dialogue into an earlier beat. If an exact line is too long, use fewer shots, split the beat, or choose another exact source sentence.
+Dialogue must be exact source excerpts. Do not rewrite, polish, invent, or move later dialogue into an earlier beat. If an exact line is too long, use fewer shots inside the current group, split the beat, or choose another exact source sentence. 不得用减少总组数解决对白变长.
+
+For multi-chapter work, make a private beat ledger first and run a 多章覆盖审计 before delivery. A 15-second group normally covers one small beat; exact dialogue and dense events should add groups, not erase chapter beats. 十章不得压成十几组 unless the user explicitly asks for a short synopsis. Avoid broad `第1-2章` group titles except for clean transitions.
 
 Name assets by reusable source identity and version: `角色名_造型/状态`, `场景名_母图/局部_用途`, `道具名_用途`, `界面名_状态`. Use crowd templates for repeated nameless groups, e.g. `青云宗外门弟子_群像模板`, instead of generating separate assets for one-off background people.
 
