@@ -112,7 +112,7 @@ Visible staging fidelity:
 
 - Do not invent concrete blocking to make a line feel cinematic. 不主动添加站起、起身、跪下、走动、抬手、收起法器, turning around, kneeling, bowing, drawing weapons, or changing seats unless the source says it or it is already established by a previous visible line.
 - Preserve explicit source posture and placement. 原文只写坐着就写坐着; if the source says `坐在左侧第二位`, do not turn it into `站在左侧席位前`.
-- 道具动作必须有原文依据. If the source says a prop exists or was refined but does not say the character is holding, shaking, raising, or putting it away, do not add those hand actions. Use neutral visible framing instead, such as `左侧第二席的枯瘦老者侧脸开口`, `群魔听着对白压低视线`, or `林夜远处眼皮轻跳`.
+- 道具动作必须有原文依据. If the source says a prop exists or was refined but does not say the character is holding, shaking, raising, or putting it away, do not add those hand actions. Use neutral visible framing instead, such as `左侧第二席的枯瘦老者正面半身开口`, `群魔听着对白压低视线`, or `林夜远处眼皮轻跳`.
 - You may add neutral camera framing, lighting, ambient sound, and facial reactions when needed for video readability, but those additions must not change who is sitting, standing, moving, holding, attacking, kneeling, or reporting.
 
 Dialogue handling:
@@ -178,9 +178,9 @@ Use this line shape:
 Dialogue camera and micro-performance:
 
 - 谁说话，镜头优先给谁; the speaking role should usually be the primary visible subject of that dialogue line unless the source clearly needs an offscreen voice, overheard line, or reaction-only reveal.
-- 默认不要纯大脸特写. 对白行优先使用中近景、半身中景或中景, 保留说话人的身体姿态、所在席位/环境, nearby reactions, and scene depth for spatial continuity and editing.
-- Do not make dialogue shots a row of isolated faces. Keep enough body, position, and environment for the clip to cut naturally.
-- 说话微表演 is allowed and useful when it stays source-compatible: 侧脸开口, 眼神微压, 短暂停顿, 喉结轻动, 袖口轻动, or fingers lightly tapping an existing armrest/table already visible in the setting.
+- 对白默认优先给说话人正面半身. 默认不要纯大脸特写. 对白行优先使用中近景、半身中景或中景, 保留说话人的身体姿态、所在席位/环境, nearby reactions, and scene depth for spatial continuity and editing.
+- 空间感放在背景纵深、席位关系和反应层次里. Do not make dialogue shots a row of isolated faces, and 不要把默认对白镜头写成半身侧面. Use 正面半身, 正面中景, slight front three-quarter, or brief reaction cutaways for variation.
+- 说话微表演 is allowed and useful when it stays source-compatible: 正面开口, 眼神微压, 短暂停顿, 喉结轻动, 袖口轻动, or fingers lightly tapping an existing armrest/table already visible in the setting.
 - Micro-actions must stay within the current source posture and placement. 不得把微动作升级成原文没有的站起、走动、跪下、抬手收法器, weapon drawing, attacking, changing seats, or new prop handling.
 
 Guidelines:

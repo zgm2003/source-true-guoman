@@ -164,6 +164,21 @@ class SkillTextRulesTests(unittest.TestCase):
             self.assertIn("说话微表演", text)
             self.assertIn("不得把微动作升级成原文没有的站起、走动、跪下、抬手收法器", text)
 
+    def test_dialogue_camera_defaults_to_front_half_body_not_side_template(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
+        format_text = root.joinpath("references", "format.md").read_text(
+            encoding="utf-8"
+        )
+
+        for text in (skill_text, format_text):
+            self.assertIn("对白默认优先给说话人正面半身", text)
+            self.assertIn("空间感放在背景纵深、席位关系和反应层次里", text)
+            self.assertIn("不要把默认对白镜头写成半身侧面", text)
+
+        self.assertIn("正面半身", format_text)
+        self.assertNotIn("半身侧面 + 左侧席位 + 王座远处可见", format_text)
+
 
 if __name__ == "__main__":
     unittest.main()
