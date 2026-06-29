@@ -149,6 +149,21 @@ class SkillTextRulesTests(unittest.TestCase):
         self.assertNotIn("站在左侧席位前", format_text)
         self.assertNotIn("法器在指节间轻晃", format_text)
 
+    def test_dialogue_camera_keeps_speaker_and_space_without_invented_blocking(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
+        format_text = root.joinpath("references", "format.md").read_text(
+            encoding="utf-8"
+        )
+
+        for text in (skill_text, format_text):
+            self.assertIn("谁说话，镜头优先给谁", text)
+            self.assertIn("默认不要纯大脸特写", text)
+            self.assertIn("对白行优先使用中近景、半身中景或中景", text)
+            self.assertIn("保留说话人的身体姿态、所在席位/环境", text)
+            self.assertIn("说话微表演", text)
+            self.assertIn("不得把微动作升级成原文没有的站起、走动、跪下、抬手收法器", text)
+
 
 if __name__ == "__main__":
     unittest.main()

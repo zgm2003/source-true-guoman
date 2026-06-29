@@ -175,6 +175,14 @@ Use this line shape:
 
 `镜头概念` should be compact, e.g. `近景 + 平视 + 单人主镜头 + 冷光压脸`, not a long paragraph.
 
+Dialogue camera and micro-performance:
+
+- 谁说话，镜头优先给谁; the speaking role should usually be the primary visible subject of that dialogue line unless the source clearly needs an offscreen voice, overheard line, or reaction-only reveal.
+- 默认不要纯大脸特写. 对白行优先使用中近景、半身中景或中景, 保留说话人的身体姿态、所在席位/环境, nearby reactions, and scene depth for spatial continuity and editing.
+- Do not make dialogue shots a row of isolated faces. Keep enough body, position, and environment for the clip to cut naturally.
+- 说话微表演 is allowed and useful when it stays source-compatible: 侧脸开口, 眼神微压, 短暂停顿, 喉结轻动, 袖口轻动, or fingers lightly tapping an existing armrest/table already visible in the setting.
+- Micro-actions must stay within the current source posture and placement. 不得把微动作升级成原文没有的站起、走动、跪下、抬手收法器, weapon drawing, attacking, changing seats, or new prop handling.
+
 Guidelines:
 
 - One line has one main visible action.
