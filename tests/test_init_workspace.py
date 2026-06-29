@@ -106,6 +106,18 @@ class SkillTextRulesTests(unittest.TestCase):
             self.assertIn("多章覆盖审计", text)
             self.assertIn("十章不得压成十几组", text)
 
+    def test_default_mode_preserves_source_content_for_manual_trimming(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
+        format_text = root.joinpath("references", "format.md").read_text(
+            encoding="utf-8"
+        )
+
+        for text in (skill_text, format_text):
+            self.assertIn("默认不主动删减原文内容", text)
+            self.assertIn("把删减权留给用户", text)
+            self.assertIn("只有用户明确要求压缩版", text)
+
 
 if __name__ == "__main__":
     unittest.main()

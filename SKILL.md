@@ -11,6 +11,8 @@ Produce a **lightweight 3D国漫 production feed**, not a director textbook. Kee
 
 Default style: `3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9`.
 
+Default editing stance: 默认不主动删减原文内容. Convert source text into usable shot groups and 把删减权留给用户. 只有用户明确要求压缩版, 精简版, or a target duration shorter than the source requires, may you intentionally trim non-load-bearing source material.
+
 ## Hard bans
 
 - Do not invent lore, factions, motives, outcomes, names, cultivation realms, props, or relationship changes not supported by the source.
@@ -84,6 +86,7 @@ For multi-chapter or long-script output, preserve source coverage before optimiz
 - Make a private beat ledger per chapter before writing video groups: opening state, key conflict, source dialogue anchor, action turn, result, and chapter hook when present.
 - Estimate group count from source beats. A 15-second group usually covers one small beat; a dense chapter often needs several groups. Ten requested chapters should normally become dozens of groups; 十章不得压成十几组 unless the user explicitly asks for a short synopsis.
 - Exact dialogue preservation is not permission to skip beats. 不得用减少总组数解决对白变长; split the beat, reduce lines inside the current group, or add another group.
+- Default output may be long. 默认不主动删减原文内容; 把删减权留给用户 so they can cut by taste, pacing, platform, or production budget after seeing the full source-faithful draft.
 - Avoid broad cross-chapter group titles such as `第1-2章` unless the group is only a clean transition or recap. If one group contains plot turns from two chapters, it is usually under-covered and should be split.
 - Run a 多章覆盖审计 before delivery: compare the draft groups against the chapter beat ledger and source index. Every requested chapter needs its setup, turning point, result, and hook represented by at least one visible group; if an anchor is missing, add groups before final output.
 
@@ -109,7 +112,8 @@ Dialogue handling:
 
 - 对白必须从原文摘取：不改写，不补写，不把旁白改成角色台词，不把角色口吻润色成“更顺”的新句。
 - Keep source dialogue in source order and local context. Do not提前挪用 later lines into an earlier beat, and do not leave a reaction line without the source setup that makes it make sense.
-- If source dialogue is long, delete whole non-load-bearing clauses or choose a shorter exact sentence. Do not paraphrase. 太长就拆镜头, reduce group line count, or split into another 15-second group.
+- If source dialogue is long, keep the source wording and split it across shots or groups. Do not paraphrase, do not replace it with a shorter invented summary, and do not silently choose a shorter source sentence that changes what the user sees. 太长就拆镜头, reduce group line count, or split into another 15-second group.
+- 只有用户明确要求压缩版 may you delete whole non-load-bearing clauses or choose a shorter exact source sentence; even then, preserve event order, setup, result, and hook.
 - Reducing line count means reducing lines inside the current group, not reducing total coverage. 不得用减少总组数解决对白变长.
 - Keep short source dialogue exact when it carries plot, identity, threat, comedy, or hook.
 - For long dialogue, preserve the source subject, action object, result, special terms, and strongest conflict clause.
@@ -153,6 +157,7 @@ Final video lines must describe what is visible in the frame. Keep them light.
 - Do not exceed 7 lines per 15-second group; split the group instead.
 - Spoken Chinese text per 15-second group should usually stay around 20-32 chars; 33-40 chars is crowded; 40+ chars should trigger fewer lines, fewer shots, or another group. Do not solve length by rewriting dialogue.
 - For multi-chapter output, the group count is elastic. Exact source dialogue and dense events should create more groups, not broader summaries. Run the 多章覆盖审计 when the requested scope spans more than one chapter.
+- Default mode accepts more groups so source content remains available for manual trimming. 默认不主动删减原文内容; 把删减权留给用户.
 - If one line contains multiple main actions, split the action or reduce the group line count.
 
 Use this line shape:
@@ -181,7 +186,7 @@ Default block footer:
 
 ```text
 上传参考图：资产名 = 图片N；资产名 = 图片N
-音色：按本组必要对白匹配角色年龄、身份和情绪；没有对白的组不要新增旁白。对白必须从原文摘取，不改写、不补写、不提前挪用；太长就拆镜头或减少本组镜头数。
+音色：按本组必要对白匹配角色年龄、身份和情绪；没有对白的组不要新增旁白。对白必须从原文摘取，不改写、不补写、不提前挪用；默认不主动删减原文内容，太长就拆镜头或拆成下一组。
 音色资产：角色音色=文件名.mp3。
 统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。
 ```
@@ -194,6 +199,7 @@ If there is no dialogue in the group, omit `音色资产`.
 | --- | --- |
 | Final feed reads like production guidelines | Move reasoning internal; output lighter video lines |
 | Dialogue gets “cleaned” until source flavor disappears | Extract exact source dialogue; do not rewrite, polish, or invent |
+| The agent pre-edits the story down because it thinks the user wants a tighter cut | 默认不主动删减原文内容; 把删减权留给用户. 只有用户明确要求压缩版才 trim |
 | Dialogue compression creates a 孤句 like `神魂也收入到了万魂幡中。` | Restore the 前因, 动作对象, and 结果, or keep the fuller original line |
 | A later reaction line appears without setup, e.g. `宗主哥哥，你怎么也不夸夸奴家？` | Keep source order and include the setup, or omit that dialogue |
 | Exact dialogue causes a ten-chapter feed to shrink to 14 groups | Do a 多章覆盖审计, restore missing chapter beats, and add groups. 十章不得压成十几组; 不得用减少总组数解决对白变长 |
