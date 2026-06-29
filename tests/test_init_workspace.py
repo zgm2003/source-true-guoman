@@ -92,9 +92,10 @@ class SkillTextRulesTests(unittest.TestCase):
             self.assertIn("不改写", text)
             self.assertIn("不补写", text)
             self.assertIn("不提前挪用", text)
-            self.assertIn("太长就拆镜头", text)
+            self.assertIn("原作多少字就保留多少字", text)
+            self.assertIn("不删上下文", text)
 
-    def test_long_scope_coverage_forbids_solving_dialogue_by_reducing_groups(self) -> None:
+    def test_long_scope_coverage_forbids_solving_dialogue_by_reducing_numbered_lines(self) -> None:
         root = Path(__file__).resolve().parents[1]
         skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
         format_text = root.joinpath("references", "format.md").read_text(
@@ -102,9 +103,9 @@ class SkillTextRulesTests(unittest.TestCase):
         )
 
         for text in (skill_text, format_text):
-            self.assertIn("不得用减少总组数解决对白变长", text)
+            self.assertIn("不得用减少编号行数解决对白变长", text)
             self.assertIn("多章覆盖审计", text)
-            self.assertIn("十章不得压成十几组", text)
+            self.assertIn("十章不得压成十几行", text)
 
     def test_default_mode_preserves_source_content_for_manual_trimming_without_ai_compression(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -121,7 +122,7 @@ class SkillTextRulesTests(unittest.TestCase):
             self.assertNotIn("may you intentionally trim", text)
             self.assertNotIn("只有用户明确要求压缩版", text)
 
-    def test_15_second_dialogue_limit_is_100_chars_without_shortening(self) -> None:
+    def test_video_feed_uses_continuous_numbering_without_ai_breathing_blocks(self) -> None:
         root = Path(__file__).resolve().parents[1]
         skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
         format_text = root.joinpath("references", "format.md").read_text(
@@ -129,10 +130,14 @@ class SkillTextRulesTests(unittest.TestCase):
         )
 
         for text in (skill_text, format_text):
-            self.assertIn("15秒对白字数上限100字", text)
-            self.assertIn("超过100字就拆镜头或拆下一组", text)
-            self.assertIn("上限是分组边界，不是删改许可", text)
-            self.assertIn("不压缩、不改写", text)
+            self.assertIn("把呼吸感交给用户", text)
+            self.assertIn("Do not create 15-second groups", text)
+            self.assertIn("do not enforce a 100-character spoken limit", text)
+            self.assertNotIn("15秒对白字数上限100字", text)
+            self.assertNotIn("超过100字就拆镜头或拆下一组", text)
+
+        self.assertIn("number lines continuously from `1` to the end", skill_text)
+        self.assertIn("Use continuous numbering only", format_text)
 
     def test_female_assets_allow_tasteful_leg_visibility(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -195,7 +200,7 @@ class SkillTextRulesTests(unittest.TestCase):
         self.assertIn("正面半身", format_text)
         self.assertNotIn("半身侧面 + 左侧席位 + 王座远处可见", format_text)
 
-    def test_15_second_groups_must_advance_plot_not_empty_setup(self) -> None:
+    def test_video_feed_starts_with_global_requirement_then_source_content(self) -> None:
         root = Path(__file__).resolve().parents[1]
         skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
         format_text = root.joinpath("references", "format.md").read_text(
@@ -203,13 +208,14 @@ class SkillTextRulesTests(unittest.TestCase):
         )
 
         for text in (skill_text, format_text):
-            self.assertIn("15秒组必须承载剧情推进", text)
-            self.assertIn("不要整组只做空定场", text)
-            self.assertIn("开场定场最多占1个短镜头", text)
-            self.assertIn("第一组应尽快进入原文事件或对白", text)
-            self.assertIn("不要用过低对白字数预算把一句完整汇报拆成多组", text)
+            self.assertIn(
+                "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。",
+                text,
+            )
 
-        self.assertIn("鬼王宗大殿与骨灵教汇报", format_text)
+        self.assertIn("Start `## 视频投喂块` with this exact line", skill_text)
+        self.assertIn("The first line after `统一要求` should enter source content quickly", format_text)
+        self.assertNotIn("### 第1组", format_text)
         self.assertIn(
             "宗主大人，昨日我骨灵教内又发现了一名正道奸细，今日一早我就已经把他剥皮抽筋，将他的一身骨头炼制成了法器，神魂也收入到了万魂幡中。",
             format_text,

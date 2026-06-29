@@ -11,7 +11,7 @@ Produce a **lightweight 3D国漫 production feed**, not a director textbook. Kee
 
 Default style: `3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9`.
 
-Default preservation stance: 原作多少字就保留多少字. Convert source text into usable shot groups and 把删减权留给用户. 不得由 AI 帮用户压缩、概括、改短、润色原作对白或剧情；压缩请求只能输出原文切点、分组建议, or tell the user which exact source spans they may manually remove.
+Default preservation stance: 原作多少字就保留多少字. Convert source text into continuous numbered feed lines and 把呼吸感、停顿、删减权留给用户. 不得由 AI 帮用户压缩、概括、改短、润色原作对白或剧情；压缩请求只能输出原文切点、连续编号建议, or tell the user which exact source spans they may manually remove.
 
 ## Hard bans
 
@@ -28,7 +28,7 @@ Default preservation stance: 原作多少字就保留多少字. Convert source t
 3. For long scripts or multi-scene excerpts, pre-scan the whole requested scope before writing assets. Track recurring characters, locations, props, interfaces, mounts/beasts, and speaking roles across early and later scenes.
 4. Build a private source fact sheet: characters, locations, event order, cause-effect, source terms, key dialogue, reveal order, hook.
 5. For long scripts or multi-chapter projects, create or update a lightweight working-directory source index when it helps continuity. Treat it as internal evidence, not final output.
-6. For multi-chapter projects, make a private chapter beat ledger and group budget before drafting. Preserve the requested story coverage; exact dialogue should expand or split groups, not shrink the scope.
+6. For multi-chapter projects, make a private chapter beat ledger and continuous numbering plan before drafting. Preserve the requested story coverage; exact dialogue stays in source order and must not shrink the scope.
 7. Build an asset ledger: existing reusable assets first, new assets only when they drive identity, setting, conflict, action, interface, or repeated continuity. Track parent-child reference relationships, such as same character new outfit or main scene to sub-location. Also track similar-character collision risk when multiple important roles share sect, uniform, age, gender, protagonist-like styling.
 8. Name assets with stable reusable names before writing prompts. Prefer `角色名_造型/状态`, `场景名_母图/局部_用途`, `道具名_用途`, and `界面名_状态`; keep names short, source-grounded, and reusable across chapters.
 9. Reconcile early anonymous roles with later named roles before emitting assets. If a “路人/NPC/弟子/店小二/黑衣人/侍女/守卫” later gets a name, repeated appearances, dialogue, or plot function, upgrade it to one stable reusable asset and bind all appearances to that identity.
@@ -37,7 +37,8 @@ Default preservation stance: 原作多少字就保留多少字. Convert source t
 12. Emit only the final package:
    - `## 资产提示词`
    - `## 视频投喂块`
-13. Before delivery, check source fidelity, dialogue load, asset reuse, Xiaoyunque raw tags, line weight, and multi-chapter coverage.
+13. In `## 视频投喂块`, start with the global `统一要求` line, then number lines continuously from `1` to the end. Do not create 15-second groups, `第N组`, group titles, group footers, or per-group pacing blocks.
+14. Before delivery, check source fidelity, dialogue preservation, asset reuse, Xiaoyunque raw tags, continuous numbering, and multi-chapter coverage.
 
 Read `references/format.md` before writing final feed blocks. Read `references/xiaoyunque-tags.md` whenever choosing the `运镜` field.
 
@@ -75,20 +76,20 @@ Use a local source index for long scripts, multi-chapter work, or any task where
 - Term entries should track sects, realms, techniques, systems, special props, titles, and any source spelling drift.
 - Doubt entries should track likely typos, suspected same assets, contradictions, unresolved reveals, and possible OCR/ASR/machine-translation errors.
 - Evidence anchors should point to chapter/scene/line numbers or short source snippets. Any cross-chapter merge, asset reuse, typo correction, relationship claim, reveal handling, or face/scene reference decision should be supported by source/index evidence.
-- Before writing each feed group, consult the relevant index entries. If evidence is missing, keep the point unresolved privately; do not invent confirmation in the final feed.
+- Before writing each feed line/span, consult the relevant index entries. If evidence is missing, keep the point unresolved privately; do not invent confirmation in the final feed.
 - Update the index when later text upgrades an early NPC, introduces a named recurrence, changes a character state/outfit, revisits a scene, or resolves a previous doubt.
 - Do not mention vector databases, embeddings, retrieval services, or implementation architecture in normal feed output; that belongs to a future engineering mode, not this lightweight skill.
 
 ## Long-scope coverage
 
-For multi-chapter or long-script output, preserve source coverage before optimizing line weight.
+For multi-chapter or long-script output, preserve source coverage before any pacing judgment.
 
-- Make a private beat ledger per chapter before writing video groups: opening state, key conflict, source dialogue anchor, action turn, result, and chapter hook when present.
-- Estimate group count from source beats. A 15-second group usually covers one small beat; a dense chapter often needs several groups. Ten requested chapters should normally become dozens of groups; 十章不得压成十几组 unless the user explicitly asks for a short synopsis.
-- Exact dialogue preservation is not permission to skip beats. 不得用减少总组数解决对白变长; split the beat, reduce lines inside the current group, or add another group.
+- Make a private beat ledger per chapter before writing video lines: opening state, key conflict, source dialogue anchor, action turn, result, and chapter hook when present.
+- Do not estimate 15-second group count, do not create group titles, and do not package lines into `第N组`. Ten requested chapters should normally become many continuous numbered lines; 十章不得压成十几行 unless the user explicitly asks for a short synopsis.
+- Exact dialogue preservation is not permission to skip beats. 不得用减少编号行数解决对白变长; add continuous lines in source order when needed.
 - Default output may be long. 原作多少字就保留多少字; 把删减权留给用户 so they can cut by taste, pacing, platform, or production budget after seeing the full source-faithful draft. 不得由 AI 帮用户压缩上下文。
-- Avoid broad cross-chapter group titles such as `第1-2章` unless the group is only a clean transition or recap. If one group contains plot turns from two chapters, it is usually under-covered and should be split.
-- Run a 多章覆盖审计 before delivery: compare the draft groups against the chapter beat ledger and source index. Every requested chapter needs its setup, turning point, result, and hook represented by at least one visible group; if an anchor is missing, add groups before final output.
+- Avoid broad cross-chapter labels such as `第1-2章` in video feed lines; the numbering should run from `1` to the end without grouping.
+- Run a 多章覆盖审计 before delivery: compare the continuous numbered lines against the chapter beat ledger and source index. Every requested chapter needs its setup, turning point, result, and hook represented by visible lines; if an anchor is missing, add source-faithful lines before final output.
 
 ## Source fidelity
 
@@ -118,14 +119,14 @@ Visible staging fidelity:
 Dialogue handling:
 
 - 对白必须从原文摘取：不改写，不补写，不把旁白改成角色台词，不把角色口吻润色成“更顺”的新句。
-- Keep source dialogue in source order and local context. Do not提前挪用 later lines into an earlier beat, and do not leave a reaction line without the source setup that makes it make sense.
-- If source dialogue is long, keep the full source wording and split it across shots or groups. Do not paraphrase, do not replace it with a shorter invented summary, and do not silently choose a shorter source sentence that changes what the user sees. 太长就拆镜头, reduce group line count, or split into another 15-second group.
-- If the user asks for compression, do not rewrite a compressed version inside this skill. Offer exact-source cut candidates, removable source spans, or a split plan; the user decides what to delete.
-- Reducing line count means reducing lines inside the current group, not reducing total coverage. 不得用减少总组数解决对白变长.
+- Keep source dialogue in source order and local context. 不提前挪用 later lines into an earlier beat, and do not leave a reaction line without the source setup that makes it make sense.
+- If source dialogue is long, keep the full source wording in continuous numbered lines. Do not paraphrase, do not replace it with a shorter invented summary, and do not silently choose a shorter source sentence that changes what the user sees. 不删上下文.
+- If the user asks for compression, do not rewrite a compressed version inside this skill. Offer exact-source cut candidates, removable source spans, or continuous-line split points; the user decides what to delete.
+- Reducing line count must not reduce total coverage. 不得用减少编号行数解决对白变长.
 - Keep short source dialogue exact when it carries plot, identity, threat, comedy, or hook.
-- For long dialogue, preserve the complete source wording in order. Splitting is allowed; shortening is not.
+- For long dialogue, preserve the complete source wording in order. Natural source punctuation can become adjacent continuous lines; shortening is not allowed.
 - Do not compress dialogue into a dangling 孤句. A line like `神魂也收入到了万魂幡中。` is too isolated if the source point depends on who was captured, what happened before, and where the body or artifact goes next. Preserve enough 前因, 动作对象, and 结果 for the viewer to understand the beat without reading the source.
-- Do not use a line like `宗主哥哥，你怎么也不夸夸奴家？` unless the preceding setup about what she did is also present in the same group or immediately clear from the previous line.
+- Do not use a line like `宗主哥哥，你怎么也不夸夸奴家？` unless the preceding setup about what she did is also present in nearby continuous lines.
 
 ## Asset rules
 
@@ -144,11 +145,11 @@ Use assets to stabilize identity, not to decorate every object.
 - Female character assets: 女角色统一按成年成熟女修处理，除非原文明确她真的是小孩。国漫仙侠、高级好看、性感但克制，吸引力来自脸、发型、肩颈锁骨、腰线、腿部线条、衣料层次、剪裁和气质。成年女修可以适度露腿，腿部线条可以是服装美感的一部分，但不要把腿写成唯一卖点。裙装、旗袍、JK、舞服必须有完整衣料结构：内衬、里裙、安全短裤或不透明下摆要明确写出；可露小腿、膝盖、膝上自然腿部线条；旗袍或长裙可以有合理开衩，走动时可见一侧腿线；短裙、JK、舞服可以正常露出双腿，正常双腿可见不算违规。禁止低机位扫腿、腿部特写、胸臀腿特写、透明无遮挡、走光、内裤或私密部位可见、超短无遮挡、开衩露到胯根。薄纱只能作为外层装饰，不能替代遮挡。禁止幼态、低俗裸露、夜店风、泳装化、内衣化。
 - Child character assets: 只有当前角色真的是小孩时，才使用单独的儿童/少年角色提示词。儿童角色必须完整保守、非性感化，不套用成年成熟女修模板。
 - Scene: empty location reference. Separate interior/exterior and materially different rooms; do not reuse an exterior for an interior shot.
-- Scene/prop reuse: if the same place, weapon, token, phone/interface, beast, vehicle, or signature object appears across distant scenes, create or bind one reusable asset instead of renaming or redesigning it per group.
+- Scene/prop reuse: if the same place, weapon, token, phone/interface, beast, vehicle, or signature object appears across distant scenes, create or bind one reusable asset instead of renaming or redesigning it per line.
 - Scene parent reference: when generating a room, gate, corridor, altar, stall, close-up corner, or other sub-area inside an existing large scene, upload the large scene mother image as style/structure reference. The derived prompt should keep the parent scene's architecture, materials, light logic, color mood, and world identity while focusing on the new sub-area. Do not invent a visually unrelated local set just because the shot is closer.
 - Prop/interface derived reference: when a prop or interface is a detail from a known scene or owner character, bind the parent scene/character image if it helps keep scale, material, faction style, or screen language consistent.
 - Prop/interface: create a clean single-subject product shot only for high-value props or interfaces. If phone orientation matters, make the prompt explicitly `正面屏幕朝镜头` or create a separate front-screen reference; do not force one asset to solve both front and back.
-- Voice: bind voice assets only for characters who speak in that group.
+- Voice: bind voice assets only for characters who speak in the requested scope.
 - Reuse: when the user provides existing images or earlier generated assets, write `沿用图片N` or bind the existing filename; do not regenerate identity assets unless asked.
 - Reference binding: the `上传参考图` line must include parent or comparison references whenever continuity or separation depends on them, not only the newly generated asset. State the purpose in parentheses: `人脸身份参考`, `旧造型参考`, `避撞脸参考`, `同门服制参考`, `场景母图参考`, `局部场景参考`, `材质风格参考`, or `界面风格参考`.
 
@@ -156,19 +157,15 @@ Use assets to stabilize identity, not to decorate every object.
 
 Final video lines must describe what is visible in the frame. Keep them light.
 
-15-second grouping:
+Continuous numbering:
 
-- Treat one video group as roughly 15 seconds. Default to 5 lines, but adjust between 3-7 lines based on density.
-- 15秒对白字数上限100字. This is a grouping boundary, not permission to edit. If exact source dialogue/OS/system text exceeds 100 Chinese characters in one 15-second group, split the text into additional shots or the next group. 超过100字就拆镜头或拆下一组，不压缩、不改写、不删上下文。
-- Use 3-4 lines when dialogue, OS, system prompts, exposition, emotional pauses, or complex actions need breathing room.
-- Use 5 lines for normal plot beats: one clear action or emotion per line, about 3 seconds each.
-- Use 6-7 lines only when shots are light, mostly visual, low-dialogue, and made of quick micro-actions.
-- Do not exceed 7 lines per 15-second group; split the group instead.
-- 15秒组必须承载剧情推进. 不要整组只做空定场、氛围、人物坐着、群像压迫. 开场定场最多占1个短镜头, then enter a source event, source dialogue, conflict, system prompt, or visible decision. 第一组应尽快进入原文事件或对白.
-- Spoken dialogue density is a pacing judgment with a 100-character ceiling per 15-second group. A normal 15-second group can carry one full source report plus a reaction when the exact spoken load stays within 100 Chinese characters and remains readable. 不要用过低对白字数预算把一句完整汇报拆成多组; split only when the actual spoken load exceeds 100 characters or needs breathing room, not because the line looks long in text.
-- For multi-chapter output, the group count is elastic. Exact source dialogue and dense events should create more groups, not broader summaries. Run the 多章覆盖审计 when the requested scope spans more than one chapter.
-- Default mode accepts more groups so source content remains available for manual trimming. 原作多少字就保留多少字; 把删减权留给用户. 不得由 AI 帮用户压缩。
-- If one line contains multiple main actions, split the action or reduce the group line count.
+- Do not create 15-second groups. Do not write `第1组`, `第1-5条`, group titles, group footers, or any fixed 3-7 line pacing rule.
+- Start `## 视频投喂块` with this exact line: `统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。`
+- After the `统一要求` line, number video lines continuously from `1` to the end. Do not reset numbering by scene, chapter, or asset.
+- The video feed should stay source-content-first: original events, exact dialogue/OS/system prompts, source-grounded visible reactions, and necessary environmental/action audio.
+- 把呼吸感交给用户. Do not decide pauses by making 15-second blocks, do not enforce a 100-character spoken limit, and do not add pacing commentary.
+- 原作多少字就保留多少字. If a source sentence is long, keep it; if readability requires line breaks, split only at natural source punctuation into adjacent continuous numbers.
+- If one line contains multiple unrelated visible actions, split into adjacent continuous numbers without deleting or rewriting the source content.
 
 Use this line shape:
 
@@ -200,16 +197,13 @@ Guidelines:
 
 Final answer should be copyable. Do not include long explanations unless the user asks for analysis.
 
-Default block footer:
+Video block header:
 
 ```text
-上传参考图：资产名 = 图片N；资产名 = 图片N
-音色：按本组必要对白匹配角色年龄、身份和情绪；没有对白的组不要新增旁白。对白必须从原文摘取，不改写、不补写、不提前挪用；原作多少字就保留多少字；15秒对白字数上限100字，太长就拆镜头或拆成下一组，不压缩、不删上下文。
-音色资产：角色音色=文件名.mp3。
 统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。
 ```
 
-If there is no dialogue in the group, omit `音色资产`.
+Do not repeat this line as a footer. Do not add per-group `上传参考图`, `音色`, or `音色资产` blocks under video lines. Put reusable images and voices in `## 资产提示词` or one compact asset list only when the user needs it.
 
 ## Common mistakes
 
@@ -220,13 +214,13 @@ If there is no dialogue in the group, omit `音色资产`.
 | The agent pre-edits the story down because it thinks the user wants a tighter cut | 原作多少字就保留多少字; 把删减权留给用户. 不得由 AI 帮用户压缩 |
 | Speaker is made to stand up, raise a prop, or put a prop away when the source only gave dialogue | 原文只写坐着就写坐着. 不主动添加站起、起身、跪下、走动、抬手、收起法器; 道具动作必须有原文依据 |
 | Dialogue compression creates a 孤句 like `神魂也收入到了万魂幡中。` | Restore the 前因, 动作对象, and 结果, or keep the fuller original line |
-| 15秒对白超过100字 | Split into fewer shots or the next group. 上限是分组边界，不是删改许可 |
+| Agent tries to solve breathing/pacing with 15-second groups | Remove all groups. Use continuous numbering and let the user decide pauses |
 | A later reaction line appears without setup, e.g. `宗主哥哥，你怎么也不夸夸奴家？` | Keep source order and include the setup, or omit that dialogue |
-| 15-second opening group only shows throne, crowd, and another reaction shot | 15秒组必须承载剧情推进. 开场定场最多占1个短镜头; 第一组应尽快进入原文事件或对白 |
-| Exact dialogue causes a ten-chapter feed to shrink to 14 groups | Do a 多章覆盖审计, restore missing chapter beats, and add groups. 十章不得压成十几组; 不得用减少总组数解决对白变长 |
+| Video feed starts with a group title instead of the global requirement | Start `## 视频投喂块` with the exact `统一要求` line, then `1...2...3...` |
+| Exact dialogue causes a ten-chapter feed to shrink to 14 lines | Do a 多章覆盖审计, restore missing chapter beats, and add continuous numbered lines. 十章不得压成十几行 |
 | Obvious typo becomes new lore | Treat source anomalies as private notes; do not invent new terms from likely errors |
 | Every shot overuses positioning rules | Use position only when it prevents a real generation error |
-| 15-second group is forced to exactly 5 lines | Use 3-7 lines based on dialogue density, pauses, and action complexity |
+| Continuous numbering resets by chapter or scene | Keep one sequence from `1` to the end |
 | Phone flips to back camera | Specify `屏幕正面朝镜头` and avoid mixed front/back asset prompts |
 | Non-library camera word appears | Replace with exact Xiaoyunque tag from `references/xiaoyunque-tags.md` |
 | Long script treats early NPCs as disposable | Pre-scan later scenes; upgrade any later-named or recurring role into one reusable asset |

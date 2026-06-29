@@ -15,36 +15,33 @@ GPT-image-2，16:9，3D国漫，国风仙侠，轻喜剧反差，角色表演夸
 
 ## 视频投喂块
 
-### 第1组｜15秒｜第1-5条
+统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。
+
 1 日 内 场景 人物 可见行为画面 镜头概念 运镜 音频/对白
 2 ...
 3 ...
 4 ...
 5 ...
-
-上传参考图：资产名 = 图片N；资产名 = 图片N
-音色：按本组必要对白匹配角色年龄、身份和情绪；没有对白的组不要新增旁白。对白必须从原文摘取，不改写、不补写、不提前挪用；原作多少字就保留多少字；15秒对白字数上限100字，太长就拆镜头或拆成下一组，不压缩、不删上下文。
-音色资产：角色音色=角色.mp3。
-统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。
+6 ...
 ```
 
-Each 15-second group may use 3-7 lines: use 3-4 for dense dialogue or pauses, 5 for normal beats, and 6-7 only for light low-dialogue micro-actions.
+Use continuous numbering only. Do not create 15-second groups, group titles, group footers, `第N组`, `第1-5条`, per-group `上传参考图`, per-group `音色`, or per-group `音色资产` blocks.
 
-15秒组必须承载剧情推进. 不要整组只做空定场、氛围、人物坐着、群像压迫. 开场定场最多占1个短镜头; 第一组应尽快进入原文事件或对白, such as a source event, source dialogue, conflict, system prompt, or visible decision.
+The first line after `统一要求` should enter source content quickly: a source event, exact source dialogue/OS/system prompt, conflict, visible decision, or one brief establishing shot tied to the source.
 
-Spoken dialogue density is a pacing judgment with a 100-character ceiling per 15-second group. A normal 15-second group can carry one full source report plus a reaction when the exact spoken load stays within 100 Chinese characters and remains readable. 不要用过低对白字数预算把一句完整汇报拆成多组; split only when the actual spoken load exceeds 100 characters or needs breathing room, not because the line looks long in text.
+把呼吸感交给用户. Do not decide pauses by making 15-second blocks, do not enforce a 100-character spoken limit, and do not add pacing commentary. The user decides where to pause, cut, merge, or split after receiving the continuous source-faithful feed.
 
-Default stance: 原作多少字就保留多少字. 把删减权留给用户; output the source-faithful draft in enough groups so the user can trim later. 不得由 AI 帮用户压缩、概括、改短、润色原作对白或剧情；压缩请求只能输出原文切点、分组建议, or tell the user which exact source spans they may manually remove.
+Default stance: 原作多少字就保留多少字. 把删减权留给用户; output the source-faithful draft as continuous numbered lines so the user can trim later. 不得由 AI 帮用户压缩、概括、改短、润色原作对白或剧情；压缩请求只能输出原文切点、连续编号建议, or tell the user which exact source spans they may manually remove.
 
-Dialogue must be exact source excerpts. Do not rewrite, polish, invent, shorten, or move later dialogue into an earlier beat. If exact source dialogue/OS/system text exceeds 100 Chinese characters in one 15-second group, use fewer shots inside the current group or split the beat into another group. 15秒对白字数上限100字; 超过100字就拆镜头或拆下一组; 上限是分组边界，不是删改许可; 不压缩、不改写、不删上下文. 不得用减少总组数解决对白变长.
+Dialogue must be exact source excerpts. 对白必须从原文摘取. Do not rewrite, polish, invent, shorten, or move later dialogue into an earlier beat. 不提前挪用 later dialogue. If exact source dialogue/OS/system text is long, preserve it; if readability requires line breaks, split only at natural source punctuation into adjacent continuous numbers. 不压缩、不改写、不补写、不删上下文. 不得用减少编号行数解决对白变长.
 
-For multi-chapter work, make a private beat ledger first and run a 多章覆盖审计 before delivery. A 15-second group normally covers one small beat; exact dialogue and dense events should add groups, not erase chapter beats. 十章不得压成十几组 unless the user explicitly asks for a short synopsis. Avoid broad `第1-2章` group titles except for clean transitions.
+For multi-chapter work, make a private beat ledger first and run a 多章覆盖审计 before delivery. Exact dialogue and dense events should add continuous numbered lines, not erase chapter beats. 十章不得压成十几行 unless the user explicitly asks for a short synopsis. Avoid broad `第1-2章` labels in the video feed.
 
 Visible staging must stay source-grounded. 不主动添加站起、起身、跪下、走动、抬手、收起法器 or other concrete body/prop actions just to make the shot more active. 原文只写坐着就写坐着. 道具动作必须有原文依据; otherwise use neutral framing, facial reactions, ambient sound, or camera movement.
 
 Dialogue camera: 谁说话，镜头优先给谁. 对白默认优先给说话人正面半身, not side-by-default. 默认不要纯大脸特写. 对白行优先使用中近景、半身中景或中景, 保留说话人的身体姿态、所在席位/环境, surrounding reactions, and scene depth so the clip is easy to edit. 空间感放在背景纵深、席位关系和反应层次里; 不要把默认对白镜头写成半身侧面. Use 正面半身, 正面中景, slight front three-quarter, or brief reaction cutaways for variation. 说话微表演 can add life, such as 正面开口, 眼神微压, 短暂停顿, 喉结轻动, 袖口轻动, or fingers lightly tapping an existing armrest/table, but it must stay inside the current source posture and placement. 不得把微动作升级成原文没有的站起、走动、跪下、抬手收法器, weapon drawing, attacking, seat changes, or new prop handling.
 
-Name assets by reusable source identity and version: `角色名_造型/状态`, `场景名_母图/局部_用途`, `道具名_用途`, `界面名_状态`. Use crowd templates for repeated nameless groups, e.g. `青云宗外门弟子_群像模板`, instead of generating separate assets for one-off background people.
+Name assets by reusable source identity and version: `角色名_造型/状态`, `场景名_母图/局部_用途`, `道具名_用途`, `界面名_状态`. Use crowd templates for repeated nameless crowds, e.g. `青云宗外门弟子_群像模板`, instead of generating separate assets for one-off background people.
 
 Character assets are concept sheets, not shots. 人设资产只写身份、脸、体型、服装和气质. 不要把坐在左侧第二位、站在席位前、当前镜头姿态写进三视图人设; 席位、站位、坐姿、当前动作属于视频行. Use reusable outfit names such as `骨灵教老者_骨纹法袍造型`, not position-based names tied to a temporary seat or camera angle. If an object is only a character identity marker, describe it as a waist/side accessory; do not force a hand-held pose unless creating a dedicated held-prop asset.
 
@@ -66,10 +63,10 @@ For similar important characters, use reference labels that preserve shared sect
 序号 日/夜 内/外 具体场景 人物 可见行为画面 镜头概念 运镜 音频/对白
 ```
 
-Good opening group:
+Good opening continuous feed:
 
 ```text
-### 第1组｜15秒｜鬼王宗大殿与骨灵教汇报
+统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。
 1 日 内 鬼王宗宗门大殿 林夜 黑袍白发的林夜面无表情坐在漆黑石椅上，十名魔门首领分坐两侧，冷雾贴地压低 中景 + 轻微低机位 + 王座居中 + 两侧席位 固定镜头 环境音：大殿低鸣、衣袖摩擦，无对白
 2 日 内 鬼王宗宗门大殿 骨灵教老者 枯瘦老者坐在左侧第二席，正面半身阴沉开口，背景保留大殿纵深和王座方向冷光 中近景 + 正面半身 + 背景纵深 + 王座方向冷光 镜头前推 骨灵教老者：宗主大人，昨日我骨灵教内又发现了一名正道奸细，今日一早我就已经把他剥皮抽筋，将他的一身骨头炼制成了法器，神魂也收入到了万魂幡中。
 3 日 内 鬼王宗宗门大殿 骨灵教老者 老者不改变坐姿，语气平静补上后续安排，林夜在王座方向眼皮轻跳 中近景 + 正面半身 + 王座方向冷光 + 反应层次 固定镜头 骨灵教老者：明日一早我就安排弟子将他的皮囊丢到烈阳宗。
@@ -87,6 +84,7 @@ Avoid:
 - Long slash chains that read like a checklist instead of a shot.
 - Multiple actions and multiple dialogue lines in one video line.
 - Rewritten dialogue, invented dialogue, or later source dialogue used before its setup.
+- `第N组`, 15-second grouping, group footers, or any AI-made breathing/pacing blocks.
 - Invented blocking such as making a seated speaker stand up, raise a prop, or put a prop away when the source did not say that.
 - Rule dumps like `不要...不要...不要...` inside every line.
 - Film-school explanation when the model only needs visible content.
