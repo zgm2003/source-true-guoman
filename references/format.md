@@ -23,12 +23,14 @@ GPT-image-2，16:9，3D国漫，国风仙侠，轻喜剧反差，角色表演夸
 5 ...
 
 上传参考图：资产名 = 图片N；资产名 = 图片N
-音色：按本组必要对白匹配角色年龄、身份和情绪；没有对白的组不要新增旁白。必要对白只保留本组逐条文本里的短句。
+音色：按本组必要对白匹配角色年龄、身份和情绪；没有对白的组不要新增旁白。对白必须从原文摘取，不改写、不补写、不提前挪用；太长就拆镜头或减少本组镜头数。
 音色资产：角色音色=角色.mp3。
 统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。
 ```
 
 Each 15-second group may use 3-7 lines: use 3-4 for dense dialogue or pauses, 5 for normal beats, and 6-7 only for light low-dialogue micro-actions.
+
+Dialogue must be exact source excerpts. Do not rewrite, polish, invent, or move later dialogue into an earlier beat. If an exact line is too long, use fewer shots, split the beat, or choose another exact source sentence.
 
 Name assets by reusable source identity and version: `角色名_造型/状态`, `场景名_母图/局部_用途`, `道具名_用途`, `界面名_状态`. Use crowd templates for repeated nameless groups, e.g. `青云宗外门弟子_群像模板`, instead of generating separate assets for one-off background people.
 
@@ -59,13 +61,14 @@ Good line:
 Good dialogue line:
 
 ```text
-2 日 内 鬼王宗宗门大殿 骨灵教老者 枯瘦老者侧背影站在左侧席位前，白骨法器在指节间轻晃，王座上的林夜在远处冷光中压住表情 中近景 + 侧背影 + 法器居中 + 王座远处可见 镜头前推 骨灵教老者：正道奸细已炼成法器，皮囊明日丢去烈阳宗。；音效：骨片轻响
+2 日 内 鬼王宗宗门大殿 骨灵教老者 枯瘦老者侧背影站在左侧席位前，白骨法器在指节间轻晃，王座上的林夜在远处冷光中压住表情 中近景 + 侧背影 + 法器居中 + 王座远处可见 镜头前推 骨灵教老者：宗主大人，昨日我骨灵教内又发现了一名正道奸细。；音效：骨片轻响
 ```
 
 Avoid:
 
 - Long slash chains that read like a checklist instead of a shot.
 - Multiple actions and multiple dialogue lines in one video line.
+- Rewritten dialogue, invented dialogue, or later source dialogue used before its setup.
 - Rule dumps like `不要...不要...不要...` inside every line.
 - Film-school explanation when the model only needs visible content.
 

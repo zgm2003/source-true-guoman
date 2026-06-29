@@ -94,15 +94,15 @@ Source text anomalies:
 - If a term affects plot, identity, realm, faction, prop, or reveal and is not clearly a typo, keep the original wording and mark the ambiguity privately; do not silently rewrite it.
 - If the user asks for exact source dialogue/OS, keep the text exact unless they explicitly allow cleanup.
 
-Dialogue compression:
+Dialogue handling:
 
+- 对白必须从原文摘取：不改写，不补写，不把旁白改成角色台词，不把角色口吻润色成“更顺”的新句。
+- Keep source dialogue in source order and local context. Do not提前挪用 later lines into an earlier beat, and do not leave a reaction line without the source setup that makes it make sense.
+- If source dialogue is long, delete whole non-load-bearing clauses or choose a shorter exact sentence. Do not paraphrase. 太长就拆镜头, reduce group line count, or split into another 15-second group.
 - Keep short source dialogue exact when it carries plot, identity, threat, comedy, or hook.
-- For long dialogue, keep the source subject, action object, result, special terms, and strongest conflict clause.
+- For long dialogue, preserve the source subject, action object, result, special terms, and strongest conflict clause.
 - Do not compress dialogue into a dangling 孤句. A line like `神魂也收入到了万魂幡中。` is too isolated if the source point depends on who was captured, what happened before, and where the body or artifact goes next. Preserve enough 前因, 动作对象, and 结果 for the viewer to understand the beat without reading the source.
-- Prefer one fuller dialogue line over two strange fragments when the fragments lose source flavor. If the full source sentence is load-bearing and still fits the 15-second group, keep it exact.
-- Delete filler, repeated explanation, and process detail first.
-- Do not delete the target of an action, the result, the named term, or the爽点 just to shorten a line.
-- If the user requests exact OS/dialogue, add more video lines instead of cramming the line.
+- Do not use a line like `宗主哥哥，你怎么也不夸夸奴家？` unless the preceding setup about what she did is also present in the same group or immediately clear from the previous line.
 
 ## Asset rules
 
@@ -139,7 +139,7 @@ Final video lines must describe what is visible in the frame. Keep them light.
 - Use 5 lines for normal plot beats: one clear action or emotion per line, about 3 seconds each.
 - Use 6-7 lines only when shots are light, mostly visual, low-dialogue, and made of quick micro-actions.
 - Do not exceed 7 lines per 15-second group; split the group instead.
-- Spoken Chinese text per 15-second group should usually stay around 20-32 chars; 33-40 chars is crowded; 40+ chars should trigger fewer lines, dialogue compression, or another group.
+- Spoken Chinese text per 15-second group should usually stay around 20-32 chars; 33-40 chars is crowded; 40+ chars should trigger fewer lines, fewer shots, or another group. Do not solve length by rewriting dialogue.
 - If one line contains multiple main actions, split the action or reduce the group line count.
 
 Use this line shape:
@@ -168,7 +168,7 @@ Default block footer:
 
 ```text
 上传参考图：资产名 = 图片N；资产名 = 图片N
-音色：按本组必要对白匹配角色年龄、身份和情绪；没有对白的组不要新增旁白。必要对白只保留本组逐条文本里的短句。
+音色：按本组必要对白匹配角色年龄、身份和情绪；没有对白的组不要新增旁白。对白必须从原文摘取，不改写、不补写、不提前挪用；太长就拆镜头或减少本组镜头数。
 音色资产：角色音色=文件名.mp3。
 统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。
 ```
@@ -180,8 +180,9 @@ If there is no dialogue in the group, omit `音色资产`.
 | Mistake | Fix |
 | --- | --- |
 | Final feed reads like production guidelines | Move reasoning internal; output lighter video lines |
-| Dialogue gets “cleaned” until source flavor disappears | Preserve source names, target, result, threat/comedy clause |
+| Dialogue gets “cleaned” until source flavor disappears | Extract exact source dialogue; do not rewrite, polish, or invent |
 | Dialogue compression creates a 孤句 like `神魂也收入到了万魂幡中。` | Restore the 前因, 动作对象, and 结果, or keep the fuller original line |
+| A later reaction line appears without setup, e.g. `宗主哥哥，你怎么也不夸夸奴家？` | Keep source order and include the setup, or omit that dialogue |
 | Obvious typo becomes new lore | Treat source anomalies as private notes; do not invent new terms from likely errors |
 | Every shot overuses positioning rules | Use position only when it prevents a real generation error |
 | 15-second group is forced to exactly 5 lines | Use 3-7 lines based on dialogue density, pauses, and action complexity |

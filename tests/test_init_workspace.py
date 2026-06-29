@@ -80,6 +80,20 @@ class SkillTextRulesTests(unittest.TestCase):
         self.assertIn("动作对象", skill_text)
         self.assertIn("结果", skill_text)
 
+    def test_dialogue_rules_require_source_excerpt_not_rewrite(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
+        format_text = root.joinpath("references", "format.md").read_text(
+            encoding="utf-8"
+        )
+
+        for text in (skill_text, format_text):
+            self.assertIn("对白必须从原文摘取", text)
+            self.assertIn("不改写", text)
+            self.assertIn("不补写", text)
+            self.assertIn("不提前挪用", text)
+            self.assertIn("太长就拆镜头", text)
+
 
 if __name__ == "__main__":
     unittest.main()
