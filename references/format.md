@@ -36,6 +36,8 @@ Dialogue must be exact source excerpts. Do not rewrite, polish, invent, or move 
 
 For multi-chapter work, make a private beat ledger first and run a 多章覆盖审计 before delivery. A 15-second group normally covers one small beat; exact dialogue and dense events should add groups, not erase chapter beats. 十章不得压成十几组 unless the user explicitly asks for a short synopsis. Avoid broad `第1-2章` group titles except for clean transitions.
 
+Visible staging must stay source-grounded. 不主动添加站起、起身、跪下、走动、抬手、收起法器 or other concrete body/prop actions just to make the shot more active. 原文只写坐着就写坐着. 道具动作必须有原文依据; otherwise use neutral framing, facial reactions, ambient sound, or camera movement.
+
 Name assets by reusable source identity and version: `角色名_造型/状态`, `场景名_母图/局部_用途`, `道具名_用途`, `界面名_状态`. Use crowd templates for repeated nameless groups, e.g. `青云宗外门弟子_群像模板`, instead of generating separate assets for one-off background people.
 
 When a new asset depends on an older image, include both in `上传参考图` with purpose labels:
@@ -65,7 +67,7 @@ Good line:
 Good dialogue line:
 
 ```text
-2 日 内 鬼王宗宗门大殿 骨灵教老者 枯瘦老者侧背影站在左侧席位前，白骨法器在指节间轻晃，王座上的林夜在远处冷光中压住表情 中近景 + 侧背影 + 法器居中 + 王座远处可见 镜头前推 骨灵教老者：宗主大人，昨日我骨灵教内又发现了一名正道奸细。；音效：骨片轻响
+2 日 内 鬼王宗宗门大殿 骨灵教老者 枯瘦老者坐在左侧第二席，侧脸阴沉开口，王座上的林夜在远处冷光中眼皮轻跳 中近景 + 侧面 + 左侧席位 + 王座远处可见 镜头前推 骨灵教老者：宗主大人，昨日我骨灵教内又发现了一名正道奸细。；环境音：殿内低鸣
 ```
 
 Avoid:
@@ -73,6 +75,7 @@ Avoid:
 - Long slash chains that read like a checklist instead of a shot.
 - Multiple actions and multiple dialogue lines in one video line.
 - Rewritten dialogue, invented dialogue, or later source dialogue used before its setup.
+- Invented blocking such as making a seated speaker stand up, raise a prop, or put a prop away when the source did not say that.
 - Rule dumps like `不要...不要...不要...` inside every line.
 - Film-school explanation when the model only needs visible content.
 

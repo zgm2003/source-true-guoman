@@ -134,6 +134,21 @@ class SkillTextRulesTests(unittest.TestCase):
             self.assertNotIn("同时露出双腿", text)
             self.assertNotIn("整条腿暴露", text)
 
+    def test_shot_staging_must_not_invent_unsourced_blocking(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
+        format_text = root.joinpath("references", "format.md").read_text(
+            encoding="utf-8"
+        )
+
+        for text in (skill_text, format_text):
+            self.assertIn("不主动添加站起、起身、跪下、走动、抬手、收起法器", text)
+            self.assertIn("原文只写坐着就写坐着", text)
+            self.assertIn("道具动作必须有原文依据", text)
+
+        self.assertNotIn("站在左侧席位前", format_text)
+        self.assertNotIn("法器在指节间轻晃", format_text)
+
 
 if __name__ == "__main__":
     unittest.main()

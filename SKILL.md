@@ -108,6 +108,13 @@ Source text anomalies:
 - If a term affects plot, identity, realm, faction, prop, or reveal and is not clearly a typo, keep the original wording and mark the ambiguity privately; do not silently rewrite it.
 - If the user asks for exact source dialogue/OS, keep the text exact unless they explicitly allow cleanup.
 
+Visible staging fidelity:
+
+- Do not invent concrete blocking to make a line feel cinematic. 不主动添加站起、起身、跪下、走动、抬手、收起法器, turning around, kneeling, bowing, drawing weapons, or changing seats unless the source says it or it is already established by a previous visible line.
+- Preserve explicit source posture and placement. 原文只写坐着就写坐着; if the source says `坐在左侧第二位`, do not turn it into `站在左侧席位前`.
+- 道具动作必须有原文依据. If the source says a prop exists or was refined but does not say the character is holding, shaking, raising, or putting it away, do not add those hand actions. Use neutral visible framing instead, such as `左侧第二席的枯瘦老者侧脸开口`, `群魔听着对白压低视线`, or `林夜远处眼皮轻跳`.
+- You may add neutral camera framing, lighting, ambient sound, and facial reactions when needed for video readability, but those additions must not change who is sitting, standing, moving, holding, attacking, kneeling, or reporting.
+
 Dialogue handling:
 
 - 对白必须从原文摘取：不改写，不补写，不把旁白改成角色台词，不把角色口吻润色成“更顺”的新句。
@@ -200,6 +207,7 @@ If there is no dialogue in the group, omit `音色资产`.
 | Final feed reads like production guidelines | Move reasoning internal; output lighter video lines |
 | Dialogue gets “cleaned” until source flavor disappears | Extract exact source dialogue; do not rewrite, polish, or invent |
 | The agent pre-edits the story down because it thinks the user wants a tighter cut | 默认不主动删减原文内容; 把删减权留给用户. 只有用户明确要求压缩版才 trim |
+| Speaker is made to stand up, raise a prop, or put a prop away when the source only gave dialogue | 原文只写坐着就写坐着. 不主动添加站起、起身、跪下、走动、抬手、收起法器; 道具动作必须有原文依据 |
 | Dialogue compression creates a 孤句 like `神魂也收入到了万魂幡中。` | Restore the 前因, 动作对象, and 结果, or keep the fuller original line |
 | A later reaction line appears without setup, e.g. `宗主哥哥，你怎么也不夸夸奴家？` | Keep source order and include the setup, or omit that dialogue |
 | Exact dialogue causes a ten-chapter feed to shrink to 14 groups | Do a 多章覆盖审计, restore missing chapter beats, and add groups. 十章不得压成十几组; 不得用减少总组数解决对白变长 |
