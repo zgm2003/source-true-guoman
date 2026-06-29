@@ -163,7 +163,8 @@ Final video lines must describe what is visible in the frame. Keep them light.
 - Use 5 lines for normal plot beats: one clear action or emotion per line, about 3 seconds each.
 - Use 6-7 lines only when shots are light, mostly visual, low-dialogue, and made of quick micro-actions.
 - Do not exceed 7 lines per 15-second group; split the group instead.
-- Spoken Chinese text per 15-second group should usually stay around 20-32 chars; 33-40 chars is crowded; 40+ chars should trigger fewer lines, fewer shots, or another group. Do not solve length by rewriting dialogue.
+- 15秒组必须承载剧情推进. 不要整组只做空定场、氛围、人物坐着、群像压迫. 开场定场最多占1个短镜头, then enter a source event, source dialogue, conflict, system prompt, or visible decision. 第一组应尽快进入原文事件或对白.
+- Spoken dialogue density is a pacing judgment, not a hard low character budget. A normal 15-second group can carry one full source report plus a reaction when the line is important and readable. 不要用过低对白字数预算把一句完整汇报拆成多组; split only when the actual spoken load is too long for the target model, not because the line looks long in text.
 - For multi-chapter output, the group count is elastic. Exact source dialogue and dense events should create more groups, not broader summaries. Run the 多章覆盖审计 when the requested scope spans more than one chapter.
 - Default mode accepts more groups so source content remains available for manual trimming. 默认不主动删减原文内容; 把删减权留给用户.
 - If one line contains multiple main actions, split the action or reduce the group line count.
@@ -219,6 +220,7 @@ If there is no dialogue in the group, omit `音色资产`.
 | Speaker is made to stand up, raise a prop, or put a prop away when the source only gave dialogue | 原文只写坐着就写坐着. 不主动添加站起、起身、跪下、走动、抬手、收起法器; 道具动作必须有原文依据 |
 | Dialogue compression creates a 孤句 like `神魂也收入到了万魂幡中。` | Restore the 前因, 动作对象, and 结果, or keep the fuller original line |
 | A later reaction line appears without setup, e.g. `宗主哥哥，你怎么也不夸夸奴家？` | Keep source order and include the setup, or omit that dialogue |
+| 15-second opening group only shows throne, crowd, and another reaction shot | 15秒组必须承载剧情推进. 开场定场最多占1个短镜头; 第一组应尽快进入原文事件或对白 |
 | Exact dialogue causes a ten-chapter feed to shrink to 14 groups | Do a 多章覆盖审计, restore missing chapter beats, and add groups. 十章不得压成十几组; 不得用减少总组数解决对白变长 |
 | Obvious typo becomes new lore | Treat source anomalies as private notes; do not invent new terms from likely errors |
 | Every shot overuses positioning rules | Use position only when it prevents a real generation error |

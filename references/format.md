@@ -30,6 +30,10 @@ GPT-image-2，16:9，3D国漫，国风仙侠，轻喜剧反差，角色表演夸
 
 Each 15-second group may use 3-7 lines: use 3-4 for dense dialogue or pauses, 5 for normal beats, and 6-7 only for light low-dialogue micro-actions.
 
+15秒组必须承载剧情推进. 不要整组只做空定场、氛围、人物坐着、群像压迫. 开场定场最多占1个短镜头; 第一组应尽快进入原文事件或对白, such as a source event, source dialogue, conflict, system prompt, or visible decision.
+
+Spoken dialogue density is a pacing judgment, not a hard low character budget. A normal 15-second group can carry one full source report plus a reaction when the line is important and readable. 不要用过低对白字数预算把一句完整汇报拆成多组; split only when the actual spoken load is too long for the target model, not because the line looks long in text.
+
 Default stance: 默认不主动删减原文内容. 把删减权留给用户; output the source-faithful draft in enough groups so the user can trim later. 只有用户明确要求压缩版, 精简版, or a shorter target duration may you intentionally remove non-load-bearing source material.
 
 Dialogue must be exact source excerpts. Do not rewrite, polish, invent, or move later dialogue into an earlier beat. If an exact line is too long, use fewer shots inside the current group or split the beat into another group. 不得用减少总组数解决对白变长.
@@ -62,16 +66,20 @@ For similar important characters, use reference labels that preserve shared sect
 序号 日/夜 内/外 具体场景 人物 可见行为画面 镜头概念 运镜 音频/对白
 ```
 
+Good opening group:
+
+```text
+### 第1组｜15秒｜鬼王宗大殿与骨灵教汇报
+1 日 内 鬼王宗宗门大殿 林夜 黑袍白发的林夜面无表情坐在漆黑石椅上，十名魔门首领分坐两侧，冷雾贴地压低 中景 + 轻微低机位 + 王座居中 + 两侧席位 固定镜头 环境音：大殿低鸣、衣袖摩擦，无对白
+2 日 内 鬼王宗宗门大殿 骨灵教老者 枯瘦老者坐在左侧第二席，正面半身阴沉开口，背景保留大殿纵深和王座方向冷光 中近景 + 正面半身 + 背景纵深 + 王座方向冷光 镜头前推 骨灵教老者：宗主大人，昨日我骨灵教内又发现了一名正道奸细，今日一早我就已经把他剥皮抽筋，将他的一身骨头炼制成了法器，神魂也收入到了万魂幡中。
+3 日 内 鬼王宗宗门大殿 骨灵教老者 老者不改变坐姿，语气平静补上后续安排，林夜在王座方向眼皮轻跳 中近景 + 正面半身 + 王座方向冷光 + 反应层次 固定镜头 骨灵教老者：明日一早我就安排弟子将他的皮囊丢到烈阳宗。
+4 日 内 鬼王宗宗门大殿 林夜 林夜眼皮子不由自主跳了跳，冷脸差点没绷住，手指在扶手边缘轻轻收紧 近景 + 正面半身 + 面瘫反差 + 扶手细节 急速变焦 音效：心跳一顿，无对白
+```
+
 Good line:
 
 ```text
 1 日 内 鬼王宗宗门大殿 林夜 白发黑袍的林夜坐在黑石王座上，两侧魔门首领低头列席，血色符纹映在他冷脸上 中景 + 轻微低机位 + 王座居中 + 两侧压迫 固定镜头 环境音：大殿低鸣、衣袖摩擦，无对白
-```
-
-Good dialogue line:
-
-```text
-2 日 内 鬼王宗宗门大殿 骨灵教老者 枯瘦老者坐在左侧第二席，正面半身阴沉开口，背景保留大殿纵深和王座方向冷光，林夜远处眼皮轻跳 中近景 + 正面半身 + 背景纵深 + 王座方向冷光 镜头前推 骨灵教老者：宗主大人，昨日我骨灵教内又发现了一名正道奸细。；环境音：殿内低鸣
 ```
 
 Avoid:

@@ -179,6 +179,26 @@ class SkillTextRulesTests(unittest.TestCase):
         self.assertIn("正面半身", format_text)
         self.assertNotIn("半身侧面 + 左侧席位 + 王座远处可见", format_text)
 
+    def test_15_second_groups_must_advance_plot_not_empty_setup(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
+        format_text = root.joinpath("references", "format.md").read_text(
+            encoding="utf-8"
+        )
+
+        for text in (skill_text, format_text):
+            self.assertIn("15秒组必须承载剧情推进", text)
+            self.assertIn("不要整组只做空定场", text)
+            self.assertIn("开场定场最多占1个短镜头", text)
+            self.assertIn("第一组应尽快进入原文事件或对白", text)
+            self.assertIn("不要用过低对白字数预算把一句完整汇报拆成多组", text)
+
+        self.assertIn("鬼王宗大殿与骨灵教汇报", format_text)
+        self.assertIn(
+            "宗主大人，昨日我骨灵教内又发现了一名正道奸细，今日一早我就已经把他剥皮抽筋，将他的一身骨头炼制成了法器，神魂也收入到了万魂幡中。",
+            format_text,
+        )
+
     def test_character_assets_must_not_include_shot_staging(self) -> None:
         root = Path(__file__).resolve().parents[1]
         skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
