@@ -94,25 +94,62 @@ class SkillTextRulesTests(unittest.TestCase):
 
     def test_main_skill_routes_common_intents_to_specialists(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
-
-        route_phrases = [
-            "New project directory or root script file",
-            "Process these chapters",
-            "turn this into feed",
-            "source-indexer -> asset-bible -> faithful-feed -> feed-auditor",
-            "Make an index",
-            "Make assets",
-            "Write feed",
-            "Review",
-            "Can I delete",
-            "Make it look better",
-            "Production order",
+        route_lines = [
+            line.strip()
+            for line in root.joinpath("SKILL.md").read_text(encoding="utf-8").splitlines()
+            if line.strip().startswith("- ")
         ]
 
-        for phrase in route_phrases:
-            with self.subTest(phrase=phrase):
-                self.assertIn(phrase, skill_text)
+        route_contracts = [
+            (
+                ("New project directory or root script file",),
+                ("scripts/init_workspace.py",),
+            ),
+            (
+                ("Process these chapters", "turn this into feed"),
+                ("source-indexer -> asset-bible -> faithful-feed -> feed-auditor",),
+            ),
+            (
+                ("Make an index",),
+                ("agents/source-indexer.md", "references/source-index-format.md"),
+            ),
+            (
+                ("Make assets",),
+                ("agents/asset-bible.md", "references/asset-bible-format.md"),
+            ),
+            (
+                ("Write feed",),
+                (
+                    "agents/faithful-feed.md",
+                    "references/format.md",
+                    "references/xiaoyunque-tags.md",
+                ),
+            ),
+            (
+                ("Review",),
+                (
+                    "agents/feed-auditor.md",
+                    "references/audit-checklist.md",
+                    "scripts/validate_feed.py",
+                ),
+            ),
+            (
+                ("Can I delete",),
+                ("agents/cut-safety.md", "references/cut-safety-rules.md"),
+            ),
+            (("Make it look better",), ("agents/visual-polish.md",)),
+            (("Production order",), ("agents/production-runner.md",)),
+        ]
+
+        for intents, targets in route_contracts:
+            with self.subTest(intents=intents):
+                matching_lines = [
+                    line for line in route_lines if all(intent in line for intent in intents)
+                ]
+                self.assertTrue(matching_lines, f"No route line found for {intents!r}")
+                route_line = matching_lines[0]
+                for target in targets:
+                    self.assertIn(target, route_line)
 
     def test_optional_agents_are_guarded_by_prerequisites(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -120,6 +157,9 @@ class SkillTextRulesTests(unittest.TestCase):
 
         guarded_phrases = [
             "cut-safety is a deletion-risk assistant, not a compression writer",
+            "generic compression requests are refused as rewrites",
+            "exact cut/source-span advice",
+            "deletion-risk review and manual cut candidates",
             "Only use `cut-safety` after the user has chosen deletion targets or asks for cut-risk help",
             "Only use `visual-polish` after preserving source coverage",
             "Only use `production-runner` after assets and faithful feed lines exist",

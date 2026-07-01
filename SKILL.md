@@ -58,13 +58,13 @@ Route by user intent:
 - "Make assets", "who needs images", "avoid face collision", "what references upload", reusable characters, scenes, props, interfaces, beasts, vehicles, or voices: read `agents/asset-bible.md` and `references/asset-bible-format.md`.
 - "Write feed", "video投喂", "faithful draft", or final continuous prompt blocks: read `agents/faithful-feed.md`, `references/format.md`, and `references/xiaoyunque-tags.md`.
 - "Review", "check", "audit", "有没有问题", numbering QA, tag QA, or delivery gate: read `agents/feed-auditor.md` and `references/audit-checklist.md`; run `python scripts/validate_feed.py <feed-file>` when the feed is saved in a file.
-- "Can I delete", "cut", "trim", "compress", manual deletion ranges, or platform-length pressure: read `agents/cut-safety.md` and `references/cut-safety-rules.md`. cut-safety is a deletion-risk assistant, not a compression writer.
+- "Can I delete", "cut", "trim", "compress", manual deletion ranges, or platform-length pressure: read `agents/cut-safety.md` and `references/cut-safety-rules.md` only for deletion-risk review and manual cut candidates. Generic compression requests are refused as rewrites and answered with exact cut/source-span advice. cut-safety is a deletion-risk assistant, not a compression writer.
 - "Make it look better", "shot variety", "画面增强", camera rhythm, or comedy performance: read `agents/visual-polish.md` only after faithful coverage exists.
 - "Production order", "upload references", dependency list, or batch checklist: read `agents/production-runner.md` only after assets and faithful feed lines exist.
 
 Default first-phase route for long projects: `source-indexer -> asset-bible -> faithful-feed -> feed-auditor`.
 
-Only use `cut-safety` after the user has chosen deletion targets or asks for cut-risk help. It may return exact line/source spans, risk levels, and safer boundaries; it must not write a rewritten compressed story. Only use `visual-polish` after preserving source coverage. Only use `production-runner` after assets and faithful feed lines exist.
+Only use `cut-safety` after the user has chosen deletion targets or asks for cut-risk help. It may return exact line/source spans, exact cut/source-span advice, risk levels, and safer boundaries; generic compression requests are refused as rewrites, and it must not write a rewritten compressed story. Only use `visual-polish` after preserving source coverage. Only use `production-runner` after assets and faithful feed lines exist.
 
 ## Workspace initialization
 
