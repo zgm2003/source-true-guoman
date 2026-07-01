@@ -33,7 +33,7 @@
 - Modify: `tests/test_init_workspace.py`
 - Modify: `SKILL.md`
 
-- [ ] **Step 1: Add failing tests for intent routing and guarded specialist order**
+- [x] **Step 1: Add failing tests for intent routing and guarded specialist order**
 
 Add these methods inside `SkillTextRulesTests` in `tests/test_init_workspace.py`:
 
@@ -76,7 +76,7 @@ Add these methods inside `SkillTextRulesTests` in `tests/test_init_workspace.py`
                 self.assertIn(phrase, skill_text)
 ```
 
-- [ ] **Step 2: Run the two new tests and verify they fail**
+- [x] **Step 2: Run the two new tests and verify they fail**
 
 Run:
 
@@ -86,7 +86,7 @@ python -m unittest tests.test_init_workspace.SkillTextRulesTests.test_main_skill
 
 Expected: `FAILED` with missing phrases from `SKILL.md`.
 
-- [ ] **Step 3: Replace the `## Agent pack routing` section in `SKILL.md`**
+- [x] **Step 3: Replace the `## Agent pack routing` section in `SKILL.md`**
 
 Replace the current section from `## Agent pack routing` through the paragraph ending `Only use visual-polish after preserving source coverage.` with:
 
@@ -112,7 +112,7 @@ Default first-phase route for long projects: `source-indexer -> asset-bible -> f
 Only use `cut-safety` after the user has chosen deletion targets or asks for cut-risk help. It may return exact line/source spans, risk levels, and safer boundaries; it must not write a rewritten compressed story. Only use `visual-polish` after preserving source coverage. Only use `production-runner` after assets and faithful feed lines exist.
 ```
 
-- [ ] **Step 4: Run the two routing tests and verify they pass**
+- [x] **Step 4: Run the two routing tests and verify they pass**
 
 Run:
 
@@ -122,7 +122,7 @@ python -m unittest tests.test_init_workspace.SkillTextRulesTests.test_main_skill
 
 Expected: `OK`.
 
-- [ ] **Step 5: Run the full test suite**
+- [x] **Step 5: Run the full test suite**
 
 Run:
 
@@ -132,7 +132,7 @@ python -m unittest discover -s tests -p "test_*.py"
 
 Expected: all existing tests plus the two new tests pass.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```powershell
 git add SKILL.md tests/test_init_workspace.py
@@ -146,7 +146,7 @@ git commit -m "feat: tighten agent pack routing contracts"
 - Modify: `agents/source-indexer.md`
 - Modify: `references/source-index-format.md`
 
-- [ ] **Step 1: Add failing tests for full source-index schema and procedure**
+- [x] **Step 1: Add failing tests for full source-index schema and procedure**
 
 Add these methods inside `SkillTextRulesTests`:
 
@@ -200,7 +200,7 @@ Add these methods inside `SkillTextRulesTests`:
                 self.assertIn(phrase, format_text)
 ```
 
-- [ ] **Step 2: Run the new source-index tests and verify they fail**
+- [x] **Step 2: Run the new source-index tests and verify they fail**
 
 Run:
 
@@ -210,7 +210,7 @@ python -m unittest tests.test_init_workspace.SkillTextRulesTests.test_source_ind
 
 Expected: `FAILED` with missing English section/field phrases.
 
-- [ ] **Step 3: Replace `agents/source-indexer.md`**
+- [x] **Step 3: Replace `agents/source-indexer.md`**
 
 Use this complete file content:
 
@@ -254,7 +254,7 @@ Scope mode policy: 正式多章任务必须先预扫完整请求范围. 局部�
 10. Keep the index compact enough to consult while writing feed lines.
 ```
 
-- [ ] **Step 4: Replace `references/source-index-format.md`**
+- [x] **Step 4: Replace `references/source-index-format.md`**
 
 Use this complete file content:
 
@@ -334,7 +334,7 @@ Use this file when creating or updating `source-index.md`.
 Keep entries short. Do not use the index as a synopsis replacement. Every merge, correction, relationship claim, reveal handling, face reference, scene reference, or reusable asset decision needs evidence.
 ````
 
-- [ ] **Step 5: Run the source-index tests**
+- [x] **Step 5: Run the source-index tests**
 
 Run:
 
@@ -344,7 +344,7 @@ python -m unittest tests.test_init_workspace.SkillTextRulesTests.test_source_ind
 
 Expected: `OK`.
 
-- [ ] **Step 6: Run the full suite**
+- [x] **Step 6: Run the full suite**
 
 Run:
 
@@ -354,7 +354,7 @@ python -m unittest discover -s tests -p "test_*.py"
 
 Expected: all tests pass.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```powershell
 git add agents/source-indexer.md references/source-index-format.md tests/test_init_workspace.py
@@ -368,7 +368,7 @@ git commit -m "feat: deepen source index baseline"
 - Modify: `agents/asset-bible.md`
 - Modify: `references/asset-bible-format.md`
 
-- [ ] **Step 1: Add failing tests for asset-bible requirements**
+- [x] **Step 1: Add failing tests for asset-bible requirements**
 
 Add these methods inside `SkillTextRulesTests`:
 
@@ -417,7 +417,7 @@ Add these methods inside `SkillTextRulesTests`:
                 self.assertIn(phrase, format_text)
 ```
 
-- [ ] **Step 2: Run the new asset-bible tests and verify they fail**
+- [x] **Step 2: Run the new asset-bible tests and verify they fail**
 
 Run:
 
@@ -427,7 +427,7 @@ python -m unittest tests.test_init_workspace.SkillTextRulesTests.test_asset_bibl
 
 Expected: `FAILED` with missing phrases.
 
-- [ ] **Step 3: Replace `agents/asset-bible.md`**
+- [x] **Step 3: Replace `agents/asset-bible.md`**
 
 Use this complete file content:
 
@@ -472,7 +472,7 @@ Scope mode policy: 正式多章任务必须先预扫完整请求范围. 局部�
 13. List upload reference purposes with exact labels such as `人脸身份参考`, `旧造型参考`, `避撞脸参考`, `同门服制参考`, `场景母图参考`, `局部场景参考`, `材质风格参考`, and `界面风格参考`.
 ```
 
-- [ ] **Step 4: Replace `references/asset-bible-format.md`**
+- [x] **Step 4: Replace `references/asset-bible-format.md`**
 
 Use this complete file content:
 
@@ -549,7 +549,7 @@ Use this file when creating `asset-bible.md` or a compact asset plan.
 Only create assets that improve identity, setting, conflict, action, interface, or continuity. Use video lines for temporary posture or blocking.
 ````
 
-- [ ] **Step 5: Run the asset-bible tests**
+- [x] **Step 5: Run the asset-bible tests**
 
 Run:
 
@@ -559,7 +559,7 @@ python -m unittest tests.test_init_workspace.SkillTextRulesTests.test_asset_bibl
 
 Expected: `OK`.
 
-- [ ] **Step 6: Run the full suite**
+- [x] **Step 6: Run the full suite**
 
 Run:
 
@@ -569,7 +569,7 @@ python -m unittest discover -s tests -p "test_*.py"
 
 Expected: all tests pass.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```powershell
 git add agents/asset-bible.md references/asset-bible-format.md tests/test_init_workspace.py
@@ -583,7 +583,7 @@ git commit -m "feat: deepen asset bible baseline"
 - Modify: `agents/faithful-feed.md`
 - Modify: `references/format.md`
 
-- [ ] **Step 1: Add failing tests for feed prerequisites and coverage**
+- [x] **Step 1: Add failing tests for feed prerequisites and coverage**
 
 Add these methods inside `SkillTextRulesTests`:
 
@@ -627,7 +627,7 @@ Add these methods inside `SkillTextRulesTests`:
                 self.assertIn(phrase, format_text)
 ```
 
-- [ ] **Step 2: Run the new feed tests and verify they fail**
+- [x] **Step 2: Run the new feed tests and verify they fail**
 
 Run:
 
@@ -637,7 +637,7 @@ python -m unittest tests.test_init_workspace.SkillTextRulesTests.test_faithful_f
 
 Expected: `FAILED` with missing phrases.
 
-- [ ] **Step 3: Patch `agents/faithful-feed.md`**
+- [x] **Step 3: Patch `agents/faithful-feed.md`**
 
 Keep the existing file structure. In the `## Output` section, replace the paragraph after the two-block example with:
 
@@ -662,7 +662,7 @@ In the `## Procedure` list, replace the current list with:
 10. Run a coverage audit before delivery for multi-chapter work.
 ```
 
-- [ ] **Step 4: Patch `references/format.md` near `## Package shape`**
+- [x] **Step 4: Patch `references/format.md` near `## Package shape`**
 
 Immediately under `## Package shape`, add:
 
@@ -675,7 +675,7 @@ Emit only these two user-facing blocks:
 Each numbered video line should carry one visible action target, one main beat, and one Xiaoyunque camera tag.
 ```
 
-- [ ] **Step 5: Run the feed tests**
+- [x] **Step 5: Run the feed tests**
 
 Run:
 
@@ -685,7 +685,7 @@ python -m unittest tests.test_init_workspace.SkillTextRulesTests.test_faithful_f
 
 Expected: `OK`.
 
-- [ ] **Step 6: Run the full suite**
+- [x] **Step 6: Run the full suite**
 
 Run:
 
@@ -695,7 +695,7 @@ python -m unittest discover -s tests -p "test_*.py"
 
 Expected: all tests pass.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```powershell
 git add agents/faithful-feed.md references/format.md tests/test_init_workspace.py
@@ -710,7 +710,7 @@ git commit -m "feat: require faithful feed coverage gates"
 - Modify: `references/audit-checklist.md`
 - Modify: `scripts/validate_feed.py`
 
-- [ ] **Step 1: Add failing auditor text tests**
+- [x] **Step 1: Add failing auditor text tests**
 
 Add this method inside `SkillTextRulesTests`:
 
@@ -732,7 +732,7 @@ Add this method inside `SkillTextRulesTests`:
             self.assertIn("scope status is explicit when the artifact is a smoke test", text)
 ```
 
-- [ ] **Step 2: Add failing validator behavior tests**
+- [x] **Step 2: Add failing validator behavior tests**
 
 Add this method inside `SkillTextRulesTests`:
 
@@ -766,7 +766,7 @@ Add this method inside `SkillTextRulesTests`:
             self.assertIn("forbidden term `storyboard`", result.stdout)
 ```
 
-- [ ] **Step 3: Run the new auditor and validator tests and verify they fail**
+- [x] **Step 3: Run the new auditor and validator tests and verify they fail**
 
 Run:
 
@@ -776,7 +776,7 @@ python -m unittest tests.test_init_workspace.SkillTextRulesTests.test_feed_audit
 
 Expected: `FAILED`. The text test should miss phrases, and the validator test should miss `storyboard`.
 
-- [ ] **Step 4: Replace `agents/feed-auditor.md`**
+- [x] **Step 4: Replace `agents/feed-auditor.md`**
 
 Use this complete file content:
 
@@ -813,7 +813,7 @@ Blocking issues first. Include file/line references when a feed file is availabl
 8. If source text is unavailable, mark source-fidelity checks as unverified rather than passing.
 ```
 
-- [ ] **Step 5: Replace `references/audit-checklist.md`**
+- [x] **Step 5: Replace `references/audit-checklist.md`**
 
 Use this complete file content:
 
@@ -856,7 +856,7 @@ Use this checklist when reviewing a source-true-guoman feed.
 - Voice assets exist for speaking roles that need production.
 ```
 
-- [ ] **Step 6: Extend deterministic forbidden terms in `scripts/validate_feed.py`**
+- [x] **Step 6: Extend deterministic forbidden terms in `scripts/validate_feed.py`**
 
 Change `FORBIDDEN_TERMS` to include storyboard-folder language:
 
@@ -883,7 +883,7 @@ FORBIDDEN_TERMS = (
 
 Do not add checks that require understanding the source story.
 
-- [ ] **Step 7: Run the auditor and validator tests**
+- [x] **Step 7: Run the auditor and validator tests**
 
 Run:
 
@@ -893,7 +893,7 @@ python -m unittest tests.test_init_workspace.SkillTextRulesTests.test_feed_audit
 
 Expected: `OK`.
 
-- [ ] **Step 8: Run the full suite**
+- [x] **Step 8: Run the full suite**
 
 Run:
 
@@ -903,7 +903,7 @@ python -m unittest discover -s tests -p "test_*.py"
 
 Expected: all tests pass.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```powershell
 git add agents/feed-auditor.md references/audit-checklist.md scripts/validate_feed.py tests/test_init_workspace.py
@@ -919,7 +919,7 @@ git commit -m "feat: deepen feed audit checks"
 - Modify: `agents/visual-polish.md`
 - Modify: `agents/production-runner.md`
 
-- [ ] **Step 1: Add failing tests for optional agent boundaries**
+- [x] **Step 1: Add failing tests for optional agent boundaries**
 
 Add these methods inside `SkillTextRulesTests`:
 
@@ -957,7 +957,7 @@ Add these methods inside `SkillTextRulesTests`:
         self.assertIn("no MP4 claim", runner_text)
 ```
 
-- [ ] **Step 2: Run the optional-agent tests and verify they fail**
+- [x] **Step 2: Run the optional-agent tests and verify they fail**
 
 Run:
 
@@ -967,7 +967,7 @@ python -m unittest tests.test_init_workspace.SkillTextRulesTests.test_cut_safety
 
 Expected: `FAILED` with missing phrases.
 
-- [ ] **Step 3: Patch `agents/cut-safety.md`**
+- [x] **Step 3: Patch `agents/cut-safety.md`**
 
 Replace the `## Output` and `## Procedure` sections with:
 
@@ -986,7 +986,7 @@ Return cut-risk notes, not a rewritten compressed story. Use `references/cut-saf
 6. Do not write a replacement compressed feed or rewritten story.
 ```
 
-- [ ] **Step 4: Replace `references/cut-safety-rules.md`**
+- [x] **Step 4: Replace `references/cut-safety-rules.md`**
 
 Use this complete file content:
 
@@ -1020,7 +1020,7 @@ Use this reference only when the user asks about manual deletion, trimming, or c
 Do not produce a rewritten short version.
 ````
 
-- [ ] **Step 5: Patch `agents/visual-polish.md`**
+- [x] **Step 5: Patch `agents/visual-polish.md`**
 
 In the first paragraph, replace it with:
 
@@ -1040,7 +1040,7 @@ In `## Procedure`, add this as step 1 and renumber the existing list:
 7. Prefer compact shot concepts over long film-school explanations.
 ```
 
-- [ ] **Step 6: Patch `agents/production-runner.md`**
+- [x] **Step 6: Patch `agents/production-runner.md`**
 
 Replace the `## Output` paragraph with:
 
@@ -1048,7 +1048,7 @@ Replace the `## Output` paragraph with:
 Return a dependency checklist grouped by production dependency, not by arbitrary 15-second pacing. This agent creates no Canvas package, no storyboard folder, and no MP4 claim.
 ```
 
-- [ ] **Step 7: Run the optional-agent tests**
+- [x] **Step 7: Run the optional-agent tests**
 
 Run:
 
@@ -1058,7 +1058,7 @@ python -m unittest tests.test_init_workspace.SkillTextRulesTests.test_cut_safety
 
 Expected: `OK`.
 
-- [ ] **Step 8: Run the full suite**
+- [x] **Step 8: Run the full suite**
 
 Run:
 
@@ -1068,7 +1068,7 @@ python -m unittest discover -s tests -p "test_*.py"
 
 Expected: all tests pass.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```powershell
 git add agents/cut-safety.md references/cut-safety-rules.md agents/visual-polish.md agents/production-runner.md tests/test_init_workspace.py
@@ -1082,7 +1082,7 @@ git commit -m "feat: guard optional production agents"
 - Modify: `SKILL.md`
 - Optionally modify: `agents/openai.yaml`
 
-- [ ] **Step 1: Add final regression contract tests**
+- [x] **Step 1: Add final regression contract tests**
 
 Add this method inside `SkillTextRulesTests`:
 
@@ -1095,7 +1095,7 @@ Add this method inside `SkillTextRulesTests`:
         self.assertIn("do not generate the full five-chapter feed as part of baseline implementation", skill_text)
 ```
 
-- [ ] **Step 2: Run the new regression test and verify it fails**
+- [x] **Step 2: Run the new regression test and verify it fails**
 
 Run:
 
@@ -1105,7 +1105,7 @@ python -m unittest tests.test_init_workspace.SkillTextRulesTests.test_skill_base
 
 Expected: `FAILED` with missing phrases.
 
-- [ ] **Step 3: Add regression-sample note to `SKILL.md`**
+- [x] **Step 3: Add regression-sample note to `SKILL.md`**
 
 Add this paragraph after the default first-phase route paragraph in `## Agent pack routing`:
 
@@ -1113,7 +1113,7 @@ Add this paragraph after the default first-phase route paragraph in `## Agent pa
 Use `E:\xianjie` only as a regression sample unless the user explicitly asks to produce its chapters. Do not generate the full five-chapter feed as part of baseline implementation; use it after implementation to check that formal multi-chapter work pre-scans the requested scope before final assets or feed output.
 ```
 
-- [ ] **Step 4: Check whether `agents/openai.yaml` needs an update**
+- [x] **Step 4: Check whether `agents/openai.yaml` needs an update**
 
 Run:
 
@@ -1123,7 +1123,7 @@ Get-Content -Raw agents\openai.yaml
 
 Expected: current `display_name`, `short_description`, and `default_prompt` still describe the skill. If unchanged meaning is acceptable, do not modify the file.
 
-- [ ] **Step 5: Run the final regression test**
+- [x] **Step 5: Run the final regression test**
 
 Run:
 
@@ -1133,7 +1133,7 @@ python -m unittest tests.test_init_workspace.SkillTextRulesTests.test_skill_base
 
 Expected: `OK`.
 
-- [ ] **Step 6: Run all unit tests**
+- [x] **Step 6: Run all unit tests**
 
 Run:
 
@@ -1143,7 +1143,7 @@ python -m unittest discover -s tests -p "test_*.py"
 
 Expected: all tests pass.
 
-- [ ] **Step 7: Run skill validation with UTF-8**
+- [x] **Step 7: Run skill validation with UTF-8**
 
 Run:
 
@@ -1157,7 +1157,7 @@ Expected:
 Skill is valid!
 ```
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```powershell
 git add SKILL.md tests/test_init_workspace.py
@@ -1169,7 +1169,7 @@ git commit -m "docs: document baseline regression boundary"
 **Files:**
 - No planned edits.
 
-- [ ] **Step 1: Inspect git status**
+- [x] **Step 1: Inspect git status**
 
 Run:
 
@@ -1179,7 +1179,7 @@ git status --short --branch
 
 Expected: branch is ahead by the implementation commits and has no unexpected unstaged tracked changes.
 
-- [ ] **Step 2: Run all tests one final time**
+- [x] **Step 2: Run all tests one final time**
 
 Run:
 
@@ -1189,7 +1189,7 @@ python -m unittest discover -s tests -p "test_*.py"
 
 Expected: all tests pass.
 
-- [ ] **Step 3: Run skill validation one final time**
+- [x] **Step 3: Run skill validation one final time**
 
 Run:
 
@@ -1203,7 +1203,7 @@ Expected:
 Skill is valid!
 ```
 
-- [ ] **Step 4: Review changed files**
+- [x] **Step 4: Review changed files**
 
 Run:
 
@@ -1213,7 +1213,7 @@ git diff --stat origin/feat/agent-pack-prototype...HEAD
 
 Expected: changes are limited to the skill, agents, references, validator, tests, spec/plan docs, and any intentional commits on this feature branch.
 
-- [ ] **Step 5: Prepare completion summary**
+- [x] **Step 5: Prepare completion summary**
 
 Summarize:
 
