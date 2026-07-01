@@ -5,57 +5,70 @@ Use this file when creating or updating `source-index.md`.
 ```text
 # Source Index
 
-## 范围状态
-- 索引状态：全范围预扫 / 局部烟测
-- 请求范围：
-- 已阅读范围：
-- 未阅读范围：
-- 范围声明：正式多章任务必须先预扫完整请求范围；局部烟测必须显式标记已阅读范围；局部烟测资产不得当作全局定稿。
+## Scope Status
+- Readable labels: 索引状态 / 请求范围 / 已阅读范围 / 全范围预扫 / 局部烟测
+- Index status: 鍏ㄨ寖鍥撮鎵?/ 灞€閮ㄧ儫娴?
+- Requested range:
+- Read range:
+- Unread range:
+- Evidence basis:
+- Scope statement: 姝ｅ紡澶氱珷浠诲姟蹇呴』鍏堥鎵畬鏁磋姹傝寖鍥达紱灞€閮ㄧ儫娴嬪繀椤绘樉寮忔爣璁板凡闃呰鑼冨洿锛涘眬閮ㄧ儫娴嬭祫浜т笉寰楀綋浣滃叏灞€瀹氱銆?
+- Smoke-test warning: Do not promote smoke-test assets to global final decisions.
 
-## 角色索引
-- 名称：
-  - 别名/称呼：
-  - 首次出现：
-  - 后续出现：
-  - 身份/阵营：
-  - 关系：
-  - 说话范围：
-  - 造型/状态变化：
-  - 资产绑定：
-  - 证据锚点：
+## Character Index
+- Name:
+  - Aliases/titles:
+  - First appearance:
+  - Later appearances:
+  - Identity/faction:
+  - Relationships:
+  - Speaking range:
+  - Posture facts:
+  - Outfit/state changes:
+  - Anonymous-to-named upgrade:
+  - Suspected same asset:
+  - Asset binding:
+  - Evidence anchors:
 
-## 场景索引
-- 场景名：
-  - 内/外：
-  - 母场景：
-  - 子区域：
-  - 材质/光线/空间逻辑：
-  - 出现位置：
-  - 资产绑定：
-  - 证据锚点：
+## Scene Index
+- Scene name:
+  - Interior/exterior:
+  - Parent scene:
+  - Sub-locations:
+  - Material/light/space logic:
+  - Chapter/line positions:
+  - Asset binding:
+  - Evidence anchors:
 
-## 资产索引
-- 资产名：
-  - 类型：
-  - 来源：
-  - 复用范围：
-  - 父级参考：
-  - 避撞脸/避漂移参考：
-  - 证据锚点：
+## Asset Index
+- Asset name:
+  - Type: character / scene / prop / interface / beast / vehicle / voice
+  - Source basis:
+  - Reuse range:
+  - Parent reference:
+  - Collision/separation reference:
+  - Evidence anchors:
 
-## 术语索引
-- 术语：
-  - 类型：
-  - 原文写法：
-  - 疑似漂移：
-  - 证据锚点：
+## Term Index
+- Term:
+  - Type: sect / realm / technique / system / prop / title / other
+  - Source spelling:
+  - Possible spelling drift:
+  - Current handling:
+  - Evidence anchors:
 
-## 疑点索引
-- 疑点：
-  - 可能解释：
-  - 当前处理：
-  - 不可确认内容：
-  - 证据锚点：
+## Doubt Index
+- Doubt:
+  - Possible explanations:
+  - Current handling:
+  - Not safe to confirm:
+  - Evidence anchors:
+
+## Evidence Anchors
+- Anchor id:
+  - Source position:
+  - Short source excerpt:
+  - Supports:
 ```
 
-Keep entries short. Do not use the index as a synopsis replacement. Every merge, correction, relationship claim, or reusable asset decision needs evidence.
+Keep entries short. Do not use the index as a synopsis replacement. Every merge, correction, relationship claim, reveal handling, face reference, scene reference, or reusable asset decision needs evidence.

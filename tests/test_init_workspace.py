@@ -227,6 +227,54 @@ class SkillTextRulesTests(unittest.TestCase):
         for phrase in ("索引状态", "请求范围", "已阅读范围", "全范围预扫", "局部烟测"):
             self.assertIn(phrase, format_text)
 
+    def test_source_index_agent_requires_evidence_backed_entries(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        agent_text = root.joinpath("agents", "source-indexer.md").read_text(
+            encoding="utf-8"
+        )
+
+        required_phrases = [
+            "formal multi-chapter work must pre-scan the whole requested scope",
+            "every merge, correction, relationship claim, reveal handling, face reference, scene reference, or reusable asset decision",
+            "anonymous-to-named upgrade",
+            "suspected same asset",
+            "do not output a synopsis replacement",
+        ]
+
+        for phrase in required_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, agent_text)
+
+    def test_source_index_format_contains_all_baseline_sections(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        format_text = root.joinpath("references", "source-index-format.md").read_text(
+            encoding="utf-8"
+        )
+
+        required_sections = [
+            "## Scope Status",
+            "## Character Index",
+            "## Scene Index",
+            "## Asset Index",
+            "## Term Index",
+            "## Doubt Index",
+            "## Evidence Anchors",
+        ]
+        required_fields = [
+            "Requested range:",
+            "Read range:",
+            "Unread range:",
+            "Evidence basis:",
+            "Posture facts:",
+            "Parent scene:",
+            "Suspected same asset:",
+            "Do not promote smoke-test assets to global final decisions.",
+        ]
+
+        for phrase in required_sections + required_fields:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, format_text)
+
     def test_validate_feed_rejects_grouped_feed_and_invalid_camera_tags(self) -> None:
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as temp_dir:
