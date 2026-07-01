@@ -4,6 +4,13 @@ Use this file when producing final user-facing output.
 
 ## Package shape
 
+Emit only these two user-facing blocks:
+
+- `## 资产提示词`
+- `## 视频投喂块`
+
+Each numbered video line should carry one visible action target, one main beat, and one Xiaoyunque camera tag.
+
 ```text
 ## 资产提示词
 

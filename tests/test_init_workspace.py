@@ -198,6 +198,44 @@ class SkillTextRulesTests(unittest.TestCase):
             self.assertIn("投喂稿、source-index、asset-bible、审计报告、剪辑风险报告属于生产资产", text)
             self.assertIn("视频资产只放最终视频文件或渲染结果", text)
 
+    def test_faithful_feed_requires_index_assets_and_coverage_audit(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        agent_text = root.joinpath("agents", "faithful-feed.md").read_text(
+            encoding="utf-8"
+        )
+
+        required_phrases = [
+            "formal multi-chapter output requires either a `全范围预扫` source index or an explicit full requested-scope pre-scan",
+            "private chapter beat ledger",
+            "coverage audit before delivery",
+            "asset-bible",
+            "source-index",
+            "do not reduce coverage by reducing line count",
+        ]
+
+        for phrase in required_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, agent_text)
+
+    def test_format_reference_declares_only_two_output_blocks(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        format_text = root.joinpath("references", "format.md").read_text(
+            encoding="utf-8"
+        )
+
+        required_phrases = [
+            "Emit only these two user-facing blocks",
+            "## 资产提示词",
+            "## 视频投喂块",
+            "one visible action target",
+            "one main beat",
+            "one Xiaoyunque camera tag",
+        ]
+
+        for phrase in required_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, format_text)
+
     def test_scope_modes_require_full_prescan_or_explicit_smoke_label(self) -> None:
         root = Path(__file__).resolve().parents[1]
         checked_files = [
