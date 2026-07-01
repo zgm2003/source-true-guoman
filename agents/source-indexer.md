@@ -17,13 +17,17 @@ Use this specialist when source reading is the bottleneck: long chapters, multi-
 
 ## Output
 
-Create or update `鐢熶骇璧勴骇/source-index.md` unless the user explicitly asks for a visible root-level working index. Use `references/source-index-format.md`.
+Create or update `生产资产/source-index.md` (`鐢熂骇璧勴骇/source-index.md`) unless the user explicitly asks for a visible root-level working index. Use `references/source-index-format.md`.
 
 Do not output a video feed. do not output a synopsis replacement. Do not summarize chapters as a replacement for source coverage. Use evidence anchors for every merge, correction, relationship claim, reveal handling, face reference, scene reference, reusable asset decision, outfit/state change, and unresolved doubt.
+
+Readable scope guidance: `全范围预扫` means formal multi-chapter work has completed the full requested pre-scan; `局部烟测` means only a smoke-test span was read. Always mark `请求范围`, `已阅读范围`, and `未阅读范围`. 正式多章任务必须先预扫完整请求范围. 局部烟测必须显式标记已阅读范围. 局部烟测资产不得当作全局定稿.
 
 Scope mode policy: 正式多章任务必须先预扫完整请求范围. 局部烟测必须显式标记已阅读范围. 局部烟测资产不得当作全局定稿. 姝ｅ紡澶氱珷浠诲姟蹇呴』鍏堥鎵畬鏁磋姹傝寖鍥? 灞€閮ㄧ儫娴嬪繀椤绘樉寮忔爣璁板凡闃呰鑼冨洿. 灞€閮ㄧ儫娴嬭祫浜т笉寰楀綋浣滃叏灞€瀹氱.
 
 ## Procedure
+
+Use readable scope fields `请求范围`, `已阅读范围`, and `未阅读范围` before any character or asset decision.
 
 1. Mark `绱㈠紩鐘舵€乣, `璇锋眰鑼冨洿`, `宸查槄璇昏寖鍥碻, `鏈槄璇昏寖鍥碻, and evidence basis before any character or asset decision.
 2. For formal multi-chapter work must pre-scan the whole requested scope before deciding identity, recurrence, scene reuse, or final asset value.

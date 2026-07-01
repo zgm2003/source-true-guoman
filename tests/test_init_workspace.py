@@ -275,6 +275,43 @@ class SkillTextRulesTests(unittest.TestCase):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, format_text)
 
+    def test_source_index_agent_uses_readable_scope_labels(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        agent_text = root.joinpath("agents", "source-indexer.md").read_text(
+            encoding="utf-8"
+        )
+
+        required_phrases = [
+            "生产资产/source-index.md",
+            "全范围预扫",
+            "局部烟测",
+            "请求范围",
+            "已阅读范围",
+            "未阅读范围",
+            "正式多章任务必须先预扫完整请求范围",
+            "局部烟测必须显式标记已阅读范围",
+            "局部烟测资产不得当作全局定稿",
+        ]
+
+        for phrase in required_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, agent_text)
+
+    def test_source_index_format_uses_readable_scope_status(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        format_text = root.joinpath("references", "source-index-format.md").read_text(
+            encoding="utf-8"
+        )
+
+        required_phrases = [
+            "Index status: 全范围预扫 / 局部烟测",
+            "Scope statement: 正式多章任务必须先预扫完整请求范围；局部烟测必须显式标记已阅读范围；局部烟测资产不得当作全局定稿。",
+        ]
+
+        for phrase in required_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, format_text)
+
     def test_validate_feed_rejects_grouped_feed_and_invalid_camera_tags(self) -> None:
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as temp_dir:
