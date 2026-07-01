@@ -364,6 +364,8 @@ class SkillTextRulesTests(unittest.TestCase):
             "淇濈湡濂戠害",
             "涓嶅緱鐢?AI 甯敤鎴峰帇缂?",
             "鍘熶綔澶氬皯瀛楀氨淇濈暀澶氬皯瀛?",
+            "瀵圭櫧蹇呴』浠庡師鏂囨憳鍙?",
+            "涓嶄富鍔ㄦ坊鍔犵珯璧枫€佽捣韬€佽藩涓嬨€佽蛋鍔ㄣ€佹姮鎵嬨€佹敹璧锋硶鍣?",
         ]
         for anchor in required_anchors:
             with self.subTest(anchor=anchor):
