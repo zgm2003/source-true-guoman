@@ -64,6 +64,8 @@ Route by user intent:
 
 Default first-phase route for long projects: `source-indexer -> asset-bible -> faithful-feed -> feed-auditor`.
 
+Use `E:\xianjie` only as a regression sample unless the user explicitly asks to produce its chapters. For baseline implementation, do not generate the full five-chapter feed as part of baseline implementation; use it after implementation to check that formal multi-chapter work pre-scans the requested scope before final assets or feed output.
+
 Only use `cut-safety` after the user has chosen deletion targets or asks for cut-risk help. It may return exact line/source spans, exact cut/source-span advice, risk levels, and safer boundaries; generic compression requests are refused as rewrites, and it must not write a rewritten compressed story. Only use `visual-polish` after preserving source coverage. Only use `production-runner` after assets and faithful feed lines exist.
 
 ## Workspace initialization

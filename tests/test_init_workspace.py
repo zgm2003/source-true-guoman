@@ -287,6 +287,19 @@ class SkillTextRulesTests(unittest.TestCase):
             with self.subTest(path=path.relative_to(root).as_posix()):
                 self.assertNoKnownMojibake(path.read_text(encoding="utf-8"))
 
+    def test_skill_baseline_mentions_xianjie_only_as_regression_sample(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
+
+        self.assertIn(
+            "Use `E:\\xianjie` only as a regression sample unless the user explicitly asks to produce its chapters",
+            skill_text,
+        )
+        self.assertIn(
+            "do not generate the full five-chapter feed as part of baseline implementation",
+            skill_text,
+        )
+
     def test_workspace_storage_policy_puts_feed_text_in_production_assets(self) -> None:
         root = Path(__file__).resolve().parents[1]
         skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
