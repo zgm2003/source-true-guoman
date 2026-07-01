@@ -257,3 +257,4 @@ Do not repeat this line as a footer. Do not add per-group `上传参考图`, `�
 | Same character changes outfit and loses face | Make the new outfit a derived asset and upload the earlier stable character image as `人脸身份参考` |
 | Scene close-up no longer matches the main location | Bind the scene mother image as `场景母图参考` when generating sub-areas or close details |
 | Same-sect important characters share a face | Add contrast anchors and upload the existing similar role as `避撞脸参考` or `同门服制参考` |
+ 
