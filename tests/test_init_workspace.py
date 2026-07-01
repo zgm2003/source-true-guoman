@@ -206,11 +206,13 @@ class SkillTextRulesTests(unittest.TestCase):
 
         required_phrases = [
             "formal multi-chapter output requires either a `全范围预扫` source index or an explicit full requested-scope pre-scan",
+            "Formal multi-chapter output requires either a `全范围预扫` source index or an explicit full requested-scope pre-scan.",
             "private chapter beat ledger",
             "coverage audit before delivery",
-            "asset-bible",
-            "source-index",
+            "Check `source-index` for names, aliases, event order, scene hierarchy, posture facts, and unresolved doubts.",
+            "Check `asset-bible` for stable asset names, existing references, outfit variants, scene mother images, and voice roles.",
             "do not reduce coverage by reducing line count",
+            "9. Do not reduce coverage by reducing line count.",
         ]
 
         for phrase in required_phrases:
@@ -235,6 +237,12 @@ class SkillTextRulesTests(unittest.TestCase):
         for phrase in required_phrases:
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, format_text)
+
+        package_heading = format_text.index("## Package shape")
+        output_paragraph = format_text.index("Emit only these two user-facing blocks")
+        first_copyable_example = format_text.index("```text", package_heading)
+        self.assertLess(package_heading, output_paragraph)
+        self.assertLess(output_paragraph, first_copyable_example)
 
     def test_scope_modes_require_full_prescan_or_explicit_smoke_label(self) -> None:
         root = Path(__file__).resolve().parents[1]
