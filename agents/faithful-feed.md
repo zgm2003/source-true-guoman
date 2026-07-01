@@ -28,10 +28,14 @@ Start the video block with the exact global `统一要求` line from `references
 
 Workspace storage policy: 投喂稿、source-index、asset-bible、审计报告、剪辑风险报告属于生产资产. 视频资产只放最终视频文件或渲染结果.
 
+Scope mode policy: 正式多章任务必须先预扫完整请求范围. 局部烟测必须显式标记已阅读范围. 局部烟测资产不得当作全局定稿.
+
 ## Procedure
 
-1. Use `source-index.md` when available, but verify load-bearing facts against the requested source.
-2. Make one line carry one visible action target, one main beat, and one Xiaoyunque camera tag.
-3. Keep speaker-focused dialogue shots, usually front half-body or medium shots with spatial context.
-4. Preserve long dialogue in adjacent continuous lines when needed; never shorten it to reduce line count.
-5. Run a coverage audit before delivery for multi-chapter work.
+1. For formal multi-chapter output, require a `全范围预扫` source index or perform the full requested pre-scan before drafting.
+2. For slice experiments, label the output as `局部烟测` and state the exact read span before any reusable assets.
+3. Use `source-index.md` when available, but verify load-bearing facts against the requested source.
+4. Make one line carry one visible action target, one main beat, and one Xiaoyunque camera tag.
+5. Keep speaker-focused dialogue shots, usually front half-body or medium shots with spatial context.
+6. Preserve long dialogue in adjacent continuous lines when needed; never shorten it to reduce line count.
+7. Run a coverage audit before delivery for multi-chapter work.

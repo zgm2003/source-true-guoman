@@ -19,11 +19,14 @@ Use this specialist when reusable assets need to be planned before image or vide
 
 Create an `asset-bible.md` or compact `## 资产提示词` plan using `references/asset-bible-format.md`.
 
+Scope mode policy: 正式多章任务必须先预扫完整请求范围. 局部烟测必须显式标记已阅读范围. 局部烟测资产不得当作全局定稿.
+
 ## Procedure
 
-1. Reuse existing assets first; only add assets that stabilize identity, setting, conflict, action, interface, or repeated continuity.
-2. Classify people as `主角/高频配角`, `命名低频角色`, `群像模板`, or `一次性背景人`.
-3. Upgrade early anonymous roles when later text gives them names, dialogue, recurrence, or plot function.
-4. Name assets by reusable source identity and version, not by temporary camera position.
-5. Separate similar important characters with explicit face, hair, body, and temperament contrast anchors.
-6. Bind parent-child references: character outfit variants to prior face references, sub-scenes to scene mother images, props/interfaces to owner or parent scene when useful.
+1. Confirm the source index is `全范围预扫` before final asset decisions for multi-chapter work. If it is `局部烟测`, label every asset as slice-limited.
+2. Reuse existing assets first; only add assets that stabilize identity, setting, conflict, action, interface, or repeated continuity.
+3. Classify people as `主角/高频配角`, `命名低频角色`, `群像模板`, or `一次性背景人`.
+4. Upgrade early anonymous roles when later text gives them names, dialogue, recurrence, or plot function.
+5. Name assets by reusable source identity and version, not by temporary camera position.
+6. Separate similar important characters with explicit face, hair, body, and temperament contrast anchors.
+7. Bind parent-child references: character outfit variants to prior face references, sub-scenes to scene mother images, props/interfaces to owner or parent scene when useful.

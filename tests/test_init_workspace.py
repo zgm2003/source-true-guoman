@@ -121,6 +121,35 @@ class SkillTextRulesTests(unittest.TestCase):
             self.assertIn("投喂稿、source-index、asset-bible、审计报告、剪辑风险报告属于生产资产", text)
             self.assertIn("视频资产只放最终视频文件或渲染结果", text)
 
+    def test_scope_modes_require_full_prescan_or_explicit_smoke_label(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        checked_files = [
+            root.joinpath("SKILL.md"),
+            root.joinpath("agents", "source-indexer.md"),
+            root.joinpath("agents", "asset-bible.md"),
+            root.joinpath("agents", "faithful-feed.md"),
+        ]
+        required_phrases = [
+            "正式多章任务必须先预扫完整请求范围",
+            "局部烟测必须显式标记已阅读范围",
+            "局部烟测资产不得当作全局定稿",
+        ]
+
+        for path in checked_files:
+            text = path.read_text(encoding="utf-8")
+            with self.subTest(path=path.name):
+                for phrase in required_phrases:
+                    self.assertIn(phrase, text)
+
+    def test_source_index_format_tracks_scope_status(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        format_text = root.joinpath("references", "source-index-format.md").read_text(
+            encoding="utf-8"
+        )
+
+        for phrase in ("索引状态", "请求范围", "已阅读范围", "全范围预扫", "局部烟测"):
+            self.assertIn(phrase, format_text)
+
     def test_validate_feed_rejects_grouped_feed_and_invalid_camera_tags(self) -> None:
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as temp_dir:

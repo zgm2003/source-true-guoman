@@ -21,11 +21,14 @@ Create or update a lightweight `source-index.md` using `references/source-index-
 
 Do not output a video feed. Do not summarize chapters as a replacement for source coverage. Use evidence anchors for identity merges, relationship claims, outfit changes, scene reuse, source anomalies, and unresolved doubts.
 
+Scope mode policy: 正式多章任务必须先预扫完整请求范围. 局部烟测必须显式标记已阅读范围. 局部烟测资产不得当作全局定稿.
+
 ## Procedure
 
-1. Pre-scan the full requested scope before deciding identity or recurrence.
-2. Record characters, aliases, factions, speaking roles, first/later appearances, posture facts, outfit/state changes, and asset binding candidates.
-3. Record scene mother locations and sub-locations, keeping interior/exterior separate.
-4. Record props, interfaces, beasts, vehicles, voice roles, source terms, and suspicious spelling drift.
-5. Keep uncertain merges as `疑似同一资产`; do not merge or assert confirmation without source evidence.
-6. Keep the index compact enough to consult while writing feed lines.
+1. Mark `索引状态`, `请求范围`, `已阅读范围`, and whether this is `全范围预扫` or `局部烟测`.
+2. Pre-scan the full requested scope before deciding identity or recurrence in formal multi-chapter work.
+3. Record characters, aliases, factions, speaking roles, first/later appearances, posture facts, outfit/state changes, and asset binding candidates.
+4. Record scene mother locations and sub-locations, keeping interior/exterior separate.
+5. Record props, interfaces, beasts, vehicles, voice roles, source terms, and suspicious spelling drift.
+6. Keep uncertain merges as `疑似同一资产`; do not merge or assert confirmation without source evidence.
+7. Keep the index compact enough to consult while writing feed lines.

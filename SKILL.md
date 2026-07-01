@@ -44,6 +44,8 @@ Read `references/format.md` before writing final feed blocks. Read `references/x
 
 Workspace storage policy: 投喂稿、source-index、asset-bible、审计报告、剪辑风险报告属于生产资产. 视频资产只放最终视频文件或渲染结果.
 
+Scope mode policy: 正式多章任务必须先预扫完整请求范围. 局部烟测必须显式标记已阅读范围. 局部烟测资产不得当作全局定稿. If only a slice was read, say so in the working artifact and avoid final-sounding asset decisions beyond that slice.
+
 ## Agent pack routing
 
 Treat this skill as the orchestrator for a lightweight specialist agent pack. The source-faithful feed remains the non-overridable center; specialist files only narrow the task, they do not override the core preservation stance.
