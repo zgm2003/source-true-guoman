@@ -1,27 +1,27 @@
 # Cut Safety Rules
 
-Use this file when the user wants help trimming a faithful feed.
+Use this reference only when the user asks about manual deletion, trimming, or compression risk.
 
-## Non-Negotiable Boundary
+## Output Boundary
 
-Do not write a compressed replacement story. Do not rewrite source dialogue. Give exact cut candidates, line ranges, source spans, and risk notes so the user can decide.
+- Return risk notes, not a rewritten compressed story.
+- Identify deletions by exact feed line numbers.
+- Add exact source spans when source text or source-index anchors are available.
+- Leave final deletion choices to the user.
 
 ## Risk Levels
 
-- Low risk: repeated atmosphere, redundant reaction, repeated establishing beat, or a non-speaking background detail that does not carry identity or cause-effect.
-- Medium risk: removable only if nearby setup or reaction is retained elsewhere.
-- High risk: source dialogue, reveal, named role introduction, cause-effect setup, punchline setup/payoff, identity evidence, chapter hook, or action result.
+- Low risk: repeated visual pause, redundant ambient-only beat, or removable reaction that does not carry setup, result, reveal, dialogue, identity, or asset continuity.
+- Medium risk: useful but non-load-bearing reaction, mood extension, or secondary beat whose removal may reduce clarity.
+- High risk: lost setup, lost cause, dangling reaction, broken reveal, lost identity evidence, broken relationship evidence, broken asset continuity, missing payoff, or missing hook.
 
-## Report Shape
+## Required Note Shape
 
 ```text
-## 剪辑风险
-
-- 行号/原文跨度：
-  - 风险：
-  - 影响：
-  - 可选处理：
-  - 不建议删除的相邻内容：
+- Lines/source span:
+  - Risk:
+  - Why:
+  - Safer boundary:
 ```
 
-If deletion creates a dangling line, name the missing setup, action object, or result.
+Do not produce a rewritten short version.

@@ -16,12 +16,13 @@ Use this specialist only after the user asks about manual deletion, gives candid
 
 ## Output
 
-Return cut-risk notes, not a rewritten short version. Use `references/cut-safety-rules.md`.
+Return cut-risk notes, not a rewritten compressed story. Use `references/cut-safety-rules.md`.
 
 ## Procedure
 
-1. Identify each proposed deletion by exact line numbers or exact source spans.
+1. Identify each proposed deletion by exact feed line numbers and, when available, exact source spans.
 2. Mark each span as low, medium, or high risk.
-3. Explain concrete breakage: lost cause, missing setup, dangling reaction, broken reveal, lost identity evidence, broken asset continuity, or missing hook.
+3. Explain concrete breakage: lost setup, lost cause, dangling reaction, broken reveal, lost identity evidence, broken asset continuity, missing payoff, or missing hook.
 4. Suggest safer line boundaries when possible.
 5. Leave final deletion choices to the user.
+6. Do not write a replacement compressed feed or rewritten story.

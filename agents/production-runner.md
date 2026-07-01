@@ -17,7 +17,7 @@ Use this specialist after assets and faithful feed lines exist and the user need
 
 ## Output
 
-Return a production checklist grouped by dependency, not by arbitrary 15-second pacing.
+Return a dependency checklist grouped by production dependency, not by arbitrary 15-second pacing. This agent creates no Canvas package, no storyboard folder, and no MP4 claim.
 
 ## Procedure
 

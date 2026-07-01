@@ -169,6 +169,41 @@ class SkillTextRulesTests(unittest.TestCase):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, skill_text)
 
+    def test_cut_safety_outputs_risk_notes_not_rewritten_compression(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        agent_text = root.joinpath("agents", "cut-safety.md").read_text(
+            encoding="utf-8"
+        )
+        rules_text = root.joinpath("references", "cut-safety-rules.md").read_text(
+            encoding="utf-8"
+        )
+
+        for text in (agent_text, rules_text):
+            self.assertIn("not a rewritten compressed story", text)
+            self.assertIn("exact feed line numbers", text)
+            self.assertIn("exact source spans", text)
+            self.assertIn("lost setup", text)
+            self.assertIn("dangling reaction", text)
+
+    def test_visual_polish_and_production_runner_keep_existing_boundaries(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        visual_text = root.joinpath("agents", "visual-polish.md").read_text(
+            encoding="utf-8"
+        )
+        runner_text = root.joinpath("agents", "production-runner.md").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("requires an existing faithful feed", visual_text)
+        self.assertIn(
+            "must not remove, shorten, reorder, or rewrite source dialogue",
+            visual_text,
+        )
+        self.assertIn("dependency checklist", runner_text)
+        self.assertIn("no Canvas package", runner_text)
+        self.assertIn("no storyboard folder", runner_text)
+        self.assertIn("no MP4 claim", runner_text)
+
     def test_agent_pack_keeps_source_faithfulness_as_non_overridable_contract(self) -> None:
         root = Path(__file__).resolve().parents[1]
         contract_phrases = [
