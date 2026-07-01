@@ -285,12 +285,15 @@ class SkillTextRulesTests(unittest.TestCase):
             "生产资产/source-index.md",
             "全范围预扫",
             "局部烟测",
+            "索引状态",
             "请求范围",
             "已阅读范围",
             "未阅读范围",
+            "证据依据",
             "正式多章任务必须先预扫完整请求范围",
             "局部烟测必须显式标记已阅读范围",
             "局部烟测资产不得当作全局定稿",
+            "弟子/NPC/黑衣人/侍女/守卫/路人",
         ]
 
         for phrase in required_phrases:
@@ -311,6 +314,23 @@ class SkillTextRulesTests(unittest.TestCase):
         for phrase in required_phrases:
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, format_text)
+
+    def test_source_index_format_keeps_compatibility_anchors_out_of_template(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        format_text = root.joinpath("references", "source-index-format.md").read_text(
+            encoding="utf-8"
+        )
+
+        template_start = format_text.index("```text")
+        template_body_start = format_text.index("\n", template_start) + 1
+        template_end = format_text.index("```", template_body_start)
+        template_text = format_text[template_body_start:template_end]
+
+        self.assertIn(
+            "## Compatibility Anchors (do not copy into source-index.md output)",
+            format_text,
+        )
+        self.assertNotIn("Mojibake compatibility", template_text)
 
     def test_validate_feed_rejects_grouped_feed_and_invalid_camera_tags(self) -> None:
         root = Path(__file__).resolve().parents[1]
