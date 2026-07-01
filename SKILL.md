@@ -50,15 +50,21 @@ Scope mode policy: 正式多章任务必须先预扫完整请求范围. 局部�
 
 Treat this skill as the orchestrator for a lightweight specialist agent pack. The source-faithful feed remains the non-overridable center; specialist files only narrow the task, they do not override the core preservation stance.
 
-- For source maps, continuity evidence, identity merges, typo doubts, or heavy multi-chapter reading, read `agents/source-indexer.md` and `references/source-index-format.md`.
-- For reusable character, scene, prop, interface, beast, vehicle, image-reference, and voice planning, read `agents/asset-bible.md` and `references/asset-bible-format.md`.
-- For the final source-faithful continuous feed, read `agents/faithful-feed.md`, `references/format.md`, and `references/xiaoyunque-tags.md`.
-- For user-directed deletions, manual trimming, line removals, or compression-risk review, read `agents/cut-safety.md` and `references/cut-safety-rules.md`.
-- For finished feed review, source-fidelity QA, numbering checks, Xiaoyunque tag checks, or delivery gates, read `agents/feed-auditor.md` and `references/audit-checklist.md`. Run `python scripts/validate_feed.py <feed-file>` when the feed is in a file.
-- For visual variety, shot polish, camera rhythm, scene depth, or comedy-performance enhancement after the faithful feed exists, read `agents/visual-polish.md`.
-- For production order, upload-reference planning, dependency lists, or batch execution checklists, read `agents/production-runner.md`.
+Route by user intent:
 
-Default first-phase route for long projects: `source-indexer` -> `asset-bible` -> `faithful-feed` -> `feed-auditor`. Only use `cut-safety` after the user has chosen deletion targets or asks for cut-risk help. Only use `visual-polish` after preserving source coverage.
+- New project directory or root script file: initialize workspace first with `scripts/init_workspace.py <workspace>`, then archive root source scripts into `剧本资产`.
+- "Process these chapters", "turn this into feed", long requested scope, or formal multi-chapter production: run `source-indexer -> asset-bible -> faithful-feed -> feed-auditor`.
+- "Make an index", "read the source", "track roles", continuity questions, confusing aliases, or suspected typos: read `agents/source-indexer.md` and `references/source-index-format.md`.
+- "Make assets", "who needs images", "avoid face collision", "what references upload", reusable characters, scenes, props, interfaces, beasts, vehicles, or voices: read `agents/asset-bible.md` and `references/asset-bible-format.md`.
+- "Write feed", "video投喂", "faithful draft", or final continuous prompt blocks: read `agents/faithful-feed.md`, `references/format.md`, and `references/xiaoyunque-tags.md`.
+- "Review", "check", "audit", "有没有问题", numbering QA, tag QA, or delivery gate: read `agents/feed-auditor.md` and `references/audit-checklist.md`; run `python scripts/validate_feed.py <feed-file>` when the feed is saved in a file.
+- "Can I delete", "cut", "trim", "compress", manual deletion ranges, or platform-length pressure: read `agents/cut-safety.md` and `references/cut-safety-rules.md`. cut-safety is a deletion-risk assistant, not a compression writer.
+- "Make it look better", "shot variety", "画面增强", camera rhythm, or comedy performance: read `agents/visual-polish.md` only after faithful coverage exists.
+- "Production order", "upload references", dependency list, or batch checklist: read `agents/production-runner.md` only after assets and faithful feed lines exist.
+
+Default first-phase route for long projects: `source-indexer -> asset-bible -> faithful-feed -> feed-auditor`.
+
+Only use `cut-safety` after the user has chosen deletion targets or asks for cut-risk help. It may return exact line/source spans, risk levels, and safer boundaries; it must not write a rewritten compressed story. Only use `visual-polish` after preserving source coverage. Only use `production-runner` after assets and faithful feed lines exist.
 
 ## Workspace initialization
 

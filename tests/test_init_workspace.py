@@ -92,6 +92,43 @@ class SkillTextRulesTests(unittest.TestCase):
                 self.assertTrue(agent_path.is_file())
                 self.assertIn(relative_path, skill_text)
 
+    def test_main_skill_routes_common_intents_to_specialists(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
+
+        route_phrases = [
+            "New project directory or root script file",
+            "Process these chapters",
+            "turn this into feed",
+            "source-indexer -> asset-bible -> faithful-feed -> feed-auditor",
+            "Make an index",
+            "Make assets",
+            "Write feed",
+            "Review",
+            "Can I delete",
+            "Make it look better",
+            "Production order",
+        ]
+
+        for phrase in route_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, skill_text)
+
+    def test_optional_agents_are_guarded_by_prerequisites(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
+
+        guarded_phrases = [
+            "cut-safety is a deletion-risk assistant, not a compression writer",
+            "Only use `cut-safety` after the user has chosen deletion targets or asks for cut-risk help",
+            "Only use `visual-polish` after preserving source coverage",
+            "Only use `production-runner` after assets and faithful feed lines exist",
+        ]
+
+        for phrase in guarded_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, skill_text)
+
     def test_agent_pack_keeps_source_faithfulness_as_non_overridable_contract(self) -> None:
         root = Path(__file__).resolve().parents[1]
         contract_phrases = [
