@@ -360,6 +360,15 @@ class SkillTextRulesTests(unittest.TestCase):
         self.assertLess(package_heading, output_paragraph)
         self.assertLess(output_paragraph, first_copyable_example)
 
+    def test_format_reference_video_block_example_matches_validator_header_order(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        format_lines = root.joinpath("references", "format.md").read_text(
+            encoding="utf-8"
+        ).splitlines()
+        header_index = format_lines.index("## 视频投喂块")
+
+        self.assertTrue(format_lines[header_index + 1].startswith("统一要求："))
+
     def test_scope_modes_require_full_prescan_or_explicit_smoke_label(self) -> None:
         root = Path(__file__).resolve().parents[1]
         checked_files = [
