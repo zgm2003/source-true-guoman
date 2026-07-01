@@ -351,6 +351,25 @@ class SkillTextRulesTests(unittest.TestCase):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, agent_text)
 
+    def test_asset_bible_live_sections_keep_compatibility_anchors_isolated(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        agent_text = root.joinpath("agents", "asset-bible.md").read_text(
+            encoding="utf-8"
+        )
+        pre_compatibility, compatibility = agent_text.split("## Compatibility Anchors", 1)
+
+        self.assertIn("## 保真契约", pre_compatibility)
+        self.assertNotIn("淇濈湡濂戠害", pre_compatibility)
+
+        required_anchors = [
+            "淇濈湡濂戠害",
+            "涓嶅緱鐢?AI 甯敤鎴峰帇缂?",
+            "鍘熶綔澶氬皯瀛楀氨淇濈暀澶氬皯瀛?",
+        ]
+        for phrase in required_anchors:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, compatibility)
+
     def test_asset_bible_format_tracks_references_and_dependencies(self) -> None:
         root = Path(__file__).resolve().parents[1]
         format_text = root.joinpath("references", "asset-bible-format.md").read_text(

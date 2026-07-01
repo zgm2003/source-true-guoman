@@ -2,7 +2,7 @@
 
 Use this specialist when reusable assets need to be planned before image or video production: character tri-views, outfit variants, scene mother images, sub-scenes, props, interfaces, beasts, vehicles, voice assets, and reference-upload dependencies.
 
-## 保真契约 / 淇濈湡濂戠害
+## 保真契约
 
 - 原作多少字就保留多少字.
 - 不得由 AI 帮用户压缩、概括、改短、润色原作对白或剧情.
@@ -54,6 +54,7 @@ Asset status must be visible near the top of the output:
 
 Do not use these as operational labels. They are retained only for legacy text-contract checks.
 
+- 淇濈湡濂戠害
 - 鍘熶綔澶氬皯瀛楀氨淇濈暀澶氬皯瀛?
 - 涓嶅緱鐢?AI 甯敤鎴峰帇缂?
 - 瀵圭櫧蹇呴』浠庡師鏂囨憳鍙?
