@@ -42,6 +42,22 @@ Default preservation stance: 原作多少字就保留多少字. Convert source t
 
 Read `references/format.md` before writing final feed blocks. Read `references/xiaoyunque-tags.md` whenever choosing the `运镜` field.
 
+Workspace storage policy: 投喂稿、source-index、asset-bible、审计报告、剪辑风险报告属于生产资产. 视频资产只放最终视频文件或渲染结果.
+
+## Agent pack routing
+
+Treat this skill as the orchestrator for a lightweight specialist agent pack. The source-faithful feed remains the non-overridable center; specialist files only narrow the task, they do not override the core preservation stance.
+
+- For source maps, continuity evidence, identity merges, typo doubts, or heavy multi-chapter reading, read `agents/source-indexer.md` and `references/source-index-format.md`.
+- For reusable character, scene, prop, interface, beast, vehicle, image-reference, and voice planning, read `agents/asset-bible.md` and `references/asset-bible-format.md`.
+- For the final source-faithful continuous feed, read `agents/faithful-feed.md`, `references/format.md`, and `references/xiaoyunque-tags.md`.
+- For user-directed deletions, manual trimming, line removals, or compression-risk review, read `agents/cut-safety.md` and `references/cut-safety-rules.md`.
+- For finished feed review, source-fidelity QA, numbering checks, Xiaoyunque tag checks, or delivery gates, read `agents/feed-auditor.md` and `references/audit-checklist.md`. Run `python scripts/validate_feed.py <feed-file>` when the feed is in a file.
+- For visual variety, shot polish, camera rhythm, scene depth, or comedy-performance enhancement after the faithful feed exists, read `agents/visual-polish.md`.
+- For production order, upload-reference planning, dependency lists, or batch execution checklists, read `agents/production-runner.md`.
+
+Default first-phase route for long projects: `source-indexer` -> `asset-bible` -> `faithful-feed` -> `feed-auditor`. Only use `cut-safety` after the user has chosen deletion targets or asks for cut-risk help. Only use `visual-polish` after preserving source coverage.
+
 ## Workspace initialization
 
 Use this when the user points to a new project directory, such as a workspace that only contains one script file.

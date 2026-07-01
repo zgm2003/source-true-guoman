@@ -1,5 +1,7 @@
 import tempfile
 import unittest
+import subprocess
+import sys
 from pathlib import Path
 
 from scripts.init_workspace import ASSET_DIRS, init_workspace
@@ -70,6 +72,141 @@ class InitWorkspaceTests(unittest.TestCase):
 
 
 class SkillTextRulesTests(unittest.TestCase):
+    def test_agent_pack_references_are_declared_and_routed_from_main_skill(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
+
+        expected_agent_refs = [
+            "agents/source-indexer.md",
+            "agents/asset-bible.md",
+            "agents/faithful-feed.md",
+            "agents/cut-safety.md",
+            "agents/feed-auditor.md",
+            "agents/visual-polish.md",
+            "agents/production-runner.md",
+        ]
+
+        for relative_path in expected_agent_refs:
+            with self.subTest(relative_path=relative_path):
+                agent_path = root / relative_path
+                self.assertTrue(agent_path.is_file())
+                self.assertIn(relative_path, skill_text)
+
+    def test_agent_pack_keeps_source_faithfulness_as_non_overridable_contract(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        contract_phrases = [
+            "不得由 AI 帮用户压缩",
+            "对白必须从原文摘取",
+            "不主动添加站起、起身、跪下、走动、抬手、收起法器",
+            "原作多少字就保留多少字",
+        ]
+
+        for agent_file in root.joinpath("agents").glob("*.md"):
+            if agent_file.name == "openai.yaml":
+                continue
+            text = agent_file.read_text(encoding="utf-8")
+            with self.subTest(agent_file=agent_file.name):
+                self.assertIn("保真契约", text)
+                for phrase in contract_phrases:
+                    self.assertIn(phrase, text)
+
+    def test_workspace_storage_policy_puts_feed_text_in_production_assets(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
+        faithful_feed_text = root.joinpath("agents", "faithful-feed.md").read_text(
+            encoding="utf-8"
+        )
+
+        for text in (skill_text, faithful_feed_text):
+            self.assertIn("投喂稿、source-index、asset-bible、审计报告、剪辑风险报告属于生产资产", text)
+            self.assertIn("视频资产只放最终视频文件或渲染结果", text)
+
+    def test_validate_feed_rejects_grouped_feed_and_invalid_camera_tags(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            bad_feed = Path(temp_dir) / "bad-feed.md"
+            bad_feed.write_text(
+                "\n".join(
+                    [
+                        "## 视频投喂块",
+                        "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。",
+                        "### 第1组",
+                        "1 日 内 鬼王宗宗门大殿 林夜 坐在黑石王座上 中景 + 平视 慢慢推进 环境音：大殿低鸣",
+                        "3 日 内 鬼王宗宗门大殿 骨灵教老者 正面半身开口 中近景 + 平视 镜头前推 骨灵教老者：宗主大人。",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [sys.executable, str(root / "scripts" / "validate_feed.py"), str(bad_feed)],
+                cwd=root,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("group marker", result.stdout)
+            self.assertIn("invalid camera tag", result.stdout)
+            self.assertIn("expected line 2", result.stdout)
+
+    def test_validate_feed_accepts_continuous_feed_with_xiaoyunque_tags(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            good_feed = Path(temp_dir) / "good-feed.md"
+            good_feed.write_text(
+                "\n".join(
+                    [
+                        "## 视频投喂块",
+                        "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。",
+                        "1 日 内 鬼王宗宗门大殿 林夜 坐在黑石王座上 中景 + 平视 固定镜头 环境音：大殿低鸣",
+                        "2 日 内 鬼王宗宗门大殿 骨灵教老者 正面半身开口 中近景 + 平视 镜头前推 骨灵教老者：宗主大人。",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [sys.executable, str(root / "scripts" / "validate_feed.py"), str(good_feed)],
+                cwd=root,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("Feed validation passed", result.stdout)
+
+    def test_validate_feed_rejects_missing_global_requirement_and_forbidden_terms(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            bad_feed = Path(temp_dir) / "legacy-feed.md"
+            bad_feed.write_text(
+                "\n".join(
+                    [
+                        "## 视频投喂块",
+                        "segment S01",
+                        "1 日 内 鬼王宗宗门大殿 林夜 首帧坐在黑石王座上 中景 + 平视 固定镜头 环境音：大殿低鸣",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [sys.executable, str(root / "scripts" / "validate_feed.py"), str(bad_feed)],
+                cwd=root,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("missing global requirement line", result.stdout)
+            self.assertIn("forbidden term `segment`", result.stdout)
+            self.assertIn("forbidden term `S01`", result.stdout)
+            self.assertIn("forbidden term `首帧`", result.stdout)
+
     def test_dialogue_compression_forbids_orphan_lines(self) -> None:
         skill_text = Path(__file__).resolve().parents[1].joinpath("SKILL.md").read_text(
             encoding="utf-8"
