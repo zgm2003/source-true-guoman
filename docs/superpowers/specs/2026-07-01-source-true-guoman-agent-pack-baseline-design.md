@@ -230,4 +230,3 @@ Baseline v1 is ready when:
 - A feed draft stays continuous, source-faithful, and Xiaoyunque-tag valid.
 - The auditor can identify both deterministic format problems and non-deterministic source-fidelity risks.
 - All tests pass and skill validation passes.
-
