@@ -858,26 +858,26 @@ Use this checklist when reviewing a source-true-guoman feed.
 
 - [x] **Step 6: Extend deterministic forbidden terms in `scripts/validate_feed.py`**
 
-Change `FORBIDDEN_TERMS` to include storyboard-folder language:
+Change `FORBIDDEN_TERMS` to include storyboard-folder language and derive legacy mojibake variants from readable source terms at runtime. Do not write mojibake literals into docs or live code:
 
 ```python
-FORBIDDEN_TERMS = (
+READABLE_FORBIDDEN_TERMS = (
     "segment",
     "S01",
     "S02",
     "keyframe",
-    "棣栧抚",
-    "灏惧抚",
     "首帧",
     "尾帧",
-    "缁帴",
-    "鎵挎帴",
     "续接",
     "承接",
     "Canvas",
     "MP4",
     "storyboard",
     "Storyboard",
+)
+
+FORBIDDEN_TERMS = derive_forbidden_terms_with_common_mojibake_variants(
+    READABLE_FORBIDDEN_TERMS
 )
 ```
 

@@ -39,6 +39,10 @@ READABLE_TEXT_THAT_MUST_NOT_APPEAR_AS_MOJIBAKE = [
     "局部场景参考",
     "材质风格参考",
     "界面风格参考",
+    "首帧",
+    "尾帧",
+    "续接",
+    "承接",
 ]
 
 
@@ -48,7 +52,7 @@ def common_mojibake_fragments() -> list[str]:
         broken = phrase.encode("utf-8").decode("gbk", errors="replace")
         fragments.add(broken)
         fragments.add(broken.replace("\ufffd", "?"))
-    return sorted(fragment for fragment in fragments if len(fragment) >= 4)
+    return sorted(fragment for fragment in fragments if len(fragment) >= 3)
 
 
 COMMON_MOJIBAKE_FRAGMENTS = common_mojibake_fragments()
@@ -282,6 +286,14 @@ class SkillTextRulesTests(unittest.TestCase):
             *root.joinpath("agents").glob("*.md"),
             *root.joinpath("references").glob("*.md"),
         ]
+
+        for path in checked_paths:
+            with self.subTest(path=path.relative_to(root).as_posix()):
+                self.assertNoKnownMojibake(path.read_text(encoding="utf-8"))
+
+    def test_plan_docs_do_not_contain_known_mojibake(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        checked_paths = root.joinpath("docs", "superpowers").rglob("*.md")
 
         for path in checked_paths:
             with self.subTest(path=path.relative_to(root).as_posix()):
@@ -777,6 +789,33 @@ class SkillTextRulesTests(unittest.TestCase):
             self.assertIn("forbidden term `segment`", result.stdout)
             self.assertIn("forbidden term `S01`", result.stdout)
             self.assertIn("forbidden term `首帧`", result.stdout)
+
+    def test_validate_feed_rejects_legacy_mojibake_workflow_terms(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        legacy_first_frame = "首帧".encode("utf-8").decode("gbk", errors="replace")
+        with tempfile.TemporaryDirectory() as temp_dir:
+            bad_feed = Path(temp_dir) / "legacy-mojibake-feed.md"
+            bad_feed.write_text(
+                "\n".join(
+                    [
+                        "## 视频投喂块",
+                        "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。",
+                        f"1 日 内 鬼王宗宗门大殿 林夜 {legacy_first_frame}坐在黑石王座上 中景 + 平视 固定镜头 环境音：大殿低鸣",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [sys.executable, str(root / "scripts" / "validate_feed.py"), str(bad_feed)],
+                cwd=root,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn(f"forbidden term `{legacy_first_frame}`", result.stdout)
 
     def test_dialogue_compression_forbids_orphan_lines(self) -> None:
         skill_text = Path(__file__).resolve().parents[1].joinpath("SKILL.md").read_text(

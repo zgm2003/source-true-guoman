@@ -19,7 +19,7 @@ GROUP_PATTERNS = (
     re.compile(r"15\s*秒"),
 )
 
-FORBIDDEN_TERMS = (
+READABLE_FORBIDDEN_TERMS = (
     "segment",
     "S01",
     "S02",
@@ -32,6 +32,21 @@ FORBIDDEN_TERMS = (
     "承接",
     "Canvas",
     "MP4",
+)
+
+
+def common_mojibake_variants(term: str) -> tuple[str, ...]:
+    broken = term.encode("utf-8").decode("gbk", errors="replace")
+    variants = (broken, broken.replace("\ufffd", "?"))
+    return tuple(variant for variant in variants if variant != term)
+
+
+FORBIDDEN_TERMS = tuple(
+    dict.fromkeys(
+        term
+        for readable in READABLE_FORBIDDEN_TERMS
+        for term in (readable, *common_mojibake_variants(readable))
+    )
 )
 
 NUMBERED_LINE_RE = re.compile(r"^(\d+)\s+")
