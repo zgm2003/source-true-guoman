@@ -27,7 +27,7 @@ Default preservation stance: 原作多少字就保留多少字. Convert source t
 2. Read only the requested source scope.
 3. For long scripts or multi-scene excerpts, pre-scan the whole requested scope before writing assets. Track recurring characters, locations, props, interfaces, mounts/beasts, and speaking roles across early and later scenes.
 4. Build a private source fact sheet: characters, locations, event order, cause-effect, source terms, key dialogue, reveal order, hook.
-5. For long scripts or multi-chapter projects, create or update a lightweight working-directory source index when it helps continuity. Treat it as internal evidence, not final output.
+5. For long scripts or multi-chapter projects, create or update `生产资产/source-index.md` when it helps continuity. Treat it as internal evidence unless the user asks to see it.
 6. For multi-chapter projects, make a private chapter beat ledger and continuous numbering plan before drafting. Preserve the requested story coverage; exact dialogue stays in source order and must not shrink the scope.
 7. Build an asset ledger: existing reusable assets first, new assets only when they drive identity, setting, conflict, action, interface, or repeated continuity. Track parent-child reference relationships, such as same character new outfit or main scene to sub-location. Also track similar-character collision risk when multiple important roles share sect, uniform, age, gender, protagonist-like styling.
 8. Name assets with stable reusable names before writing prompts. Prefer `角色名_造型/状态`, `场景名_母图/局部_用途`, `道具名_用途`, and `界面名_状态`; keep names short, source-grounded, and reusable across chapters.
@@ -88,13 +88,13 @@ Create exactly these top-level folders when missing:
 - `视频资产`
 - `音色资产`
 
-After creating folders, move root-level source script files into `剧本资产`. This keeps project roots clean when the user starts with a directory that only contains one script. Do not move `source-index.md`, generated feed files, hidden files, code files, or files already inside asset folders. Do not overwrite an existing file in `剧本资产`; leave the root file in place and ask the user if a conflict needs manual resolution.
+After creating folders, move root-level source script files into `剧本资产`. This keeps project roots clean when the user starts with a directory that only contains one script. Do not archive existing generated working files, including legacy root `source-index.md`, generated feed files, hidden files, code files, or files already inside asset folders; continuing formal work should create or update the production copy under `生产资产`. Do not overwrite an existing file in `剧本资产`; leave the root file in place and ask the user if a conflict needs manual resolution.
 
 ## Lightweight source index
 
-Use a local source index for long scripts, multi-chapter work, or any task where continuity depends on information that may be far apart. Do not force an index for short excerpts.
+Use a lightweight source index for long scripts, multi-chapter work, or any task where continuity depends on information that may be far apart. Do not force an index for short excerpts.
 
-- Keep the index in the working directory when useful, such as `source-index.md` or a project-specific equivalent. It is a private working aid unless the user asks to see it.
+- Keep the index under production assets, normally `生产资产/source-index.md` or a project-specific equivalent inside `生产资产`. It is a private working aid unless the user asks to see it.
 - Suggested sections: `角色索引`, `场景索引`, `资产索引`, `术语索引`, `疑点索引`, and `证据锚点`.
 - Character entries should track names, aliases, first appearance, later appearances, identity/faction, relationships, speaking role, outfit/state changes, and asset bindings.
 - Scene entries should track mother scene, sub-locations, interior/exterior split, style/material/light logic, and chapter or scene positions.

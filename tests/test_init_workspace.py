@@ -310,6 +310,9 @@ class SkillTextRulesTests(unittest.TestCase):
         for text in (skill_text, faithful_feed_text):
             self.assertIn("投喂稿、source-index、asset-bible、审计报告、剪辑风险报告属于生产资产", text)
             self.assertIn("视频资产只放最终视频文件或渲染结果", text)
+        self.assertIn("生产资产/source-index.md", skill_text)
+        self.assertNotIn("working-directory source index", skill_text)
+        self.assertNotIn("Keep the index in the working directory", skill_text)
 
     def test_faithful_feed_requires_index_assets_and_coverage_audit(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -615,6 +618,70 @@ class SkillTextRulesTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("invalid camera tag count 2", result.stdout)
             self.assertIn("forbidden term `storyboard`", result.stdout)
+
+    def test_validate_feed_rejects_repeated_same_camera_tag(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            bad_feed = Path(temp_dir) / "bad-feed.md"
+            bad_feed.write_text(
+                "\n".join(
+                    [
+                        "## 视频投喂块",
+                        "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。",
+                        "1 日 内 大殿 林夜 坐在王座中 中景 + 平视 固定镜头 固定镜头 环境音：低鸣",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(root / "scripts" / "validate_feed.py"),
+                    str(bad_feed),
+                ],
+                cwd=root,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("invalid camera tag count 2", result.stdout)
+
+    def test_validate_feed_requires_global_requirement_immediately_after_header(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            bad_feed = Path(temp_dir) / "bad-feed.md"
+            bad_feed.write_text(
+                "\n".join(
+                    [
+                        "## 视频投喂块",
+                        "这里不应该出现说明文字",
+                        "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。",
+                        "1 日 内 大殿 林夜 坐在王座中 中景 + 平视 固定镜头 环境音：低鸣",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(root / "scripts" / "validate_feed.py"),
+                    str(bad_feed),
+                ],
+                cwd=root,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn(
+                "global requirement line must immediately follow ## 视频投喂块",
+                result.stdout,
+            )
 
     def test_validate_feed_rejects_grouped_feed_and_invalid_camera_tags(self) -> None:
         root = Path(__file__).resolve().parents[1]

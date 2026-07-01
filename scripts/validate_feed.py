@@ -48,7 +48,13 @@ def load_camera_tags(root: Path) -> set[str]:
 
 
 def line_camera_tags(line: str, tags: set[str]) -> list[str]:
-    return [tag for tag in tags if re.search(rf"(?<!\S){re.escape(tag)}(?:（[^）]*）)?(?=\s|$)", line)]
+    found_tags: list[str] = []
+    for tag in tags:
+        matches = re.findall(
+            rf"(?<!\S){re.escape(tag)}(?:（[^）]*）)?(?=\s|$)", line
+        )
+        found_tags.extend([tag] * len(matches))
+    return found_tags
 
 
 def validate_feed(path: Path, root: Path) -> list[str]:
@@ -59,6 +65,22 @@ def validate_feed(path: Path, root: Path) -> list[str]:
 
     if GLOBAL_REQUIREMENT not in text:
         errors.append("missing global requirement line")
+
+    try:
+        header_index = next(
+            index for index, line in enumerate(lines) if line.strip() == "## 视频投喂块"
+        )
+    except StopIteration:
+        errors.append("missing ## 视频投喂块 header")
+    else:
+        requirement_index = header_index + 1
+        if (
+            requirement_index >= len(lines)
+            or lines[requirement_index].strip() != GLOBAL_REQUIREMENT
+        ):
+            errors.append(
+                "global requirement line must immediately follow ## 视频投喂块"
+            )
 
     expected_number = 1
     saw_numbered_line = False
