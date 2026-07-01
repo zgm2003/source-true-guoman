@@ -2,30 +2,34 @@
 
 Use this checklist when reviewing a source-true-guoman feed.
 
-## Blocking Checks
+## Output Style
 
-- The feed starts `## 视频投喂块` with the exact global `统一要求` line.
+- Blocking issues first.
+- Cite file/line references for every concrete saved-file issue.
+- Separate script-deterministic checks from human/agent source-fidelity checks.
+- If source text is unavailable, mark human/agent source-fidelity checks as unverified rather than passing.
+
+## Script-Deterministic Checks
+
+- Exact global line appears immediately under `## 视频投喂块`.
 - Numbering starts at `1` and stays continuous.
-- No `第N组`, `第1-5条`, 15-second groups, group footers, or pacing blocks.
-- No `segment`, `S01/S02`, `keyframe`, `首帧`, `尾帧`, `续接`, `承接`, Canvas package, storyboard folder, or MP4 claim.
+- No groups, old workflow terms, storyboard folder language, Canvas package, or MP4 claim.
+- No `segment`, `S01/S02`, keyframe language, `首帧`, `尾帧`, `续接`, or `承接`.
 - Each video line uses exactly one Xiaoyunque raw tag, optionally followed by parentheses.
+- Check that scope status is explicit when the artifact is a smoke test.
 
-## Source Checks
+## Human/Agent Source-Fidelity Checks
 
-- Dialogue is exact source text when source is available.
-- Dialogue stays in source order and local context.
+- Dialogue is exact source text, in source order and local context.
 - Long dialogue is split only at natural source punctuation, not shortened.
 - Events preserve cause-effect, reveal order, and chapter hooks.
-- No unsourced standing, walking, kneeling, bowing, weapon drawing, prop raising, prop putting away, seat changes, or reporting.
+- No unsourced movement, prop handling, reporting, attacks, standing, walking, kneeling, bowing, weapon drawing, seat changes, or scene exits.
 
 ## Asset Checks
 
 - Asset names are stable source identities and versions.
 - Later-named recurring NPCs are not split from earlier anonymous appearances.
-- Outfit variants preserve face identity references.
+- Outfit variants preserve face references and identity marks.
 - Similar important characters have separation anchors.
 - Sub-scenes bind to scene mother images when continuity depends on it.
-
-## Output
-
-Lead with issues that require correction before delivery. If source text is unavailable, mark dialogue and plot exactness as unverified rather than claiming they pass.
+- Speaking roles have voice assets when voice continuity matters.

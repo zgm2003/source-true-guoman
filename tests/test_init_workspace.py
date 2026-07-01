@@ -468,6 +468,56 @@ class SkillTextRulesTests(unittest.TestCase):
             with self.subTest(fragment=fragment):
                 self.assertNotIn(fragment, template_text)
 
+    def test_feed_auditor_splits_script_checks_from_source_fidelity_review(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        agent_text = root.joinpath("agents", "feed-auditor.md").read_text(
+            encoding="utf-8"
+        )
+        checklist_text = root.joinpath("references", "audit-checklist.md").read_text(
+            encoding="utf-8"
+        )
+
+        for text in (agent_text, checklist_text):
+            self.assertIn("Blocking issues first", text)
+            self.assertIn("file/line references", text)
+            self.assertIn("script-deterministic checks", text)
+            self.assertIn("human/agent source-fidelity checks", text)
+            self.assertIn(
+                "scope status is explicit when the artifact is a smoke test", text
+            )
+
+    def test_validate_feed_rejects_duplicate_camera_tags_and_storyboard_terms(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            bad_feed = Path(temp_dir) / "bad-feed.md"
+            bad_feed.write_text(
+                "\n".join(
+                    [
+                        "## 视频投喂块",
+                        "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。",
+                        "1 日 内 大殿 林夜 坐在王座中 中景 + 平视 固定镜头 镜头前推 环境音：低鸣",
+                        "2 日 内 大殿 林夜 坐在王座中 中景 + 平视 固定镜头 storyboard folder 环境音：低鸣",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(root / "scripts" / "validate_feed.py"),
+                    str(bad_feed),
+                ],
+                cwd=root,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("invalid camera tag count 2", result.stdout)
+            self.assertIn("forbidden term `storyboard`", result.stdout)
+
     def test_validate_feed_rejects_grouped_feed_and_invalid_camera_tags(self) -> None:
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as temp_dir:

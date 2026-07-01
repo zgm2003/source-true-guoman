@@ -24,6 +24,8 @@ FORBIDDEN_TERMS = (
     "S01",
     "S02",
     "keyframe",
+    "storyboard",
+    "Storyboard",
     "首帧",
     "尾帧",
     "续接",
