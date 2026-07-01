@@ -19,14 +19,14 @@ Use this specialist when source reading is the bottleneck: long chapters, multi-
 
 Create or update `生产资产/source-index.md` unless the user explicitly asks for a visible root-level working index. Use `references/source-index-format.md`.
 
-Do not output a video feed. Do not output a synopsis replacement. Do not summarize chapters as a replacement for source coverage. Use evidence anchors for every merge, correction, relationship claim, reveal handling, face reference, scene reference, reusable asset decision, outfit/state change, and unresolved doubt.
+Do not output a video feed; do not output a synopsis replacement. Do not summarize chapters as a replacement for source coverage. Use evidence anchors for every merge, correction, relationship claim, reveal handling, face reference, scene reference, or reusable asset decision; also cite outfit/state changes and unresolved doubts.
 
 Scope mode policy: use `全范围预扫` when formal multi-chapter work has completed the full requested pre-scan; use `局部烟测` only when a smoke-test span was read. 正式多章任务必须先预扫完整请求范围. 局部烟测必须显式标记已阅读范围. 局部烟测资产不得当作全局定稿.
 
 ## Procedure
 
 1. Mark `索引状态`, `请求范围`, `已阅读范围`, `未阅读范围`, and `证据依据` before any character or asset decision.
-2. Formal multi-chapter work must pre-scan the whole requested scope before deciding identity, recurrence, scene reuse, or final asset value.
+2. Confirm that formal multi-chapter work must pre-scan the whole requested scope before deciding identity, recurrence, scene reuse, or final asset value.
 3. Smoke tests must label `局部烟测`, list exact read span and unread span, and write `Do not promote smoke-test assets to global final decisions.`
 4. Record characters, aliases, factions, speaking roles, first/later appearances, relationships, posture facts, outfit/state changes, and asset binding candidates.
 5. Track anonymous-to-named upgrade cases: early `弟子/NPC/黑衣人/侍女/守卫/路人` becomes one stable role if later named, recurring, speaking, or plot-bearing.
