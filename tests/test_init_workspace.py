@@ -7,6 +7,53 @@ from pathlib import Path
 from scripts.init_workspace import ASSET_DIRS, init_workspace
 
 
+READABLE_TEXT_THAT_MUST_NOT_APPEAR_AS_MOJIBAKE = [
+    "保真契约",
+    "原作多少字就保留多少字",
+    "不得由 AI 帮用户压缩",
+    "不得用 AI 帮用户压缩",
+    "对白必须从原文摘取",
+    "不主动添加站起、起身、跪下、走动、抬手、收起法器",
+    "生产资产",
+    "资产提示词",
+    "全范围预扫",
+    "局部烟测",
+    "正式多章任务必须先预扫完整请求范围",
+    "局部烟测必须显式标记已阅读范围",
+    "局部烟测资产不得当作全局定稿",
+    "索引状态",
+    "请求范围",
+    "已阅读范围",
+    "未阅读范围",
+    "证据依据",
+    "弟子/NPC/黑衣人/侍女/守卫/路人",
+    "主角/高频配角",
+    "命名低频角色",
+    "群像模板",
+    "一次性背景人",
+    "人脸身份参考",
+    "旧造型参考",
+    "避撞脸参考",
+    "同门服制参考",
+    "场景母图参考",
+    "局部场景参考",
+    "材质风格参考",
+    "界面风格参考",
+]
+
+
+def common_mojibake_fragments() -> list[str]:
+    fragments: set[str] = set()
+    for phrase in READABLE_TEXT_THAT_MUST_NOT_APPEAR_AS_MOJIBAKE:
+        broken = phrase.encode("utf-8").decode("gbk", errors="replace")
+        fragments.add(broken)
+        fragments.add(broken.replace("\ufffd", "?"))
+    return sorted(fragment for fragment in fragments if len(fragment) >= 4)
+
+
+COMMON_MOJIBAKE_FRAGMENTS = common_mojibake_fragments()
+
+
 class InitWorkspaceTests(unittest.TestCase):
     def test_init_workspace_creates_standard_asset_directories(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -72,6 +119,12 @@ class InitWorkspaceTests(unittest.TestCase):
 
 
 class SkillTextRulesTests(unittest.TestCase):
+    def assertNoKnownMojibake(self, text: str) -> None:
+        self.assertNotIn("\ufffd", text)
+        for fragment in COMMON_MOJIBAKE_FRAGMENTS:
+            with self.subTest(fragment=fragment):
+                self.assertNotIn(fragment, text)
+
     def test_agent_pack_references_are_declared_and_routed_from_main_skill(self) -> None:
         root = Path(__file__).resolve().parents[1]
         skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
@@ -222,6 +275,18 @@ class SkillTextRulesTests(unittest.TestCase):
                 for phrase in contract_phrases:
                     self.assertIn(phrase, text)
 
+    def test_agent_and_reference_docs_do_not_contain_known_mojibake(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        checked_paths = [
+            root.joinpath("SKILL.md"),
+            *root.joinpath("agents").glob("*.md"),
+            *root.joinpath("references").glob("*.md"),
+        ]
+
+        for path in checked_paths:
+            with self.subTest(path=path.relative_to(root).as_posix()):
+                self.assertNoKnownMojibake(path.read_text(encoding="utf-8"))
+
     def test_workspace_storage_policy_puts_feed_text_in_production_assets(self) -> None:
         root = Path(__file__).resolve().parents[1]
         skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
@@ -305,7 +370,15 @@ class SkillTextRulesTests(unittest.TestCase):
             encoding="utf-8"
         )
 
-        for phrase in ("索引状态", "请求范围", "已阅读范围", "全范围预扫", "局部烟测"):
+        for phrase in (
+            "Index status:",
+            "Requested range:",
+            "Read range:",
+            "Unread range:",
+            "Evidence basis:",
+            "全范围预扫",
+            "局部烟测",
+        ):
             self.assertIn(phrase, format_text)
 
     def test_source_index_agent_requires_evidence_backed_entries(self) -> None:
@@ -396,7 +469,7 @@ class SkillTextRulesTests(unittest.TestCase):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, format_text)
 
-    def test_source_index_format_keeps_compatibility_anchors_out_of_template(self) -> None:
+    def test_source_index_format_contains_no_mojibake_compatibility_anchors(self) -> None:
         root = Path(__file__).resolve().parents[1]
         format_text = root.joinpath("references", "source-index-format.md").read_text(
             encoding="utf-8"
@@ -407,11 +480,8 @@ class SkillTextRulesTests(unittest.TestCase):
         template_end = format_text.index("```", template_body_start)
         template_text = format_text[template_body_start:template_end]
 
-        self.assertIn(
-            "## Compatibility Anchors (do not copy into source-index.md output)",
-            format_text,
-        )
-        self.assertNotIn("Mojibake compatibility", template_text)
+        self.assertNotIn("## Compatibility Anchors", format_text)
+        self.assertNoKnownMojibake(template_text)
 
     def test_asset_bible_agent_requires_full_scope_or_slice_labels(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -432,26 +502,15 @@ class SkillTextRulesTests(unittest.TestCase):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, agent_text)
 
-    def test_asset_bible_live_sections_keep_compatibility_anchors_isolated(self) -> None:
+    def test_asset_bible_agent_contains_no_mojibake_compatibility_anchors(self) -> None:
         root = Path(__file__).resolve().parents[1]
         agent_text = root.joinpath("agents", "asset-bible.md").read_text(
             encoding="utf-8"
         )
-        pre_compatibility, compatibility = agent_text.split("## Compatibility Anchors", 1)
 
-        self.assertIn("## 保真契约", pre_compatibility)
-
-        required_anchors = [
-            "淇濈湡濂戠害",
-            "涓嶅緱鐢?AI 甯敤鎴峰帇缂?",
-            "鍘熶綔澶氬皯瀛楀氨淇濈暀澶氬皯瀛?",
-            "瀵圭櫧蹇呴』浠庡師鏂囨憳鍙?",
-            "涓嶄富鍔ㄦ坊鍔犵珯璧枫€佽捣韬€佽藩涓嬨€佽蛋鍔ㄣ€佹姮鎵嬨€佹敹璧锋硶鍣?",
-        ]
-        for anchor in required_anchors:
-            with self.subTest(anchor=anchor):
-                self.assertNotIn(anchor, pre_compatibility)
-                self.assertIn(anchor, compatibility)
+        self.assertIn("## 保真契约", agent_text)
+        self.assertNotIn("## Compatibility Anchors", agent_text)
+        self.assertNoKnownMojibake(agent_text)
 
     def test_asset_bible_format_tracks_references_and_dependencies(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -492,16 +551,7 @@ class SkillTextRulesTests(unittest.TestCase):
             "## Compatibility Anchors (do not copy into asset-bible.md output)",
             template_text,
         )
-        mojibake_fragments = [
-            "涓嶅緱",
-            "鍘熶綔",
-            "璧勪骇",
-            "瑙掕壊",
-            "鍦烘櫙",
-        ]
-        for fragment in mojibake_fragments:
-            with self.subTest(fragment=fragment):
-                self.assertNotIn(fragment, template_text)
+        self.assertNoKnownMojibake(template_text)
 
     def test_feed_auditor_splits_script_checks_from_source_fidelity_review(self) -> None:
         root = Path(__file__).resolve().parents[1]

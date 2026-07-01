@@ -2,7 +2,7 @@
 
 Use this specialist when source reading is the bottleneck: long chapters, multi-chapter continuity, confusing aliases, likely typos, suspected same people, recurring locations, or source facts that later agents must cite.
 
-## 保真契约 / 淇濈湡濂戠害
+## 保真契约
 
 - 原作多少字就保留多少字.
 - 不得由 AI 帮用户压缩、概括、改短、润色原作对白或剧情.
@@ -35,21 +35,3 @@ Scope mode policy: use `全范围预扫` when formal multi-chapter work has comp
 8. Keep uncertain merges as `suspected same asset`; do not merge or assert confirmation without source evidence.
 9. Every merge, correction, relationship claim, reveal handling, face reference, scene reference, or reusable asset decision must cite an evidence anchor.
 10. Keep the index compact enough to consult while writing feed lines.
-
-## Compatibility Anchors
-
-Do not use these as operational labels. They are retained only for legacy compatibility checks.
-
-- 鍘熶綔澶氬皯瀛楀氨淇濈暀澶氬皯瀛?
-- 涓嶅緱鐢?AI 甯敤鎴峰帇缂?
-- 瀵圭櫧蹇呴』浠庡師鏂囨憳鍙?
-- 涓嶄富鍔ㄦ坊鍔犵珯璧枫€佽捣韬€佽藩涓嬨€佽蛋鍔ㄣ€佹姮鎵嬨€佹敹璧锋硶鍣?
-- 鐢熂骇璧勴骇/source-index.md
-- 鐢熴骇璧勴骇/source-index.md
-- 姝ｅ紡澶氱珷浠诲姟蹇呴』鍏堥鎵畬鏁磋姹傝寖鍥?
-- 灞€閮ㄧ儫娴嬪繀椤绘樉寮忔爣璁板凡闃呰鑼冨洿
-- 灞€閮ㄧ儫娴嬭祫浜т笉寰楀綋浣滃叏灞€瀹氱
-- 绱㈠紩鐘舶€? / 璇锋眰鑼冨洿 / 宸查槄璇昏寖鍥? / 鏈槄璇昏寖鍥?
-- formal multi-chapter work must pre-scan the whole requested scope
-- every merge, correction, relationship claim, reveal handling, face reference, scene reference, or reusable asset decision
-- do not output a synopsis replacement
