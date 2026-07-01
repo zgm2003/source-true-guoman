@@ -332,6 +332,75 @@ class SkillTextRulesTests(unittest.TestCase):
         )
         self.assertNotIn("Mojibake compatibility", template_text)
 
+    def test_asset_bible_agent_requires_full_scope_or_slice_labels(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        agent_text = root.joinpath("agents", "asset-bible.md").read_text(
+            encoding="utf-8"
+        )
+
+        required_phrases = [
+            "final asset decisions require `全范围预扫`",
+            "label every asset as slice-limited",
+            "tri-view assets",
+            "derived outfit/state",
+            "same sect, same uniform, same gender/age band, or similar protagonist styling",
+            "voice assets for speaking roles",
+        ]
+
+        for phrase in required_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, agent_text)
+
+    def test_asset_bible_format_tracks_references_and_dependencies(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        format_text = root.joinpath("references", "asset-bible-format.md").read_text(
+            encoding="utf-8"
+        )
+
+        required_phrases = [
+            "## Scope Status",
+            "## Character Assets",
+            "Tier: 主角/高频配角 / 命名低频角色 / 群像模板 / 一次性背景人",
+            "Tri-view requirement:",
+            "Derived from previous asset:",
+            "Reference uploads:",
+            "人脸身份参考",
+            "避撞脸参考",
+            "同门服制参考",
+            "场景母图参考",
+            "## Production Dependencies",
+        ]
+
+        for phrase in required_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, format_text)
+
+    def test_asset_bible_format_keeps_compatibility_anchors_out_of_template(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        format_text = root.joinpath("references", "asset-bible-format.md").read_text(
+            encoding="utf-8"
+        )
+
+        template_start = format_text.index("```text")
+        template_body_start = format_text.index("\n", template_start) + 1
+        template_end = format_text.index("```", template_body_start)
+        template_text = format_text[template_body_start:template_end]
+
+        self.assertNotIn(
+            "## Compatibility Anchors (do not copy into asset-bible.md output)",
+            template_text,
+        )
+        mojibake_fragments = [
+            "涓嶅緱",
+            "鍘熶綔",
+            "璧勪骇",
+            "瑙掕壊",
+            "鍦烘櫙",
+        ]
+        for fragment in mojibake_fragments:
+            with self.subTest(fragment=fragment):
+                self.assertNotIn(fragment, template_text)
+
     def test_validate_feed_rejects_grouped_feed_and_invalid_camera_tags(self) -> None:
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as temp_dir:
