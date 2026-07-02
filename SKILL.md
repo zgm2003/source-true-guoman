@@ -205,6 +205,7 @@ Dialogue camera and micro-performance:
 
 - 谁说话，镜头优先给谁; the speaking role should usually be the primary visible subject of that dialogue line unless the source clearly needs an offscreen voice, overheard line, or reaction-only reveal.
 - 对白默认优先给说话人正面半身. 默认不要纯大脸特写. 对白行优先使用中近景、半身中景或中景, 保留说话人的身体姿态、所在席位/环境, nearby reactions, and scene depth for spatial continuity and editing.
+- 单人对白镜头不要点名另一个重要角色做后景, especially the protagonist on a throne. Use blurred pillars, seat edge, cold fog, lamps, or robe details to carry space instead of forcing another named character into the frame.
 - 空间感放在背景纵深、席位关系和反应层次里. Do not make dialogue shots a row of isolated faces, and 不要把默认对白镜头写成半身侧面. Use 正面半身, 正面中景, slight front three-quarter, or brief reaction cutaways for variation.
 - 说话微表演 is allowed and useful when it stays source-compatible: 正面开口, 眼神微压, 短暂停顿, 喉结轻动, 袖口轻动, or fingers lightly tapping an existing armrest/table already visible in the setting.
 - Micro-actions must stay within the current source posture and placement. 不得把微动作升级成原文没有的站起、走动、跪下、抬手收法器, weapon drawing, attacking, changing seats, or new prop handling.

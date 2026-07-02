@@ -947,6 +947,22 @@ class SkillTextRulesTests(unittest.TestCase):
         self.assertIn("正面半身", format_text)
         self.assertNotIn("半身侧面 + 左侧席位 + 王座远处可见", format_text)
 
+    def test_single_speaker_dialogue_avoids_named_background_characters(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
+        format_text = root.joinpath("references", "format.md").read_text(
+            encoding="utf-8"
+        )
+
+        for text in (skill_text, format_text):
+            self.assertIn("单人对白镜头不要点名另一个重要角色做后景", text)
+            self.assertIn("blurred pillars, seat edge, cold fog, lamps, or robe details", text)
+
+        self.assertIn("画面只显示说话人", format_text)
+        self.assertIn("后景虚化暗柱和席位边缘", format_text)
+        self.assertNotIn("背景保留林夜所在上首方向", format_text)
+        self.assertNotIn("林夜在王座方向眼皮轻跳", format_text)
+
     def test_video_feed_starts_with_global_requirement_then_source_content(self) -> None:
         root = Path(__file__).resolve().parents[1]
         skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
