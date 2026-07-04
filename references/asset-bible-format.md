@@ -14,12 +14,17 @@ Use this file when creating `asset-bible.md` or a compact asset plan.
 ## Character Assets
 - Asset name:
   - Tier: 主角/高频配角 / 命名低频角色 / 群像模板 / 一次性背景人
+  - Canonical source identity:
   - Source evidence:
+  - Character variant matrix:
   - Outfit/state version:
+  - Variant type:
   - Tri-view requirement:
   - Derived from previous asset:
+  - Face/identity reference:
   - Face/identity constants:
   - Similar-character separation anchors:
+  - Parent reference purpose:
   - Reference uploads:
     - 人脸身份参考:
     - 旧造型参考:
@@ -32,8 +37,10 @@ Use this file when creating `asset-bible.md` or a compact asset plan.
   - Type: mother image / sub-location / interior / exterior
   - Source evidence:
   - Parent scene:
+  - Scene mother reference:
   - Sub-locations:
   - Material/light/space constants:
+  - Parent reference purpose:
   - Reference uploads:
     - 场景母图参考:
     - 局部场景参考:
@@ -44,8 +51,12 @@ Use this file when creating `asset-bible.md` or a compact asset plan.
 - Asset name:
   - Type: prop / interface / magic item / beast / vehicle
   - Source evidence:
+  - Value gate:
+  - Dependency gate:
+  - Variant type:
   - Single-subject image requirement:
   - Parent character/scene reference:
+  - Parent reference purpose:
   - Interface orientation:
   - Reference uploads:
     - 人脸身份参考:
@@ -57,6 +68,7 @@ Use this file when creating `asset-bible.md` or a compact asset plan.
 ## Voice Assets
 - Character name:
   - Speaking range:
+  - Voice asset trigger:
   - Voice direction:
   - Source evidence:
 

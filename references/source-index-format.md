@@ -16,7 +16,11 @@ Use this file when creating or updating `source-index.md`.
 
 ## Character Index
 - Name:
+  - Canonical source name:
+  - Standard name basis:
+  - Alias evidence:
   - Aliases/titles:
+  - Role tier:
   - First appearance:
   - Later appearances:
   - Identity/faction:
@@ -24,6 +28,12 @@ Use this file when creating or updating `source-index.md`.
   - Speaking range:
   - Posture facts:
   - Outfit/state changes:
+  - Period/state variants:
+    - Variant name:
+    - Period/state trigger:
+    - Start evidence:
+    - End/change evidence:
+  - Slice limitation:
   - Anonymous-to-named upgrade:
   - Suspected same asset:
   - Asset binding:

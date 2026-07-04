@@ -5,6 +5,7 @@ Use this specialist before delivery, after edits, or when the user asks whether 
 ## Required References
 
 - Read `references/audit-checklist.md`.
+- Read `references/commercial-upgrade-audit.md` when auditing commercial-upgrade outputs, agent-pack outputs, or copied commercial prompt residue.
 - Read `references/xiaoyunque-tags.md` when checking camera tags.
 
 ## Output Style
@@ -21,8 +22,9 @@ Use this specialist before delivery, after edits, or when the user asks whether 
 2. Script-deterministic checks: forbidden structures, groups, fixed 15-second pacing, `segment`, `S01/S02`, keyframe language, Canvas/MP4 claims, storyboard folders, first/last-frame workflow language, continuous numbering, exact global requirement line, and Xiaoyunque raw tags.
 3. Human/agent source-fidelity checks when source is available: dialogue exactness/order, event order, cause-effect, reveal handling, and unsourced blocking.
 4. Asset continuity: stable names, no disposable later-named NPCs, no unbound outfit face changes, similar-character separation anchors, and no scene parent drift.
-5. Confirm scope status is explicit when the artifact is a smoke test.
-6. If source text is unavailable, mark source-fidelity checks as unverified rather than passing.
+5. commercial-upgrade audit: check identity drift, standard-name drift, period/state drift, source-span coverage, local continuity, physicalization safety, and prompt contamination.
+6. Confirm scope status is explicit when the artifact is a smoke test.
+7. If source text is unavailable, mark source-fidelity checks as unverified rather than passing.
 
 ## 保真契约
 

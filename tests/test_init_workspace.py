@@ -999,5 +999,237 @@ class SkillTextRulesTests(unittest.TestCase):
             self.assertNotIn("骨灵教老者_左侧第二席造型", text)
 
 
+    def test_commercial_upgrade_identity_period_reference_is_routed(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        agent_text = root.joinpath("agents", "source-indexer.md").read_text(
+            encoding="utf-8"
+        )
+        format_text = root.joinpath("references", "source-index-format.md").read_text(
+            encoding="utf-8"
+        )
+        reference_path = root.joinpath("references", "identity-period-rules.md")
+
+        self.assertTrue(reference_path.is_file())
+        reference_text = reference_path.read_text(encoding="utf-8")
+        self.assertIn("references/identity-period-rules.md", agent_text)
+
+        agent_phrases = [
+            "canonical source name",
+            "standard-name basis",
+            "alias mapping",
+            "period/state trigger",
+            "period/state decisions are slice-limited",
+            "evidence anchor",
+        ]
+        format_phrases = [
+            "Standard name basis:",
+            "Alias evidence:",
+            "Period/state variants:",
+            "Period/state trigger:",
+            "Slice limitation:",
+        ]
+        reference_phrases = [
+            "Canonical name is an evidence-backed source identity",
+            "Aliases are evidence, not production names",
+            "Generic-role upgrade",
+            "Role tier",
+            "first-person labels",
+            "Period/state trigger",
+            "Smoke-test limitation",
+        ]
+
+        for phrase in agent_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, agent_text)
+        for phrase in format_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, format_text)
+        for phrase in reference_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, reference_text)
+
+    def test_commercial_upgrade_asset_continuity_reference_is_routed(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        agent_text = root.joinpath("agents", "asset-bible.md").read_text(
+            encoding="utf-8"
+        )
+        format_text = root.joinpath("references", "asset-bible-format.md").read_text(
+            encoding="utf-8"
+        )
+        reference_path = root.joinpath("references", "asset-continuity-rules.md")
+
+        self.assertTrue(reference_path.is_file())
+        reference_text = reference_path.read_text(encoding="utf-8")
+        self.assertIn("references/asset-continuity-rules.md", agent_text)
+
+        agent_phrases = [
+            "prop/interface double gate",
+            "both value and dependency",
+            "character variant matrix",
+            "derived variant",
+            "face/identity reference",
+            "scene mother reference",
+            "similar-character separation",
+            "voice asset trigger",
+        ]
+        format_phrases = [
+            "Canonical source identity:",
+            "Value gate:",
+            "Dependency gate:",
+            "Character variant matrix:",
+            "Variant type:",
+            "Face/identity reference:",
+            "Parent reference purpose:",
+            "Scene mother reference:",
+            "Voice asset trigger:",
+        ]
+        reference_phrases = [
+            "Character variant matrix",
+            "Prop/interface double gate",
+            "both value and dependency",
+            "Scene mother and sub-scene dependencies",
+            "Reference purpose labels",
+        ]
+
+        for phrase in agent_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, agent_text)
+        for phrase in format_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, format_text)
+        for phrase in reference_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, reference_text)
+
+    def test_commercial_upgrade_feed_alignment_reference_is_routed(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        agent_text = root.joinpath("agents", "faithful-feed.md").read_text(
+            encoding="utf-8"
+        )
+        format_text = root.joinpath("references", "format.md").read_text(
+            encoding="utf-8"
+        )
+        reference_path = root.joinpath("references", "feed-alignment-rules.md")
+
+        self.assertTrue(reference_path.is_file())
+        reference_text = reference_path.read_text(encoding="utf-8")
+        self.assertIn("references/feed-alignment-rules.md", agent_text)
+
+        agent_phrases = [
+            "source-span alignment",
+            "private line/span plan",
+            "local continuity check",
+            "previous visible state",
+            "speaker as the primary subject",
+            "Do not import fixed-second timelines",
+        ]
+        reference_phrases = [
+            "Source-span alignment",
+            "Private line/span plan",
+            "Coverage ledger",
+            "Local continuity check",
+            "Dialogue alignment",
+            "Do not import fixed-second timelines",
+        ]
+        format_phrases = [
+            "source-span alignment",
+            "local continuity check",
+            "previous visible state",
+        ]
+
+        for phrase in agent_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, agent_text)
+        for phrase in reference_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, reference_text)
+        for phrase in format_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, format_text)
+
+    def test_commercial_upgrade_physicalization_reference_is_routed(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        visual_text = root.joinpath("agents", "visual-polish.md").read_text(
+            encoding="utf-8"
+        )
+        feed_text = root.joinpath("agents", "faithful-feed.md").read_text(
+            encoding="utf-8"
+        )
+        reference_path = root.joinpath("references", "source-safe-physicalization.md")
+
+        self.assertTrue(reference_path.is_file())
+        reference_text = reference_path.read_text(encoding="utf-8")
+        self.assertIn("references/source-safe-physicalization.md", visual_text)
+
+        required_phrases = [
+            "source-safe physicalization",
+            "main motion requires source support",
+            "secondary animation must be consequence",
+            "facial micro-performance",
+            "breath/cloth/hair/environment",
+            "unsafe motion escalation",
+            "must not add standing, walking, kneeling, bowing, weapon drawing, attacks, prop raising, prop putting away, seat changes, or exits",
+        ]
+
+        for phrase in required_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, visual_text)
+                self.assertIn(phrase, reference_text)
+
+        self.assertIn("source-safe physicalization", feed_text)
+
+    def test_commercial_upgrade_audit_reference_is_routed(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        agent_text = root.joinpath("agents", "feed-auditor.md").read_text(
+            encoding="utf-8"
+        )
+        checklist_text = root.joinpath("references", "audit-checklist.md").read_text(
+            encoding="utf-8"
+        )
+        reference_path = root.joinpath("references", "commercial-upgrade-audit.md")
+
+        self.assertTrue(reference_path.is_file())
+        reference_text = reference_path.read_text(encoding="utf-8")
+        self.assertIn("references/commercial-upgrade-audit.md", agent_text)
+
+        required_phrases = [
+            "commercial-upgrade audit",
+            "identity drift",
+            "standard-name drift",
+            "period/state drift",
+            "source-span coverage",
+            "local continuity",
+            "physicalization safety",
+            "prompt contamination",
+        ]
+
+        for phrase in required_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, agent_text)
+                self.assertIn(phrase, checklist_text)
+                self.assertIn(phrase, reference_text)
+
+    def test_skill_docs_do_not_copy_commercial_prompt_contamination_terms(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        checked_paths = [
+            root.joinpath("SKILL.md"),
+            *root.joinpath("agents").glob("*.md"),
+            *root.joinpath("references").glob("*.md"),
+        ]
+        contamination_terms = [
+            "隐藏" + "游戏",
+            "Prompt " + "Injection",
+            "D" + "ALL",
+            "异常" + "指令",
+            "欢迎" + "参加",
+        ]
+
+        for path in checked_paths:
+            text = path.read_text(encoding="utf-8")
+            for term in contamination_terms:
+                with self.subTest(path=path.relative_to(root).as_posix(), term=term):
+                    self.assertNotIn(term, text)
+
+
 if __name__ == "__main__":
     unittest.main()

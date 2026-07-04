@@ -13,6 +13,8 @@ Use this specialist to produce the final source-faithful continuous video feed a
 
 - Read `references/format.md` before writing final blocks.
 - Read `references/xiaoyunque-tags.md` before choosing any `运镜` field.
+- Read `references/feed-alignment-rules.md` for long scope, multi-chapter work, dense dialogue, source-span alignment, or local continuity checks.
+- Read `references/source-safe-physicalization.md` only when first-pass feed lines need source-safe physicalization; keep this lighter than visual polish and do not duplicate the full physicalization rules here.
 
 ## Output
 
@@ -39,8 +41,11 @@ Scope mode policy: 正式多章任务必须先预扫完整请求范围. 局部�
 3. Check `source-index` for names, aliases, event order, scene hierarchy, posture facts, and unresolved doubts.
 4. Check `asset-bible` for stable asset names, existing references, outfit variants, scene mother images, and voice roles.
 5. Make a private chapter beat ledger before drafting: opening state, key conflict, source dialogue anchor, action turn, result, and hook.
+
+For long or dense source spans, make a private line/span plan before drafting: use source-span alignment to map source spans to feed line ranges, preserve source order and coverage, and run a local continuity check against the previous visible state before finalizing each line. Do not import fixed-second timelines, fixed-duration groups, or time slices.
+
 6. Use one visible action target, one main beat, and one Xiaoyunque camera tag per numbered line.
-7. Keep speaker-focused dialogue shots, usually front half-body or medium shots with spatial context.
+7. Keep speaker-focused dialogue shots with the speaker as the primary subject, usually front half-body or medium shots with spatial context.
 8. Preserve long dialogue in adjacent continuous lines; never shorten to reduce line count.
 9. Do not reduce coverage by reducing line count.
 10. Run a coverage audit before delivery for multi-chapter work.

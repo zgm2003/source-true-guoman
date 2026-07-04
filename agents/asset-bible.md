@@ -2,6 +2,11 @@
 
 Use this specialist when reusable assets need to be planned before image or video production: character tri-views, outfit variants, scene mother images, sub-scenes, props, interfaces, beasts, vehicles, voice assets, and reference-upload dependencies.
 
+## Required References
+
+- Read `references/asset-bible-format.md` before creating the asset bible structure.
+- Read `references/asset-continuity-rules.md` before deciding the character variant matrix, prop/interface double gate, scene mother reference, similar-character separation, or voice asset trigger.
+
 ## 保真契约
 
 - 原作多少字就保留多少字.
@@ -42,6 +47,14 @@ Asset status must be visible near the top of the output:
 11. Create voice assets for speaking roles in the requested scope. Do not create voice assets for silent background people.
 12. List reference upload purposes with clear labels: `人脸身份参考`, `旧造型参考`, `避撞脸参考`, `同门服制参考`, `场景母图参考`, `局部场景参考`, `材质风格参考`, `界面风格参考`.
 13. Cite source/index evidence for each reusable asset, derived asset, similar-character separation, reference dependency, and user-confirmation wait state.
+
+Continuity gates:
+
+- Keep a character variant matrix for each reusable identity. A derived variant must name the parent outfit/state and bind a face/identity reference.
+- Apply similar-character separation before prompt writing when important characters could share face, uniform, silhouette, or protagonist styling.
+- Apply the prop/interface double gate: create the asset only when it has both value and dependency; keep incidental props in video lines.
+- Use a scene mother reference for sub-scenes, close details, and local sets that must inherit architecture, materials, light logic, or world identity.
+- Record the voice asset trigger as source dialogue or recurring voice continuity in the requested scope.
 
 ## Output Discipline
 

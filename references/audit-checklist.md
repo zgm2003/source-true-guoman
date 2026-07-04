@@ -33,3 +33,14 @@ Use this checklist when reviewing a source-true-guoman feed.
 - Similar important characters have separation anchors.
 - Sub-scenes bind to scene mother images when continuity depends on it.
 - Speaking roles have voice assets when voice continuity matters.
+
+## Commercial-Upgrade Audit
+
+- Run a commercial-upgrade audit when output may inherit commercial workflow residue or multi-agent asset drift.
+- identity drift: recurring people, aliases, and later names stay merged by source evidence.
+- standard-name drift: production names follow the evidence-backed standard name.
+- period/state drift: age, state, outfit, injury, face, and faction changes have local source evidence.
+- source-span coverage: requested spans keep setup, reactions, reveals, transitions, and hooks.
+- local continuity: each line preserves the previous visible state, speaker, prop possession, and scene.
+- physicalization safety: motion and prop handling stay source-supported or direct consequence.
+- prompt contamination: remove copied commercial boilerplate, instruction games, fixed refusal text, tool side effects, silent source replacement, fixed-duration packaging, and rewrite formulas.

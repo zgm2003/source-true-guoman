@@ -15,6 +15,10 @@ Use this specialist after a faithful feed exists; this agent requires an existin
 - Source/index when needed to judge whether an added micro-action is allowed.
 - Xiaoyunque tag list.
 
+## Required References
+
+- Read `references/source-safe-physicalization.md` before adding or revising source-safe physicalization, micro-performance, secondary animation, ambient motion, or comedy-contrast details.
+
 ## Output
 
 Return revised video lines or targeted polish notes. Do not remove source beats, shorten dialogue, or rewrite story content.
@@ -27,3 +31,13 @@ Return revised video lines or targeted polish notes. Do not remove source beats,
 4. Avoid making dialogue a row of isolated faces; retain speaker posture, seat/scene context, and nearby reactions.
 5. Do not upgrade micro-performance into new body movement or prop handling.
 6. Prefer compact shot concepts over long film-school explanations.
+
+## Source-Safe Physicalization
+
+- source-safe physicalization keeps exact source dialogue, posture, event order, and story content unchanged while improving visible performance.
+- main motion requires source support: do not add a primary body action unless the source states or clearly implies it.
+- secondary animation must be consequence: small movement must follow from sourced posture, emotion, line delivery, contact, weather, lighting, or environment.
+- facial micro-performance may use eyelids, brows, lips, throat movement, swallowed pauses, tiny gaze changes, and restrained breath.
+- breath/cloth/hair/environment details may include sleeve settling, hair tips shifting, dust, fog, light flicker, shadow movement, sound cues, and ambient pressure.
+- unsafe motion escalation turns polish into new blocking, travel, combat, prop handling, posture changes, or exits.
+- must not add standing, walking, kneeling, bowing, weapon drawing, attacks, prop raising, prop putting away, seat changes, or exits unless the source directly supports that action.
