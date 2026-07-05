@@ -1009,7 +1009,11 @@ class SkillTextRulesTests(unittest.TestCase):
                     *pack_lines(1, 1, 2, [1, 2]),
                     *pack_lines(2, 3, 4, [1, 4]),
                 ],
-                "expected original line 3, got 1",
+                [
+                    "heading range 3-4 does not match numbered lines 1,4",
+                    "duplicate original line 1",
+                    "expected original line 3, got 1",
+                ],
             ),
             (
                 "duplicate",
@@ -1017,7 +1021,7 @@ class SkillTextRulesTests(unittest.TestCase):
                     "# Seedance Copy Packs - ch01",
                     *pack_lines(1, 1, 3, [1, 2, 2]),
                 ],
-                "duplicate original line 2",
+                ["duplicate original line 2"],
             ),
             (
                 "missing",
@@ -1025,12 +1029,12 @@ class SkillTextRulesTests(unittest.TestCase):
                     "# Seedance Copy Packs - ch01",
                     *pack_lines(1, 1, 3, [1, 3]),
                 ],
-                "missing original line 2",
+                ["missing original line 2"],
             ),
         ]
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            for case_name, lines, expected_error in cases:
+            for case_name, lines, expected_errors in cases:
                 with self.subTest(case_name=case_name):
                     copy_pack = Path(temp_dir) / f"{case_name}-copy-packs.md"
                     copy_pack.write_text("\n".join(lines), encoding="utf-8")
@@ -1051,7 +1055,8 @@ class SkillTextRulesTests(unittest.TestCase):
 
                     self.assertNotEqual(result.returncode, 0)
                     self.assertIn("Copy-pack validation failed:", result.stdout)
-                    self.assertIn(expected_error, result.stdout)
+                    for expected_error in expected_errors:
+                        self.assertIn(expected_error, result.stdout)
 
     def test_validate_copy_packs_rejects_voice_binding_in_upload_block(self) -> None:
         root = Path(__file__).resolve().parents[1]

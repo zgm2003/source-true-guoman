@@ -85,7 +85,7 @@ def numbered_lines(pack: CopyPack) -> list[tuple[int, int, str]]:
 def format_numbers(numbers: list[int]) -> str:
     if not numbers:
         return "none"
-    return ", ".join(str(number) for number in numbers)
+    return ",".join(str(number) for number in numbers)
 
 
 def check_forbidden_terms(lines: list[str], errors: list[str]) -> None:
@@ -147,8 +147,8 @@ def check_pack_content(
 
         if actual_numbers != expected_numbers:
             errors.append(
-                f"pack {pack.index:03d} copied line numbers must match heading range "
-                f"{pack.start}-{pack.end}; got {format_numbers(actual_numbers)}"
+                f"pack {pack.index:03d} heading range {pack.start}-{pack.end} "
+                f"does not match numbered lines {format_numbers(actual_numbers)}"
             )
 
         for missing_number in expected_numbers:
