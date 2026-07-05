@@ -137,6 +137,7 @@ class SkillTextRulesTests(unittest.TestCase):
             "agents/source-indexer.md",
             "agents/asset-bible.md",
             "agents/faithful-feed.md",
+            "agents/copy-packager.md",
             "agents/cut-safety.md",
             "agents/feed-auditor.md",
             "agents/visual-polish.md",
@@ -195,6 +196,10 @@ class SkillTextRulesTests(unittest.TestCase):
                 ("agents/cut-safety.md", "references/cut-safety-rules.md"),
             ),
             (("Make it look better",), ("agents/visual-polish.md",)),
+            (
+                ("复制包", "投喂包"),
+                ("agents/copy-packager.md", "references/copy-pack-format.md"),
+            ),
             (("Production order",), ("agents/production-runner.md",)),
         ]
 
@@ -220,11 +225,40 @@ class SkillTextRulesTests(unittest.TestCase):
             "Only use `cut-safety` after the user has chosen deletion targets or asks for cut-risk help",
             "Only use `visual-polish` after preserving source coverage",
             "Only use `production-runner` after assets and faithful feed lines exist",
+            "Only use `copy-packager` after source index, asset bible, faithful feed, and feed audit exist",
+            "copy-packager creates paste-ready wrappers, not pacing groups",
         ]
 
         for phrase in guarded_phrases:
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, skill_text)
+
+    def test_copy_packager_contract_preserves_non_compression_and_wrapper_boundary(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        agent_path = root.joinpath("agents", "copy-packager.md")
+
+        self.assertTrue(agent_path.is_file())
+        agent_text = agent_path.read_text(encoding="utf-8")
+
+        required_phrases = [
+            "保真契约",
+            "原作多少字就保留多少字",
+            "不得由 AI 帮用户压缩",
+            "对白必须从原文摘取",
+            "复制投喂包",
+            "delivery wrapper",
+            "not pacing groups",
+            "preserve original continuous line numbers",
+            "do not renumber each pack from 1",
+            "default pack size is 5",
+            "do not invent references",
+            "references/copy-pack-format.md",
+            "scripts/validate_copy_packs.py",
+        ]
+
+        for phrase in required_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, agent_text)
 
     def test_cut_safety_outputs_risk_notes_not_rewritten_compression(self) -> None:
         root = Path(__file__).resolve().parents[1]

@@ -39,6 +39,7 @@ Default preservation stance: 原作多少字就保留多少字. Convert source t
    - `## 视频投喂块`
 13. In `## 视频投喂块`, start with the global `统一要求` line, then number lines continuously from `1` to the end. Do not create 15-second groups, `第N组`, group titles, group footers, or per-group pacing blocks.
 14. Before delivery, check source fidelity, dialogue preservation, asset reuse, Xiaoyunque raw tags, continuous numbering, and multi-chapter coverage.
+15. If the user explicitly asks for paste-ready copy packs, run `copy-packager` after the faithful feed and audit exist; keep copy packs in a separate `生产资产` artifact.
 
 Read `references/format.md` before writing final feed blocks. Read `references/xiaoyunque-tags.md` whenever choosing the `运镜` field.
 
@@ -60,13 +61,14 @@ Route by user intent:
 - "Review", "check", "audit", "有没有问题", numbering QA, tag QA, or delivery gate: read `agents/feed-auditor.md` and `references/audit-checklist.md`; run `python scripts/validate_feed.py <feed-file>` when the feed is saved in a file.
 - "Can I delete", "cut", "trim", "compress", manual deletion ranges, or platform-length pressure: read `agents/cut-safety.md` and `references/cut-safety-rules.md` only for deletion-risk review and manual cut candidates. Generic compression requests are refused as rewrites and answered with exact cut/source-span advice. cut-safety is a deletion-risk assistant, not a compression writer.
 - "Make it look better", "shot variety", "画面增强", camera rhythm, or comedy performance: read `agents/visual-polish.md` only after faithful coverage exists.
+- "复制包", "投喂包", "paste-ready", "每5条一包", "分包方便复制", "不用每次复制统一要求", or "场景1= / 角色1= / 音色1=": read `agents/copy-packager.md` and `references/copy-pack-format.md` only after source index, asset bible, faithful feed, and feed audit exist. Run `python scripts/validate_copy_packs.py <copy-pack-file> --source-feed <feed-file> --pack-size <N>` after saving the artifact.
 - "Production order", "upload references", dependency list, or batch checklist: read `agents/production-runner.md` only after assets and faithful feed lines exist.
 
-Default first-phase route for long projects: `source-indexer -> asset-bible -> faithful-feed -> feed-auditor`.
+Default first-phase route for long projects: `source-indexer -> asset-bible -> faithful-feed -> feed-auditor`; optional `-> copy-packager` only when paste-ready copy packs are requested.
 
 Use `E:\xianjie` only as a regression sample unless the user explicitly asks to produce its chapters. For baseline implementation, do not generate the full five-chapter feed as part of baseline implementation; use it after implementation to check that formal multi-chapter work pre-scans the requested scope before final assets or feed output.
 
-Only use `cut-safety` after the user has chosen deletion targets or asks for cut-risk help. It may return exact line/source spans, exact cut/source-span advice, risk levels, and safer boundaries; generic compression requests are refused as rewrites, and it must not write a rewritten compressed story. Only use `visual-polish` after preserving source coverage. Only use `production-runner` after assets and faithful feed lines exist.
+Only use `cut-safety` after the user has chosen deletion targets or asks for cut-risk help. It may return exact line/source spans, exact cut/source-span advice, risk levels, and safer boundaries; generic compression requests are refused as rewrites, and it must not write a rewritten compressed story. Only use `visual-polish` after preserving source coverage. Only use `production-runner` after assets and faithful feed lines exist. Only use `copy-packager` after source index, asset bible, faithful feed, and feed audit exist; copy-packager creates paste-ready wrappers, not pacing groups.
 
 ## Workspace initialization
 
