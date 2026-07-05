@@ -36,6 +36,8 @@ Write copy-pack files under `生产资产`, for example:
 - 角色1 = 林夜_黑袍白发宗主造型 = 图片1
 - 角色2 = 骨灵教枯瘦老者_骨纹法袍造型 = 图片3
 - 道具1 = 万魂幡_单体 = 图片4
+
+音色绑定：
 - 音色1 = 林夜.mp3
 - 音色2 = 骨灵教枯瘦老者.mp3
 
@@ -54,9 +56,16 @@ Next pack heading:
 
 The final pack may contain fewer lines when the source feed line count is not divisible by pack size.
 
+## Heading Grammar
+
+- Heading exact grammar: `### 投喂包 {NNN}｜原始行 {start}-{end}`.
+- `NNN` must be zero-padded to three digits and increase by 1 per pack.
+- The heading separator is full-width `｜`.
+- The heading range must match copied original line numbers.
+
 ## Pack Size
 
-- Default Pack size: 5.
+- Default pack size: 5.
 - User may request a positive integer pack size, such as `每6条一包`, `每8条一包`, or `每10条一包`.
 - Recommended range is 5-10, but larger sizes are allowed as copy convenience.
 - Never choose pack size from perceived story rhythm or 15-second pacing.
@@ -71,10 +80,9 @@ The final pack may contain fewer lines when the source feed line count is not di
 
 List only references needed by the copied lines:
 
-- Scene references visible in the pack.
-- Character references for primary visible characters and named visible supporting roles.
-- Prop or interface references only when the copied lines need them.
-- Voice assets only for speaking characters or source-supported system/OS voices in the pack.
+- `上传参考图：` contains only image or visual references needed by the copied lines: scene references, character references, prop references, interface references, and other visible reference images.
+- `音色绑定：` contains voice assets only for speaking characters or source-supported system/OS voices in the pack.
+- Voice assets belong under `音色绑定：`, not the image-upload block.
 
 Do not list every global asset in every pack. That recreates the copy burden.
 

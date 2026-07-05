@@ -274,20 +274,49 @@ class SkillTextRulesTests(unittest.TestCase):
             "delivery wrapper",
             "not pacing groups",
             "Pack size: 5",
+            "### 投喂包 {NNN}｜原始行 {start}-{end}",
             "### 投喂包 001｜原始行 1-5",
+            "zero-padded to three digits",
+            "separator is full-width `｜`",
+            "range must match copied original line numbers",
             "preserve original continuous line numbers",
             "do not renumber from 1 inside each pack",
             "上传参考图：",
+            "音色绑定：",
             "场景1 =",
             "角色1 =",
             "音色1 =",
             "需人工确认",
             "Do not invent references",
+            "Voice assets belong under `音色绑定：`",
         ]
 
         for phrase in required_phrases:
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, reference_text)
+
+    def test_copy_pack_format_separates_image_uploads_from_voice_bindings(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        reference_text = root.joinpath("references", "copy-pack-format.md").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("上传参考图：", reference_text)
+        self.assertIn("音色绑定：", reference_text)
+        upload_block = reference_text.split("上传参考图：", 1)[1].split(
+            "音色绑定：", 1
+        )[0]
+        voice_block = reference_text.split("音色绑定：", 1)[1].split(
+            "1 日 内", 1
+        )[0]
+
+        self.assertIn("场景1 =", upload_block)
+        self.assertIn("角色1 =", upload_block)
+        self.assertIn("道具1 =", upload_block)
+        self.assertNotIn("音色1 =", upload_block)
+        self.assertNotIn("音色2 =", upload_block)
+        self.assertIn("音色1 =", voice_block)
+        self.assertIn("音色2 =", voice_block)
 
     def test_canonical_format_keeps_copy_packs_out_of_video_feed(self) -> None:
         root = Path(__file__).resolve().parents[1]
