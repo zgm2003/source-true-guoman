@@ -4,6 +4,13 @@ Use this file when producing final user-facing output.
 
 ## Package shape
 
+Emit only these two user-facing blocks:
+
+- `## 资产提示词`
+- `## 视频投喂块`
+
+Each numbered video line should carry one visible action target, one main beat, and one Xiaoyunque camera tag.
+
 ```text
 ## 资产提示词
 
@@ -14,7 +21,6 @@ GPT-image-2，16:9，3D国漫，国风仙侠，轻喜剧反差，角色表演夸
 GPT-image-2，16:9，3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续。...
 
 ## 视频投喂块
-
 统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。
 
 1 日 内 场景 人物 可见行为画面 镜头概念 运镜 音频/对白
@@ -27,6 +33,8 @@ GPT-image-2，16:9，3D国漫，国风仙侠，轻喜剧反差，角色表演夸
 
 Use continuous numbering only. Do not create 15-second groups, group titles, group footers, `第N组`, `第1-5条`, per-group `上传参考图`, per-group `音色`, or per-group `音色资产` blocks.
 
+This is the canonical continuous feed. Copy packs are separate paste-ready artifacts described in `references/copy-pack-format.md`; they may repeat `统一要求` and local reference bindings for user convenience, but they must never be placed inside `## 视频投喂块`. Do not put `复制投喂包` inside `## 视频投喂块`.
+
 The first line after `统一要求` should enter source content quickly: a source event, exact source dialogue/OS/system prompt, conflict, visible decision, or one brief establishing shot tied to the source.
 
 把呼吸感交给用户. Do not decide pauses by making 15-second blocks, do not enforce a 100-character spoken limit, and do not add pacing commentary. The user decides where to pause, cut, merge, or split after receiving the continuous source-faithful feed.
@@ -37,9 +45,11 @@ Dialogue must be exact source excerpts. 对白必须从原文摘取. Do not rewr
 
 For multi-chapter work, make a private beat ledger first and run a 多章覆盖审计 before delivery. Exact dialogue and dense events should add continuous numbered lines, not erase chapter beats. 十章不得压成十几行 unless the user explicitly asks for a short synopsis. Avoid broad `第1-2章` labels in the video feed.
 
+For long or dense source spans, use source-span alignment and a local continuity check before finalizing numbered lines. Each line must remain compatible with the previous visible state unless the source or prior line supports the change.
+
 Visible staging must stay source-grounded. 不主动添加站起、起身、跪下、走动、抬手、收起法器 or other concrete body/prop actions just to make the shot more active. 原文只写坐着就写坐着. 道具动作必须有原文依据; otherwise use neutral framing, facial reactions, ambient sound, or camera movement.
 
-Dialogue camera: 谁说话，镜头优先给谁. 对白默认优先给说话人正面半身, not side-by-default. 默认不要纯大脸特写. 对白行优先使用中近景、半身中景或中景, 保留说话人的身体姿态、所在席位/环境, surrounding reactions, and scene depth so the clip is easy to edit. 空间感放在背景纵深、席位关系和反应层次里; 不要把默认对白镜头写成半身侧面. Use 正面半身, 正面中景, slight front three-quarter, or brief reaction cutaways for variation. 说话微表演 can add life, such as 正面开口, 眼神微压, 短暂停顿, 喉结轻动, 袖口轻动, or fingers lightly tapping an existing armrest/table, but it must stay inside the current source posture and placement. 不得把微动作升级成原文没有的站起、走动、跪下、抬手收法器, weapon drawing, attacking, seat changes, or new prop handling.
+Dialogue camera: 谁说话，镜头优先给谁. 对白默认优先给说话人正面半身, not side-by-default. 默认不要纯大脸特写. 对白行优先使用中近景、半身中景或中景, 保留说话人的身体姿态、所在席位/环境, surrounding reactions, and scene depth so the clip is easy to edit. 单人对白镜头不要点名另一个重要角色做后景, especially the protagonist on a throne; use blurred pillars, seat edge, cold fog, lamps, or robe details to carry space. 空间感放在背景纵深、席位关系和反应层次里, not by forcing another named character into the frame; 不要把默认对白镜头写成半身侧面. Use 正面半身, 正面中景, slight front three-quarter, or brief reaction cutaways for variation. 说话微表演 can add life, such as 正面开口, 眼神微压, 短暂停顿, 喉结轻动, 袖口轻动, or fingers lightly tapping an existing armrest/table, but it must stay inside the current source posture and placement. 不得把微动作升级成原文没有的站起、走动、跪下、抬手收法器, weapon drawing, attacking, seat changes, or new prop handling.
 
 Name assets by reusable source identity and version: `角色名_造型/状态`, `场景名_母图/局部_用途`, `道具名_用途`, `界面名_状态`. Use crowd templates for repeated nameless crowds, e.g. `青云宗外门弟子_群像模板`, instead of generating separate assets for one-off background people.
 
@@ -68,8 +78,8 @@ Good opening continuous feed:
 ```text
 统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。
 1 日 内 鬼王宗宗门大殿 林夜 黑袍白发的林夜面无表情坐在漆黑石椅上，十名魔门首领分坐两侧，冷雾贴地压低 中景 + 轻微低机位 + 王座居中 + 两侧席位 固定镜头 环境音：大殿低鸣、衣袖摩擦，无对白
-2 日 内 鬼王宗宗门大殿 骨灵教老者 枯瘦老者坐在左侧第二席，正面半身阴沉开口，背景保留大殿纵深和王座方向冷光 中近景 + 正面半身 + 背景纵深 + 王座方向冷光 镜头前推 骨灵教老者：宗主大人，昨日我骨灵教内又发现了一名正道奸细，今日一早我就已经把他剥皮抽筋，将他的一身骨头炼制成了法器，神魂也收入到了万魂幡中。
-3 日 内 鬼王宗宗门大殿 骨灵教老者 老者不改变坐姿，语气平静补上后续安排，林夜在王座方向眼皮轻跳 中近景 + 正面半身 + 王座方向冷光 + 反应层次 固定镜头 骨灵教老者：明日一早我就安排弟子将他的皮囊丢到烈阳宗。
+2 日 内 鬼王宗宗门大殿 骨灵教老者 枯瘦老者坐在左侧第二席，正面半身阴沉开口，画面只显示说话人，后景虚化暗柱和席位边缘 中近景 + 正面半身 + 单人主镜头 + 后景虚化 镜头前推 骨灵教老者：宗主大人，昨日我骨灵教内又发现了一名正道奸细，今日一早我就已经把他剥皮抽筋，将他的一身骨头炼制成了法器，神魂也收入到了万魂幡中。
+3 日 内 鬼王宗宗门大殿 骨灵教老者 老者不改变坐姿，语气平静补上后续安排，骨纹袖口被冷光压住 中近景 + 正面半身 + 单人主镜头 + 袖口细节 固定镜头 骨灵教老者：明日一早我就安排弟子将他的皮囊丢到烈阳宗。
 4 日 内 鬼王宗宗门大殿 林夜 林夜眼皮子不由自主跳了跳，冷脸差点没绷住，手指在扶手边缘轻轻收紧 近景 + 正面半身 + 面瘫反差 + 扶手细节 急速变焦 音效：心跳一顿，无对白
 ```
 

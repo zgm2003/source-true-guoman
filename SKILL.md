@@ -27,7 +27,7 @@ Default preservation stance: 原作多少字就保留多少字. Convert source t
 2. Read only the requested source scope.
 3. For long scripts or multi-scene excerpts, pre-scan the whole requested scope before writing assets. Track recurring characters, locations, props, interfaces, mounts/beasts, and speaking roles across early and later scenes.
 4. Build a private source fact sheet: characters, locations, event order, cause-effect, source terms, key dialogue, reveal order, hook.
-5. For long scripts or multi-chapter projects, create or update a lightweight working-directory source index when it helps continuity. Treat it as internal evidence, not final output.
+5. For long scripts or multi-chapter projects, create or update `生产资产/source-index.md` when it helps continuity. Treat it as internal evidence unless the user asks to see it.
 6. For multi-chapter projects, make a private chapter beat ledger and continuous numbering plan before drafting. Preserve the requested story coverage; exact dialogue stays in source order and must not shrink the scope.
 7. Build an asset ledger: existing reusable assets first, new assets only when they drive identity, setting, conflict, action, interface, or repeated continuity. Track parent-child reference relationships, such as same character new outfit or main scene to sub-location. Also track similar-character collision risk when multiple important roles share sect, uniform, age, gender, protagonist-like styling.
 8. Name assets with stable reusable names before writing prompts. Prefer `角色名_造型/状态`, `场景名_母图/局部_用途`, `道具名_用途`, and `界面名_状态`; keep names short, source-grounded, and reusable across chapters.
@@ -39,8 +39,36 @@ Default preservation stance: 原作多少字就保留多少字. Convert source t
    - `## 视频投喂块`
 13. In `## 视频投喂块`, start with the global `统一要求` line, then number lines continuously from `1` to the end. Do not create 15-second groups, `第N组`, group titles, group footers, or per-group pacing blocks.
 14. Before delivery, check source fidelity, dialogue preservation, asset reuse, Xiaoyunque raw tags, continuous numbering, and multi-chapter coverage.
+15. If the user explicitly asks for paste-ready copy packs, run `copy-packager` after source index, asset bible, faithful feed, and feed audit exist; keep copy packs in a separate `生产资产` artifact.
 
 Read `references/format.md` before writing final feed blocks. Read `references/xiaoyunque-tags.md` whenever choosing the `运镜` field.
+
+Workspace storage policy: 投喂稿、source-index、asset-bible、审计报告、剪辑风险报告属于生产资产. 视频资产只放最终视频文件或渲染结果.
+
+Scope mode policy: 正式多章任务必须先预扫完整请求范围. 局部烟测必须显式标记已阅读范围. 局部烟测资产不得当作全局定稿. If only a slice was read, say so in the working artifact and avoid final-sounding asset decisions beyond that slice.
+
+## Agent pack routing
+
+Treat this skill as the orchestrator for a lightweight specialist agent pack. The source-faithful feed remains the non-overridable center; specialist files only narrow the task, they do not override the core preservation stance.
+
+Route by user intent:
+
+- New project directory or root script file: initialize workspace first with `scripts/init_workspace.py <workspace>`, then archive root source scripts into `剧本资产`.
+- "Process these chapters", "turn this into feed", long requested scope, or formal multi-chapter production: run `source-indexer -> asset-bible -> faithful-feed -> feed-auditor`.
+- "Make an index", "read the source", "track roles", continuity questions, confusing aliases, or suspected typos: read `agents/source-indexer.md` and `references/source-index-format.md`.
+- "Make assets", "who needs images", "avoid face collision", "what references upload", reusable characters, scenes, props, interfaces, beasts, vehicles, or voices: read `agents/asset-bible.md` and `references/asset-bible-format.md`.
+- "Write feed", "video投喂", "faithful draft", or final continuous prompt blocks: read `agents/faithful-feed.md`, `references/format.md`, and `references/xiaoyunque-tags.md`.
+- "Review", "check", "audit", "有没有问题", numbering QA, tag QA, or delivery gate: read `agents/feed-auditor.md` and `references/audit-checklist.md`; run `python scripts/validate_feed.py <feed-file>` when the feed is saved in a file.
+- "Can I delete", "cut", "trim", "compress", manual deletion ranges, or platform-length pressure: read `agents/cut-safety.md` and `references/cut-safety-rules.md` only for deletion-risk review and manual cut candidates. Generic compression requests are refused as rewrites and answered with exact cut/source-span advice. cut-safety is a deletion-risk assistant, not a compression writer.
+- "Make it look better", "shot variety", "画面增强", camera rhythm, or comedy performance: read `agents/visual-polish.md` only after faithful coverage exists.
+- "复制包", "投喂包", "paste-ready", "每5条一包", "分包方便复制", "不用每次复制统一要求", or "场景1= / 角色1= / 音色1=": read `agents/copy-packager.md` and `references/copy-pack-format.md` only after source index, asset bible, faithful feed, and feed audit exist. Run `python scripts/validate_copy_packs.py <copy-pack-file> --source-feed <feed-file> --pack-size <N>` after saving the artifact.
+- "Production order", "upload references", dependency list, or batch checklist: read `agents/production-runner.md` only after assets and faithful feed lines exist.
+
+Default first-phase route for long projects: `source-indexer -> asset-bible -> faithful-feed -> feed-auditor`; optional `-> copy-packager` only when paste-ready copy packs are requested.
+
+Use `E:\xianjie` only as a regression sample unless the user explicitly asks to produce its chapters. For baseline implementation, do not generate the full five-chapter feed as part of baseline implementation; use it after implementation to check that formal multi-chapter work pre-scans the requested scope before final assets or feed output.
+
+Only use `cut-safety` after the user has chosen deletion targets or asks for cut-risk help. It may return exact line/source spans, exact cut/source-span advice, risk levels, and safer boundaries; generic compression requests are refused as rewrites, and it must not write a rewritten compressed story. Only use `visual-polish` after preserving source coverage. Only use `production-runner` after assets and faithful feed lines exist. Only use `copy-packager` after source index, asset bible, faithful feed, and feed audit exist; copy-packager creates paste-ready wrappers, not pacing groups.
 
 ## Workspace initialization
 
@@ -62,13 +90,13 @@ Create exactly these top-level folders when missing:
 - `视频资产`
 - `音色资产`
 
-After creating folders, move root-level source script files into `剧本资产`. This keeps project roots clean when the user starts with a directory that only contains one script. Do not move `source-index.md`, generated feed files, hidden files, code files, or files already inside asset folders. Do not overwrite an existing file in `剧本资产`; leave the root file in place and ask the user if a conflict needs manual resolution.
+After creating folders, move root-level source script files into `剧本资产`. This keeps project roots clean when the user starts with a directory that only contains one script. Do not archive existing generated working files, including legacy root `source-index.md`, generated feed files, hidden files, code files, or files already inside asset folders; continuing formal work should create or update the production copy under `生产资产`. Do not overwrite an existing file in `剧本资产`; leave the root file in place and ask the user if a conflict needs manual resolution.
 
 ## Lightweight source index
 
-Use a local source index for long scripts, multi-chapter work, or any task where continuity depends on information that may be far apart. Do not force an index for short excerpts.
+Use a lightweight source index for long scripts, multi-chapter work, or any task where continuity depends on information that may be far apart. Do not force an index for short excerpts.
 
-- Keep the index in the working directory when useful, such as `source-index.md` or a project-specific equivalent. It is a private working aid unless the user asks to see it.
+- Keep the index under production assets, normally `生产资产/source-index.md` or a project-specific equivalent inside `生产资产`. It is a private working aid unless the user asks to see it.
 - Suggested sections: `角色索引`, `场景索引`, `资产索引`, `术语索引`, `疑点索引`, and `证据锚点`.
 - Character entries should track names, aliases, first appearance, later appearances, identity/faction, relationships, speaking role, outfit/state changes, and asset bindings.
 - Scene entries should track mother scene, sub-locations, interior/exterior split, style/material/light logic, and chapter or scene positions.
@@ -179,6 +207,7 @@ Dialogue camera and micro-performance:
 
 - 谁说话，镜头优先给谁; the speaking role should usually be the primary visible subject of that dialogue line unless the source clearly needs an offscreen voice, overheard line, or reaction-only reveal.
 - 对白默认优先给说话人正面半身. 默认不要纯大脸特写. 对白行优先使用中近景、半身中景或中景, 保留说话人的身体姿态、所在席位/环境, nearby reactions, and scene depth for spatial continuity and editing.
+- 单人对白镜头不要点名另一个重要角色做后景, especially the protagonist on a throne. Use blurred pillars, seat edge, cold fog, lamps, or robe details to carry space instead of forcing another named character into the frame.
 - 空间感放在背景纵深、席位关系和反应层次里. Do not make dialogue shots a row of isolated faces, and 不要把默认对白镜头写成半身侧面. Use 正面半身, 正面中景, slight front three-quarter, or brief reaction cutaways for variation.
 - 说话微表演 is allowed and useful when it stays source-compatible: 正面开口, 眼神微压, 短暂停顿, 喉结轻动, 袖口轻动, or fingers lightly tapping an existing armrest/table already visible in the setting.
 - Micro-actions must stay within the current source posture and placement. 不得把微动作升级成原文没有的站起、走动、跪下、抬手收法器, weapon drawing, attacking, changing seats, or new prop handling.
