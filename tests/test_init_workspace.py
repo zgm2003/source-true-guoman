@@ -272,6 +272,7 @@ class SkillTextRulesTests(unittest.TestCase):
         self.assertTrue(validator_path.is_file())
         for text in (skill_text, agent_text):
             self.assertIn("scripts/validate_copy_packs.py", text)
+            self.assertIn("--source-feed", text)
             self.assertIn("--pack-size", text)
 
     def test_copy_pack_format_defines_paste_ready_wrapper_shape(self) -> None:
