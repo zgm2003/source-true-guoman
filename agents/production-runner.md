@@ -19,7 +19,7 @@ Use this specialist after assets and faithful feed lines exist and the user need
 
 Return a dependency checklist grouped by production dependency, not by arbitrary 15-second pacing. This agent creates no Canvas package, no storyboard folder, and no MP4 claim.
 
-If the user asks for `复制包`, `投喂包`, `paste-ready`, or fixed copy counts such as `每5条一包`, hand off to `copy-packager`. Production runner may list dependencies by production order, but copy-packager creates paste-ready wrappers, not by arbitrary 15-second pacing.
+If the user asks for `复制包`, `投喂包`, `paste-ready`, or fixed pack sizes such as `每5条一包`, hand off to `copy-packager`. Production runner may list dependencies by production order, but copy-packager creates paste-ready wrappers, not by arbitrary 15-second pacing.
 
 ## Procedure
 

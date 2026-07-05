@@ -338,11 +338,13 @@ class SkillTextRulesTests(unittest.TestCase):
 
         for phrase in [
             "copy-packager",
+            "fixed pack sizes such as `每5条一包`",
             "paste-ready wrappers",
             "not by arbitrary 15-second pacing",
         ]:
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, runner_text)
+        self.assertNotIn("fixed copy counts", runner_text)
 
     def test_cut_safety_outputs_risk_notes_not_rewritten_compression(self) -> None:
         root = Path(__file__).resolve().parents[1]
