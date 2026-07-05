@@ -30,6 +30,8 @@ except ModuleNotFoundError:
 
 HEADING_RE = re.compile(r"^### 投喂包 (\d{3})｜原始行 (\d+)-(\d+)$")
 HEADING_PREFIX_RE = re.compile(r"^###\s*投喂包")
+VOICE_UPLOAD_TERMS = ("音色", "配音", "声音")
+VOICE_UPLOAD_LOWER_TERMS = ("voice", "audio", ".mp3", ".wav", ".m4a", ".flac")
 
 
 @dataclass
@@ -120,7 +122,11 @@ def check_upload_blocks(lines: list[str], errors: list[str]) -> None:
         ):
             inside_upload_block = False
 
-        if inside_upload_block and "音色" in stripped:
+        lowered = stripped.casefold()
+        if inside_upload_block and (
+            any(term in stripped for term in VOICE_UPLOAD_TERMS)
+            or any(term in lowered for term in VOICE_UPLOAD_LOWER_TERMS)
+        ):
             errors.append(f"line {line_number}: voice binding belongs under 音色绑定")
 
 
