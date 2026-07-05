@@ -225,6 +225,7 @@ class SkillTextRulesTests(unittest.TestCase):
             "Only use `cut-safety` after the user has chosen deletion targets or asks for cut-risk help",
             "Only use `visual-polish` after preserving source coverage",
             "Only use `production-runner` after assets and faithful feed lines exist",
+            "run `copy-packager` after source index, asset bible, faithful feed, and feed audit exist; keep copy packs in a separate `生产资产` artifact",
             "Only use `copy-packager` after source index, asset bible, faithful feed, and feed audit exist",
             "copy-packager creates paste-ready wrappers, not pacing groups",
         ]

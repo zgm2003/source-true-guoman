@@ -39,7 +39,7 @@ Default preservation stance: 原作多少字就保留多少字. Convert source t
    - `## 视频投喂块`
 13. In `## 视频投喂块`, start with the global `统一要求` line, then number lines continuously from `1` to the end. Do not create 15-second groups, `第N组`, group titles, group footers, or per-group pacing blocks.
 14. Before delivery, check source fidelity, dialogue preservation, asset reuse, Xiaoyunque raw tags, continuous numbering, and multi-chapter coverage.
-15. If the user explicitly asks for paste-ready copy packs, run `copy-packager` after the faithful feed and audit exist; keep copy packs in a separate `生产资产` artifact.
+15. If the user explicitly asks for paste-ready copy packs, run `copy-packager` after source index, asset bible, faithful feed, and feed audit exist; keep copy packs in a separate `生产资产` artifact.
 
 Read `references/format.md` before writing final feed blocks. Read `references/xiaoyunque-tags.md` whenever choosing the `运镜` field.
 
