@@ -65,6 +65,8 @@ def split_packs(lines: list[str], errors: list[str]) -> list[CopyPack]:
 
         if current_pack is not None:
             current_pack.lines.append((line_number, line))
+        elif NUMBERED_LINE_RE.match(stripped):
+            errors.append(f"line {line_number}: numbered line outside copy pack")
 
     if current_pack is not None:
         packs.append(current_pack)
@@ -112,7 +114,9 @@ def check_upload_blocks(lines: list[str], errors: list[str]) -> None:
             continue
 
         if inside_upload_block and (
-            not stripped or stripped == "音色绑定：" or stripped.startswith("### ")
+            stripped == "音色绑定："
+            or stripped.startswith("##")
+            or NUMBERED_LINE_RE.match(stripped)
         ):
             inside_upload_block = False
 
@@ -215,6 +219,14 @@ def check_source_feed(
     errors: list[str],
 ) -> None:
     source_lines = load_source_feed_numbered_lines(source_feed)
+    source_numbers = sorted(source_lines)
+    copied_numbers = [original_number for _, original_number, _ in copied_lines]
+    if source_numbers != copied_numbers:
+        errors.append(
+            "copied line numbers do not match source feed; "
+            f"source {format_numbers(source_numbers)}; copied {format_numbers(copied_numbers)}"
+        )
+
     for line_number, original_number, text in copied_lines:
         source_text = source_lines.get(original_number)
         if source_text is None:

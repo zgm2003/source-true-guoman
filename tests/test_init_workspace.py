@@ -1097,6 +1097,141 @@ class SkillTextRulesTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("voice binding belongs under 音色绑定", result.stdout)
 
+    def test_validate_copy_packs_source_feed_rejects_missing_copied_line(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        requirement = "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。"
+        source_line_1 = "1 日 内 鬼王宗宗门大殿 林夜 坐在王座上 中景 + 平视 固定镜头 环境音：低鸣"
+        source_line_2 = "2 日 内 鬼王宗宗门大殿 骨灵教老者 正面半身开口 中近景 + 平视 镜头前推 骨灵教老者：宗主大人。"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            source_feed = Path(temp_dir) / "source-feed.md"
+            source_feed.write_text(
+                "\n".join(
+                    [
+                        "## 视频投喂块",
+                        requirement,
+                        source_line_1,
+                        source_line_2,
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            copy_pack = Path(temp_dir) / "copy-packs.md"
+            copy_pack.write_text(
+                "\n".join(
+                    [
+                        "# Seedance Copy Packs - ch01",
+                        "### 投喂包 001｜原始行 1-1",
+                        requirement,
+                        "上传参考图：",
+                        "- 场景1 = 鬼王宗宗门大殿_母图 = 图片2",
+                        "音色绑定：",
+                        "- 音色1 = 林夜.mp3",
+                        source_line_1,
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(root / "scripts" / "validate_copy_packs.py"),
+                    str(copy_pack),
+                    "--source-feed",
+                    str(source_feed),
+                    "--pack-size",
+                    "5",
+                ],
+                cwd=root,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("copied line numbers do not match source feed", result.stdout)
+
+    def test_validate_copy_packs_rejects_numbered_line_outside_pack(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        requirement = "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。"
+        copied_line = "1 日 内 鬼王宗宗门大殿 林夜 坐在王座上 中景 + 平视 固定镜头 环境音：低鸣"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            copy_pack = Path(temp_dir) / "outside-line-copy-packs.md"
+            copy_pack.write_text(
+                "\n".join(
+                    [
+                        "# Seedance Copy Packs - ch01",
+                        copied_line,
+                        "### 投喂包 001｜原始行 1-1",
+                        requirement,
+                        "上传参考图：",
+                        "- 场景1 = 鬼王宗宗门大殿_母图 = 图片2",
+                        "音色绑定：",
+                        "- 音色1 = 林夜.mp3",
+                        copied_line,
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(root / "scripts" / "validate_copy_packs.py"),
+                    str(copy_pack),
+                    "--pack-size",
+                    "5",
+                ],
+                cwd=root,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("numbered line outside copy pack", result.stdout)
+
+    def test_validate_copy_packs_rejects_voice_binding_after_blank_upload_line(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        requirement = "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            copy_pack = Path(temp_dir) / "voice-after-blank-copy-packs.md"
+            copy_pack.write_text(
+                "\n".join(
+                    [
+                        "# Seedance Copy Packs - ch01",
+                        "### 投喂包 001｜原始行 1-1",
+                        requirement,
+                        "上传参考图：",
+                        "- 场景1 = 鬼王宗宗门大殿_母图 = 图片2",
+                        "",
+                        "- 音色1 = 林夜.mp3",
+                        "1 日 内 鬼王宗宗门大殿 林夜 坐在王座上 中景 + 平视 固定镜头 环境音：低鸣",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(root / "scripts" / "validate_copy_packs.py"),
+                    str(copy_pack),
+                    "--pack-size",
+                    "5",
+                ],
+                cwd=root,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("voice binding belongs under 音色绑定", result.stdout)
+
     def test_validate_feed_rejects_missing_global_requirement_and_forbidden_terms(self) -> None:
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as temp_dir:
