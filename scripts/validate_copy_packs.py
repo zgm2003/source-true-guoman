@@ -241,7 +241,7 @@ def check_source_feed(
             )
         elif source_text != text:
             errors.append(
-                f"line {line_number}: source feed line {original_number} text mismatch"
+                f"line {line_number}: copied line {original_number} differs from source feed"
             )
 
 

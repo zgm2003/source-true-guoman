@@ -261,6 +261,19 @@ class SkillTextRulesTests(unittest.TestCase):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, agent_text)
 
+    def test_copy_packager_routes_to_copy_pack_validator(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
+        agent_text = root.joinpath("agents", "copy-packager.md").read_text(
+            encoding="utf-8"
+        )
+        validator_path = root.joinpath("scripts", "validate_copy_packs.py")
+
+        self.assertTrue(validator_path.is_file())
+        for text in (skill_text, agent_text):
+            self.assertIn("scripts/validate_copy_packs.py", text)
+            self.assertIn("--pack-size", text)
+
     def test_copy_pack_format_defines_paste_ready_wrapper_shape(self) -> None:
         root = Path(__file__).resolve().parents[1]
         reference_path = root.joinpath("references", "copy-pack-format.md")
@@ -1097,6 +1110,65 @@ class SkillTextRulesTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("voice binding belongs under 音色绑定", result.stdout)
 
+    def test_validate_copy_packs_compares_against_source_feed_when_provided(
+        self,
+    ) -> None:
+        root = Path(__file__).resolve().parents[1]
+        requirement = "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。"
+        source_line_1 = "1 日 内 鬼王宗宗门大殿 林夜 坐在王座上 中景 + 平视 固定镜头 环境音：低鸣"
+        source_line_2 = "2 日 内 鬼王宗宗门大殿 骨灵教老者 正面半身开口 中近景 + 平视 镜头前推 骨灵教老者：宗主大人。"
+        copied_line_2 = "2 日 内 鬼王宗宗门大殿 骨灵教老者 被改写成错误动作 中近景 + 平视 镜头前推 骨灵教老者：宗主大人。"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            source_feed = Path(temp_dir) / "source-feed.md"
+            source_feed.write_text(
+                "\n".join(
+                    [
+                        "## 视频投喂块",
+                        requirement,
+                        source_line_1,
+                        source_line_2,
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            copy_pack = Path(temp_dir) / "copy-packs.md"
+            copy_pack.write_text(
+                "\n".join(
+                    [
+                        "# Seedance Copy Packs - ch01",
+                        "### 投喂包 001｜原始行 1-2",
+                        requirement,
+                        "上传参考图：",
+                        "- 场景1 = 鬼王宗宗门大殿_母图 = 图片2",
+                        "音色绑定：",
+                        "- 音色1 = 林夜.mp3",
+                        source_line_1,
+                        copied_line_2,
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(root / "scripts" / "validate_copy_packs.py"),
+                    str(copy_pack),
+                    "--source-feed",
+                    str(source_feed),
+                    "--pack-size",
+                    "2",
+                ],
+                cwd=root,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("copied line 2 differs from source feed", result.stdout)
+
     def test_validate_copy_packs_source_feed_rejects_missing_copied_line(self) -> None:
         root = Path(__file__).resolve().parents[1]
         requirement = "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。"
@@ -1151,6 +1223,55 @@ class SkillTextRulesTests(unittest.TestCase):
 
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("copied line numbers do not match source feed", result.stdout)
+
+    def test_validate_copy_packs_rejects_legacy_group_and_workflow_terms(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        requirement = "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            copy_pack = Path(temp_dir) / "legacy-copy-packs.md"
+            copy_pack.write_text(
+                "\n".join(
+                    [
+                        "# Seedance Copy Packs - ch01",
+                        "### 第1组",
+                        "### 投喂包 001｜原始行 1-2",
+                        requirement,
+                        "上传参考图：",
+                        "- 场景1 = 鬼王宗宗门大殿_母图 = 图片2",
+                        "音色绑定：",
+                        "- 音色1 = 林夜.mp3",
+                        "segment S01 15秒 Canvas MP4 首帧 尾帧 续接 承接",
+                        "1 日 内 鬼王宗宗门大殿 林夜 坐在王座上 中景 + 平视 固定镜头 环境音：低鸣",
+                        "2 日 内 鬼王宗宗门大殿 骨灵教老者 正面半身开口 中近景 + 平视 镜头前推 骨灵教老者：宗主大人。",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(root / "scripts" / "validate_copy_packs.py"),
+                    str(copy_pack),
+                    "--pack-size",
+                    "2",
+                ],
+                cwd=root,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("group marker is not allowed", result.stdout)
+            self.assertIn("forbidden term `segment`", result.stdout)
+            self.assertIn("forbidden term `S01`", result.stdout)
+            self.assertIn("forbidden term `Canvas`", result.stdout)
+            self.assertIn("forbidden term `MP4`", result.stdout)
+            self.assertIn("forbidden term `首帧`", result.stdout)
+            self.assertIn("forbidden term `尾帧`", result.stdout)
+            self.assertIn("forbidden term `续接`", result.stdout)
+            self.assertIn("forbidden term `承接`", result.stdout)
 
     def test_validate_copy_packs_rejects_numbered_line_outside_pack(self) -> None:
         root = Path(__file__).resolve().parents[1]
