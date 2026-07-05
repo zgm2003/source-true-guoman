@@ -881,6 +881,217 @@ class SkillTextRulesTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertIn("Feed validation passed", result.stdout)
 
+    def test_validate_copy_packs_accepts_valid_five_line_pack_file(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        requirement = "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            copy_pack = Path(temp_dir) / "copy-packs.md"
+            copy_pack.write_text(
+                "\n".join(
+                    [
+                        "# Seedance Copy Packs - ch01",
+                        "## Pack Settings",
+                        "- Pack size: 5",
+                        "### 投喂包 001｜原始行 1-5",
+                        requirement,
+                        "上传参考图：",
+                        "- 场景1 = 鬼王宗宗门大殿_母图 = 图片2",
+                        "- 角色1 = 林夜_黑袍造型 = 图片1",
+                        "音色绑定：",
+                        "- 音色1 = 林夜.mp3",
+                        "1 日 内 鬼王宗宗门大殿 林夜 坐在黑石王座上 中景 + 平视 固定镜头 环境音：低鸣",
+                        "2 日 内 鬼王宗宗门大殿 骨灵教老者 正面半身开口 中近景 + 平视 镜头前推 骨灵教老者：宗主大人。",
+                        "3 日 内 鬼王宗宗门大殿 骨灵教老者 不改变坐姿继续说话 中近景 + 正面半身 固定镜头 骨灵教老者：明日一早。",
+                        "4 日 内 鬼王宗宗门大殿 林夜 眼皮轻跳 近景 + 正面半身 急速变焦 音效：心跳一顿",
+                        "5 日 内 鬼王宗宗门大殿 林夜 压住反差表情 中近景 + 正面半身 固定镜头 环境音：冷雾低鸣",
+                        "### 投喂包 002｜原始行 6-7",
+                        requirement,
+                        "上传参考图：",
+                        "- 场景1 = 鬼王宗宗门大殿_母图 = 图片2",
+                        "音色绑定：",
+                        "- 音色1 = 林夜.mp3",
+                        "6 日 内 鬼王宗宗门大殿 林夜 抬眼看向殿中 中景 + 平视 镜头前推 环境音：衣袖轻响",
+                        "7 日 内 鬼王宗宗门大殿 群魔 殿内众人压低视线 远景 + 两侧席位 固定镜头 环境音：大殿低鸣",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(root / "scripts" / "validate_copy_packs.py"),
+                    str(copy_pack),
+                    "--pack-size",
+                    "5",
+                ],
+                cwd=root,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("Copy-pack validation passed", result.stdout)
+
+    def test_validate_copy_packs_rejects_missing_requirement_per_pack(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        requirement = "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            copy_pack = Path(temp_dir) / "missing-requirement-copy-packs.md"
+            copy_pack.write_text(
+                "\n".join(
+                    [
+                        "# Seedance Copy Packs - ch01",
+                        "## Pack Settings",
+                        "- Pack size: 2",
+                        "### 投喂包 001｜原始行 1-2",
+                        requirement,
+                        "上传参考图：",
+                        "- 场景1 = 鬼王宗宗门大殿_母图 = 图片2",
+                        "音色绑定：",
+                        "- 音色1 = 林夜.mp3",
+                        "1 日 内 鬼王宗宗门大殿 林夜 坐在王座上 中景 + 平视 固定镜头 环境音：低鸣",
+                        "2 日 内 鬼王宗宗门大殿 骨灵教老者 正面半身开口 中近景 + 平视 镜头前推 骨灵教老者：宗主大人。",
+                        "### 投喂包 002｜原始行 3-4",
+                        "上传参考图：",
+                        "- 场景1 = 鬼王宗宗门大殿_母图 = 图片2",
+                        "音色绑定：",
+                        "- 音色1 = 林夜.mp3",
+                        "3 日 内 鬼王宗宗门大殿 骨灵教老者 继续说话 中近景 + 正面半身 固定镜头 骨灵教老者：明日一早。",
+                        "4 日 内 鬼王宗宗门大殿 林夜 眼皮轻跳 近景 + 正面半身 急速变焦 音效：心跳一顿",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(root / "scripts" / "validate_copy_packs.py"),
+                    str(copy_pack),
+                    "--pack-size",
+                    "2",
+                ],
+                cwd=root,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("Copy-pack validation failed:", result.stdout)
+            self.assertIn("pack 002 missing global requirement line", result.stdout)
+
+    def test_validate_copy_packs_rejects_reset_duplicate_or_missing_numbers(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        requirement = "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。"
+
+        def numbered_line(number: int) -> str:
+            return f"{number} 日 内 鬼王宗宗门大殿 林夜 编号测试动作{number} 中景 + 平视 固定镜头 环境音：低鸣"
+
+        def pack_lines(pack_index: int, start: int, end: int, numbers: list[int]) -> list[str]:
+            return [
+                f"### 投喂包 {pack_index:03d}｜原始行 {start}-{end}",
+                requirement,
+                "上传参考图：",
+                "- 场景1 = 鬼王宗宗门大殿_母图 = 图片2",
+                "音色绑定：",
+                "- 音色1 = 林夜.mp3",
+                *[numbered_line(number) for number in numbers],
+            ]
+
+        cases = [
+            (
+                "reset",
+                [
+                    "# Seedance Copy Packs - ch01",
+                    *pack_lines(1, 1, 2, [1, 2]),
+                    *pack_lines(2, 3, 4, [1, 4]),
+                ],
+                "expected original line 3, got 1",
+            ),
+            (
+                "duplicate",
+                [
+                    "# Seedance Copy Packs - ch01",
+                    *pack_lines(1, 1, 3, [1, 2, 2]),
+                ],
+                "duplicate original line 2",
+            ),
+            (
+                "missing",
+                [
+                    "# Seedance Copy Packs - ch01",
+                    *pack_lines(1, 1, 3, [1, 3]),
+                ],
+                "missing original line 2",
+            ),
+        ]
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            for case_name, lines, expected_error in cases:
+                with self.subTest(case_name=case_name):
+                    copy_pack = Path(temp_dir) / f"{case_name}-copy-packs.md"
+                    copy_pack.write_text("\n".join(lines), encoding="utf-8")
+
+                    result = subprocess.run(
+                        [
+                            sys.executable,
+                            str(root / "scripts" / "validate_copy_packs.py"),
+                            str(copy_pack),
+                            "--pack-size",
+                            "2",
+                        ],
+                        cwd=root,
+                        text=True,
+                        capture_output=True,
+                        check=False,
+                    )
+
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn("Copy-pack validation failed:", result.stdout)
+                    self.assertIn(expected_error, result.stdout)
+
+    def test_validate_copy_packs_rejects_voice_binding_in_upload_block(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        requirement = "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            copy_pack = Path(temp_dir) / "voice-in-upload-copy-packs.md"
+            copy_pack.write_text(
+                "\n".join(
+                    [
+                        "# Seedance Copy Packs - ch01",
+                        "### 投喂包 001｜原始行 1-1",
+                        requirement,
+                        "上传参考图：",
+                        "- 场景1 = 鬼王宗宗门大殿_母图 = 图片2",
+                        "- 音色1 = 林夜.mp3",
+                        "音色绑定：",
+                        "- 音色1 = 林夜.mp3",
+                        "1 日 内 鬼王宗宗门大殿 林夜 坐在王座上 中景 + 平视 固定镜头 环境音：低鸣",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(root / "scripts" / "validate_copy_packs.py"),
+                    str(copy_pack),
+                    "--pack-size",
+                    "5",
+                ],
+                cwd=root,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("voice binding belongs under 音色绑定", result.stdout)
+
     def test_validate_feed_rejects_missing_global_requirement_and_forbidden_terms(self) -> None:
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as temp_dir:
