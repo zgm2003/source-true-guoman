@@ -33,6 +33,8 @@ GPT-image-2，16:9，3D国漫，国风仙侠，轻喜剧反差，角色表演夸
 
 Use continuous numbering only. Do not create 15-second groups, group titles, group footers, `第N组`, `第1-5条`, per-group `上传参考图`, per-group `音色`, or per-group `音色资产` blocks.
 
+This is the canonical continuous feed. Copy packs are separate paste-ready artifacts described in `references/copy-pack-format.md`; they may repeat `统一要求` and local reference bindings for user convenience, but they must never be placed inside `## 视频投喂块`. Do not put `复制投喂包` inside `## 视频投喂块`.
+
 The first line after `统一要求` should enter source content quickly: a source event, exact source dialogue/OS/system prompt, conflict, visible decision, or one brief establishing shot tied to the source.
 
 把呼吸感交给用户. Do not decide pauses by making 15-second blocks, do not enforce a 100-character spoken limit, and do not add pacing commentary. The user decides where to pause, cut, merge, or split after receiving the continuous source-faithful feed.

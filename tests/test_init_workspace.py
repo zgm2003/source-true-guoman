@@ -261,6 +261,60 @@ class SkillTextRulesTests(unittest.TestCase):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, agent_text)
 
+    def test_copy_pack_format_defines_paste_ready_wrapper_shape(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        reference_path = root.joinpath("references", "copy-pack-format.md")
+
+        self.assertTrue(reference_path.is_file())
+        reference_text = reference_path.read_text(encoding="utf-8")
+
+        required_phrases = [
+            "# Copy Pack Format",
+            "复制投喂包",
+            "delivery wrapper",
+            "not pacing groups",
+            "Pack size: 5",
+            "### 投喂包 001｜原始行 1-5",
+            "preserve original continuous line numbers",
+            "do not renumber from 1 inside each pack",
+            "上传参考图：",
+            "场景1 =",
+            "角色1 =",
+            "音色1 =",
+            "需人工确认",
+            "Do not invent references",
+        ]
+
+        for phrase in required_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, reference_text)
+
+    def test_canonical_format_keeps_copy_packs_out_of_video_feed(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        format_text = root.joinpath("references", "format.md").read_text(
+            encoding="utf-8"
+        )
+        runner_text = root.joinpath("agents", "production-runner.md").read_text(
+            encoding="utf-8"
+        )
+
+        for phrase in [
+            "canonical continuous feed",
+            "Copy packs are separate paste-ready artifacts",
+            "references/copy-pack-format.md",
+            "Do not put `复制投喂包` inside `## 视频投喂块`",
+        ]:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, format_text)
+
+        for phrase in [
+            "copy-packager",
+            "paste-ready wrappers",
+            "not by arbitrary 15-second pacing",
+        ]:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, runner_text)
+
     def test_cut_safety_outputs_risk_notes_not_rewritten_compression(self) -> None:
         root = Path(__file__).resolve().parents[1]
         agent_text = root.joinpath("agents", "cut-safety.md").read_text(
