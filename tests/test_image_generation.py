@@ -413,6 +413,61 @@ class ImageGenerationRunnerTests(unittest.TestCase):
             concurrency=concurrency,
         )
 
+    def existing_done_asset(
+        self,
+        job: ImageJob,
+        path: str | None = None,
+        prompt_hash_value: str | None = None,
+        model: str = "gpt-image-2",
+        size: str = "16:9",
+        attempts: object = 1,
+        references: list[dict[str, str]] | None = None,
+    ) -> dict[str, object]:
+        return {
+            "asset_name": job.asset_name,
+            "asset_type": job.asset_type,
+            "path": path or job.output_path.as_posix(),
+            "status": "done",
+            "prompt_hash": prompt_hash_value or prompt_hash(job.prompt),
+            "model": model,
+            "size": size,
+            "attempts": attempts,
+            "depends_on": list(job.depends_on),
+            "references": references or [],
+        }
+
+    def run_generate_images_cli_with_job_data(
+        self,
+        job_data: dict[str, object],
+    ) -> subprocess.CompletedProcess[str]:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            jobs_path = root / "image-jobs.jsonl"
+            manifest_path = root / "image-manifest.json"
+            jobs_path.write_text(
+                json.dumps(job_data, ensure_ascii=False) + "\n",
+                encoding="utf-8",
+            )
+
+            return subprocess.run(
+                [
+                    sys.executable,
+                    str(
+                        Path(__file__).resolve().parents[1]
+                        / "scripts"
+                        / "generate_images.py"
+                    ),
+                    "--jobs",
+                    str(jobs_path),
+                    "--manifest",
+                    str(manifest_path),
+                    "--workspace",
+                    str(root),
+                ],
+                text=True,
+                capture_output=True,
+            )
+
     def test_run_generation_respects_dependency_order_and_resume(self) -> None:
         jobs = [
             self.make_job("parent"),
@@ -600,6 +655,158 @@ class ImageGenerationRunnerTests(unittest.TestCase):
         self.assertEqual(manifest["assets"][0]["status"], "done")
         self.assertNotEqual(manifest["assets"][0]["path"], "../outside.png")
 
+    def test_unexpected_same_wave_provider_error_fails_and_blocks_dependents(self) -> None:
+        jobs = [
+            self.make_job("bad_parent"),
+            self.make_job("good_sibling"),
+            self.make_job("child", depends_on=["bad_parent"]),
+        ]
+        calls: list[str] = []
+        config = self.make_config(concurrency=2)
+
+        def provider(job: ImageJob, current_config: ImageGenerationConfig) -> bytes:
+            calls.append(job.asset_name)
+            if job.asset_name == "bad_parent":
+                raise RuntimeError(
+                    f"boom from {current_config.base_url} with {current_config.api_key}"
+                )
+            return f"image:{job.asset_name}".encode("utf-8")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            manifest = generate_images_module.run_generation(
+                jobs,
+                config,
+                Path(temp_dir),
+                provider=provider,
+            )
+
+        by_name = {asset["asset_name"]: asset for asset in manifest["assets"]}
+        manifest_text = json.dumps(manifest, ensure_ascii=False, sort_keys=True)
+        self.assertEqual(by_name["bad_parent"]["status"], "failed")
+        self.assertEqual(by_name["good_sibling"]["status"], "done")
+        self.assertEqual(by_name["child"]["status"], "blocked")
+        self.assertEqual(by_name["child"]["attempts"], 0)
+        self.assertIn("bad_parent", by_name["child"]["last_error"])
+        self.assertNotIn(config.base_url, manifest_text)
+        self.assertNotIn(config.api_key, manifest_text)
+        self.assertEqual(sorted(calls), ["bad_parent", "good_sibling"])
+
+    def test_resume_in_workspace_wrong_path_does_not_skip(self) -> None:
+        job = self.make_job("wrong_path_asset")
+        calls: list[str] = []
+
+        def provider(current_job: ImageJob, config: ImageGenerationConfig) -> bytes:
+            calls.append(current_job.asset_name)
+            return b"new-image"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            wrong_path = job.output_path.with_name("wrong_path_asset_old.png")
+            (workspace / wrong_path).parent.mkdir(parents=True, exist_ok=True)
+            (workspace / wrong_path).write_bytes(b"old-image")
+            existing_manifest = {
+                "version": 1,
+                "provider": "openai-compatible",
+                "assets": [
+                    self.existing_done_asset(job, path=wrong_path.as_posix())
+                ],
+            }
+
+            manifest = generate_images_module.run_generation(
+                [job],
+                self.make_config(),
+                workspace,
+                provider=provider,
+                existing_manifest=existing_manifest,
+                resume=True,
+            )
+
+        self.assertEqual(calls, ["wrong_path_asset"])
+        self.assertEqual(manifest["assets"][0]["path"], job.output_path.as_posix())
+        self.assertEqual(manifest["assets"][0]["attempts"], 1)
+
+    def test_resume_prompt_hash_mismatch_does_not_skip(self) -> None:
+        job = self.make_job("changed_prompt_asset")
+        calls: list[str] = []
+
+        def provider(current_job: ImageJob, config: ImageGenerationConfig) -> bytes:
+            calls.append(current_job.asset_name)
+            return b"new-image"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            output_path = workspace / job.output_path
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_bytes(b"old-image")
+            existing_manifest = {
+                "version": 1,
+                "provider": "openai-compatible",
+                "assets": [
+                    self.existing_done_asset(
+                        job,
+                        prompt_hash_value=prompt_hash("old prompt"),
+                    )
+                ],
+            }
+
+            manifest = generate_images_module.run_generation(
+                [job],
+                self.make_config(),
+                workspace,
+                provider=provider,
+                existing_manifest=existing_manifest,
+                resume=True,
+            )
+
+            regenerated_bytes = output_path.read_bytes()
+
+        self.assertEqual(calls, ["changed_prompt_asset"])
+        self.assertEqual(regenerated_bytes, b"new-image")
+        self.assertEqual(manifest["assets"][0]["prompt_hash"], prompt_hash(job.prompt))
+
+    def test_resume_skip_rebuilds_manifest_row_without_old_allowed_field_secrets(self) -> None:
+        job = self.make_job("clean_skip_asset")
+        secret_reference = {
+            "asset_name": "secret_ref",
+            "path": "out/sk-test-secret-1234567890.png",
+            "purpose": "secret reference",
+        }
+
+        def provider(current_job: ImageJob, config: ImageGenerationConfig) -> bytes:
+            raise AssertionError("provider should not be called for valid resume skip")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            output_path = workspace / job.output_path
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_bytes(b"existing-image")
+            existing_manifest = {
+                "version": 1,
+                "provider": "openai-compatible",
+                "assets": [
+                    self.existing_done_asset(
+                        job,
+                        attempts=3,
+                        references=[secret_reference],
+                    )
+                ],
+            }
+
+            manifest = generate_images_module.run_generation(
+                [job],
+                self.make_config(),
+                workspace,
+                provider=provider,
+                existing_manifest=existing_manifest,
+                resume=True,
+            )
+
+        manifest_text = json.dumps(manifest, ensure_ascii=False, sort_keys=True)
+        self.assertEqual(manifest["assets"][0]["status"], "done")
+        self.assertEqual(manifest["assets"][0]["attempts"], 3)
+        self.assertEqual(manifest["assets"][0]["references"], [])
+        self.assertNotIn("sk-test-secret", manifest_text)
+
     def test_write_generation_report_orders_failed_blocked_generated_sections(self) -> None:
         manifest = {
             "version": 1,
@@ -687,6 +894,32 @@ class ImageGenerationRunnerTests(unittest.TestCase):
         self.assertNotIn("api_key", manifest_text)
         self.assertNotIn("sk-test-secret", manifest_text)
         self.assertNotIn("https://provider.example/openai", manifest_text)
+
+    def test_cli_reports_malformed_depends_on_without_traceback(self) -> None:
+        job_data = self.make_job("bad_depends_on").to_dict()
+        job_data["depends_on"] = None
+
+        result = self.run_generate_images_cli_with_job_data(job_data)
+
+        combined = result.stdout + result.stderr
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Image generation failed:", result.stdout)
+        self.assertIn("line 1", result.stdout)
+        self.assertIn("depends_on", result.stdout)
+        self.assertNotIn("Traceback", combined)
+
+    def test_cli_reports_malformed_reference_images_without_traceback(self) -> None:
+        job_data = self.make_job("bad_reference_images").to_dict()
+        job_data["reference_images"] = None
+
+        result = self.run_generate_images_cli_with_job_data(job_data)
+
+        combined = result.stdout + result.stderr
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Image generation failed:", result.stdout)
+        self.assertIn("line 1", result.stdout)
+        self.assertIn("reference_images", result.stdout)
+        self.assertNotIn("Traceback", combined)
 
 
 class ImageManifestValidationTests(unittest.TestCase):

@@ -71,18 +71,6 @@ class ImageGenerationConfig:
 
 
 ProviderCallable = Callable[[ImageJob, ImageGenerationConfig], bytes]
-SAFE_MANIFEST_ASSET_FIELDS = (
-    "asset_name",
-    "asset_type",
-    "path",
-    "status",
-    "prompt_hash",
-    "model",
-    "size",
-    "attempts",
-    "depends_on",
-    "references",
-)
 
 
 def load_config_from_env() -> ImageGenerationConfig:
@@ -222,6 +210,14 @@ def run_job_with_retry(
             )
             if delay > 0:
                 time.sleep(delay)
+        except Exception as error:
+            last_error = _sanitize_error(str(error), config)
+            LOGGER.warning(
+                "Image asset %s failed with unexpected error: %s",
+                job.asset_name,
+                last_error,
+            )
+            return _failed_result(job, config, attempts, last_error)
 
 
 def manifest_by_name(manifest: dict[str, Any] | None) -> dict[str, dict[str, Any]]:
@@ -243,6 +239,7 @@ def manifest_by_name(manifest: dict[str, Any] | None) -> dict[str, dict[str, Any
 
 def should_skip_job(
     job: ImageJob,
+    config: ImageGenerationConfig,
     existing: dict[str, dict[str, Any]],
     workspace: Path,
     resume: bool,
@@ -253,7 +250,19 @@ def should_skip_job(
     if not asset or asset.get("status") != "done":
         return False
     existing_path = _existing_asset_path(asset, workspace)
-    return existing_path is not None and existing_path.is_file()
+    if existing_path is None or not existing_path.is_file():
+        return False
+
+    expected_path = _current_job_output_path(job, workspace)
+    if expected_path is None or existing_path != expected_path:
+        return False
+    if asset.get("prompt_hash") != prompt_hash(job.prompt):
+        return False
+    if asset.get("model") != _job_model(job, config):
+        return False
+    if asset.get("size") != _job_size(job, config):
+        return False
+    return True
 
 
 def run_generation(
@@ -286,9 +295,11 @@ def run_generation(
                 )
                 continue
 
-            if should_skip_job(job, existing, workspace, resume):
-                results_by_name[job.asset_name] = _safe_manifest_asset(
-                    existing[job.asset_name]
+            if should_skip_job(job, config, existing, workspace, resume):
+                results_by_name[job.asset_name] = _skipped_result(
+                    job,
+                    config,
+                    existing[job.asset_name],
                 )
                 done_assets.add(job.asset_name)
                 LOGGER.info("Skipping image asset %s on resume", job.asset_name)
@@ -311,7 +322,21 @@ def run_generation(
                 }
                 for future in as_completed(future_map):
                     job = future_map[future]
-                    completed_results[job.asset_name] = future.result()
+                    try:
+                        completed_results[job.asset_name] = future.result()
+                    except Exception as error:
+                        last_error = _sanitize_error(str(error), config)
+                        LOGGER.warning(
+                            "Image asset %s failed with unexpected worker error: %s",
+                            job.asset_name,
+                            last_error,
+                        )
+                        completed_results[job.asset_name] = _failed_result(
+                            job,
+                            config,
+                            0,
+                            last_error,
+                        )
 
         for job in runnable:
             result = completed_results[job.asset_name]
@@ -546,8 +571,22 @@ def _existing_asset_path(asset: dict[str, Any], workspace: Path) -> Path | None:
     return resolved_path
 
 
-def _safe_manifest_asset(asset: dict[str, Any]) -> dict[str, Any]:
-    return {field: asset[field] for field in SAFE_MANIFEST_ASSET_FIELDS if field in asset}
+def _current_job_output_path(job: ImageJob, workspace: Path) -> Path | None:
+    try:
+        return _workspace_output_path(workspace, job)
+    except NonRetryableProviderError:
+        return None
+
+
+def _skipped_result(
+    job: ImageJob,
+    config: ImageGenerationConfig,
+    existing_asset: dict[str, Any],
+) -> dict[str, Any]:
+    attempts = existing_asset.get("attempts", 0)
+    if type(attempts) is not int or attempts < 0:
+        attempts = 0
+    return _result_base(job, config, attempts) | {"status": "done"}
 
 
 def _append_report_section(

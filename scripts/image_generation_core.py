@@ -67,9 +67,16 @@ class ImageJob:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "ImageJob":
+        raw_depends_on = data.get("depends_on", [])
+        raw_reference_images = data.get("reference_images", [])
+        if "depends_on" in data and not isinstance(raw_depends_on, list):
+            raise ImageGenerationError("depends_on must be a list")
+        if "reference_images" in data and not isinstance(raw_reference_images, list):
+            raise ImageGenerationError("reference_images must be a list")
+
         references = [
             ReferenceImage.from_dict(item)
-            for item in data.get("reference_images", [])
+            for item in raw_reference_images
             if isinstance(item, dict)
         ]
         return cls(
@@ -79,7 +86,7 @@ class ImageJob:
             prompt=str(data.get("prompt", "")).strip(),
             output_dir=str(data.get("output_dir", "")).strip(),
             output_file=str(data.get("output_file", "")).strip(),
-            depends_on=[str(item).strip() for item in data.get("depends_on", [])],
+            depends_on=[str(item).strip() for item in raw_depends_on],
             reference_images=references,
             provider=str(data.get("provider", "")).strip(),
             model=str(data.get("model", "")).strip(),
@@ -123,7 +130,10 @@ def load_jobs_jsonl(path: Path) -> list[ImageJob]:
             raise ImageGenerationError(f"line {line_number}: invalid JSON") from error
         if not isinstance(data, dict):
             raise ImageGenerationError(f"line {line_number}: job must be an object")
-        jobs.append(ImageJob.from_dict(data))
+        try:
+            jobs.append(ImageJob.from_dict(data))
+        except ImageGenerationError as error:
+            raise ImageGenerationError(f"line {line_number}: {error}") from error
     return jobs
 
 
