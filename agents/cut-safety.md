@@ -16,7 +16,7 @@ Use this specialist only after the user asks about manual deletion, gives candid
 
 ## Output
 
-Return cut-risk notes, not a rewritten compressed story. Use `references/cut-safety-rules.md`.
+Return cut-risk notes, not a rewritten compressed story. Cut-safety writes a separate risk report and does not directly modify the canonical feed or copy packs. Use `references/cut-safety-rules.md`.
 
 ## Procedure
 
@@ -26,3 +26,4 @@ Return cut-risk notes, not a rewritten compressed story. Use `references/cut-saf
 4. Suggest safer line boundaries when possible.
 5. Leave final deletion choices to the user.
 6. Do not write a replacement compressed feed or rewritten story.
+7. If the user approves cuts, create a revised canonical feed first, then audit it and regenerate copy packs.

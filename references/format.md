@@ -33,7 +33,9 @@ GPT-image-2，16:9，3D国漫，国风仙侠，轻喜剧反差，角色表演夸
 
 Use continuous numbering only. Do not create 15-second groups, group titles, group footers, `第N组`, `第1-5条`, per-group `上传参考图`, per-group `音色`, or per-group `音色资产` blocks.
 
-This is the canonical continuous feed. Copy packs are separate paste-ready artifacts described in `references/copy-pack-format.md`; they may repeat `统一要求` and local reference bindings for user convenience, but they must never be placed inside `## 视频投喂块`. Do not put `复制投喂包` inside `## 视频投喂块`.
+This is the canonical continuous feed. 连续投喂稿 is the canonical mother feed. 复制投喂包 is a derived paste wrapper. Copy packs are separate paste-ready artifacts described in `references/copy-pack-format.md`; they may repeat `统一要求` and local reference bindings for user convenience, but they must never be placed inside `## 视频投喂块`. Do not put `复制投喂包` inside `## 视频投喂块`.
+
+Any operation that changes video line text, line numbers, or asset bindings must update the canonical continuous feed first, then re-run feed audit and regenerate copy packs. Do not edit copy packs as the source of truth.
 
 The first line after `统一要求` should enter source content quickly: a source event, exact source dialogue/OS/system prompt, conflict, visible decision, or one brief establishing shot tied to the source.
 

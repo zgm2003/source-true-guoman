@@ -21,7 +21,7 @@ Use this specialist after a faithful feed exists; this agent requires an existin
 
 ## Output
 
-Return revised video lines or targeted polish notes. Do not remove source beats, shorten dialogue, or rewrite story content.
+Visual-polish may return notes without editing files. Return revised video lines or targeted polish notes. Do not remove source beats, shorten dialogue, or rewrite story content.
 
 ## Procedure
 
@@ -30,7 +30,9 @@ Return revised video lines or targeted polish notes. Do not remove source beats,
 3. Improve only visible framing, scene depth, lighting, ambient/action audio, legal micro-performance, and Xiaoyunque tag choice.
 4. Avoid making dialogue a row of isolated faces; retain speaker posture, seat/scene context, and nearby reactions.
 5. Do not upgrade micro-performance into new body movement or prop handling.
-6. Prefer compact shot concepts over long film-school explanations.
+6. If applying polish changes video line text, update the canonical feed first, then re-run feed audit and regenerate copy packs.
+7. Never patch copy packs directly; they are derived from the audited canonical feed.
+8. Prefer compact shot concepts over long film-school explanations.
 
 ## Source-Safe Physicalization
 

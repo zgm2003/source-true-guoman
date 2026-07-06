@@ -395,6 +395,62 @@ class SkillTextRulesTests(unittest.TestCase):
         self.assertIn("no storyboard folder", runner_text)
         self.assertIn("no MP4 claim", runner_text)
 
+    def test_canonical_feed_controls_copy_pack_regeneration_for_downstream_tools(
+        self,
+    ) -> None:
+        root = Path(__file__).resolve().parents[1]
+        skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
+        format_text = root.joinpath("references", "format.md").read_text(
+            encoding="utf-8"
+        )
+        copy_format_text = root.joinpath("references", "copy-pack-format.md").read_text(
+            encoding="utf-8"
+        )
+        cut_text = root.joinpath("agents", "cut-safety.md").read_text(encoding="utf-8")
+        visual_text = root.joinpath("agents", "visual-polish.md").read_text(
+            encoding="utf-8"
+        )
+        runner_text = root.joinpath("agents", "production-runner.md").read_text(
+            encoding="utf-8"
+        )
+
+        canonical_phrases = [
+            "连续投喂稿 is the canonical mother feed",
+            "复制投喂包 is a derived paste wrapper",
+            "Any operation that changes video line text, line numbers, or asset bindings must update the canonical continuous feed first, then re-run feed audit and regenerate copy packs",
+            "Do not edit copy packs as the source of truth",
+        ]
+
+        for text in (skill_text, format_text, copy_format_text):
+            for phrase in canonical_phrases:
+                with self.subTest(phrase=phrase):
+                    self.assertIn(phrase, text)
+
+        for phrase in [
+            "Cut-safety writes a separate risk report",
+            "does not directly modify the canonical feed or copy packs",
+            "If the user approves cuts, create a revised canonical feed first, then audit it and regenerate copy packs",
+        ]:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, cut_text)
+
+        for phrase in [
+            "Visual-polish may return notes without editing files",
+            "If applying polish changes video line text, update the canonical feed first",
+            "then re-run feed audit and regenerate copy packs",
+            "Never patch copy packs directly",
+        ]:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, visual_text)
+
+        for phrase in [
+            "Production-runner writes a dependency checklist",
+            "does not modify the canonical feed or copy packs",
+            "Reference line ranges from the canonical feed and copy packs without changing them",
+        ]:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, runner_text)
+
     def test_agent_pack_keeps_source_faithfulness_as_non_overridable_contract(self) -> None:
         root = Path(__file__).resolve().parents[1]
         contract_phrases = [

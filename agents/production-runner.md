@@ -17,7 +17,7 @@ Use this specialist after assets and faithful feed lines exist and the user need
 
 ## Output
 
-Return a dependency checklist grouped by production dependency, not by arbitrary 15-second pacing. This agent creates no Canvas package, no storyboard folder, and no MP4 claim.
+Production-runner writes a dependency checklist. Return a dependency checklist grouped by production dependency, not by arbitrary 15-second pacing. This agent does not modify the canonical feed or copy packs, and creates no Canvas package, no storyboard folder, and no MP4 claim.
 
 If the user asks for `复制包`, `投喂包`, `paste-ready`, or fixed pack sizes such as `每5条一包`, hand off to `copy-packager`. Production runner may list dependencies by production order, but copy-packager creates paste-ready wrappers, not by arbitrary 15-second pacing.
 
@@ -28,3 +28,4 @@ If the user asks for `复制包`, `投喂包`, `paste-ready`, or fixed pack size
 3. List required upload references for each derived asset with purpose labels.
 4. Bind video line ranges to required image and voice assets.
 5. Flag missing assets, ambiguous references, or places where the user must choose between alternatives.
+6. Reference line ranges from the canonical feed and copy packs without changing them.
