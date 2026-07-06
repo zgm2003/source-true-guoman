@@ -507,6 +507,80 @@ GPT-image-2，16:9，3D国漫。保持同一张脸，换宗门礼服。
             self.assertEqual(jobs[0].output_dir, "道具资产")
             self.assertEqual(jobs[0].provider, "openai-compatible")
 
+    def test_build_jobs_keeps_character_prompt_with_negative_scene_wording(self) -> None:
+        text = """
+### 图片1 = 林夜_黑袍造型
+GPT-image-2，16:9，角色三视图，白色背景，不要复杂场景。
+"""
+
+        jobs = build_jobs_from_asset_text(text, model="gpt-image-2", size="16:9")
+
+        self.assertEqual(jobs[0].asset_type, "character")
+        self.assertEqual(jobs[0].output_dir, "人设资产")
+
+    def test_build_image_jobs_cli_reports_missing_asset_bible_without_traceback(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(
+                        Path(__file__).resolve().parents[1]
+                        / "scripts"
+                        / "build_image_jobs.py"
+                    ),
+                    "--asset-bible",
+                    str(root / "missing-asset-bible.md"),
+                    "--out",
+                    str(root / "image-jobs.jsonl"),
+                ],
+                text=True,
+                capture_output=True,
+            )
+
+            combined = result.stdout + result.stderr
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("Image job build failed:", result.stdout)
+            self.assertNotIn("Traceback", combined)
+
+    def test_build_image_jobs_cli_reports_invalid_generated_jobs_without_traceback(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            asset_bible = root / "asset-bible.md"
+            asset_bible.write_text(
+                "### 图片1 = 林夜_宗门礼服\n"
+                "上传参考图：林夜_黑袍造型 = 图片99（人脸身份参考）\n"
+                "GPT-image-2，16:9，保持同一张脸，换宗门礼服。\n",
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(
+                        Path(__file__).resolve().parents[1]
+                        / "scripts"
+                        / "build_image_jobs.py"
+                    ),
+                    "--asset-bible",
+                    str(asset_bible),
+                    "--out",
+                    str(root / "image-jobs.jsonl"),
+                ],
+                text=True,
+                capture_output=True,
+            )
+
+            combined = result.stdout + result.stderr
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("Image job build failed:", result.stdout)
+            self.assertIn("unknown dependency", result.stdout)
+            self.assertNotIn("Traceback", combined)
+
     def test_build_jobs_stops_prompt_before_following_markdown_heading(self) -> None:
         text = """
 ## 资产提示词

@@ -9,13 +9,20 @@ from pathlib import Path
 
 try:
     from scripts.image_generation_core import (
+        ImageGenerationError,
         ImageJob,
         ReferenceImage,
         validate_jobs,
         write_jobs_jsonl,
     )
 except ModuleNotFoundError:
-    from image_generation_core import ImageJob, ReferenceImage, validate_jobs, write_jobs_jsonl
+    from image_generation_core import (
+        ImageGenerationError,
+        ImageJob,
+        ReferenceImage,
+        validate_jobs,
+        write_jobs_jsonl,
+    )
 
 
 ASSET_BLOCK_RE = re.compile(r"^##\s+资产提示词\s*$")
@@ -152,14 +159,20 @@ def main() -> int:
 
     asset_bible_path = Path(args.asset_bible).expanduser().resolve()
     out_path = Path(args.out).expanduser().resolve()
-    jobs = build_jobs_from_asset_text(
-        asset_bible_path.read_text(encoding="utf-8"),
-        model=args.model,
-        size=args.size,
-        provider=args.provider,
-    )
-    validate_jobs(jobs)
-    write_jobs_jsonl(out_path, jobs)
+    try:
+        jobs = build_jobs_from_asset_text(
+            asset_bible_path.read_text(encoding="utf-8"),
+            model=args.model,
+            size=args.size,
+            provider=args.provider,
+        )
+        validate_jobs(jobs)
+        write_jobs_jsonl(out_path, jobs)
+    except (OSError, ImageGenerationError) as error:
+        print("Image job build failed:")
+        print(f"- {error}")
+        return 1
+
     print(f"Wrote {len(jobs)} image jobs to {out_path}")
     return 0
 
@@ -175,7 +188,7 @@ def _strip_reference_line_prefix(line: str) -> str:
 
 
 def _has_scene_marker(value: str) -> bool:
-    return any(marker in value for marker in ("母图", "场景", "空场景"))
+    return any(marker in value for marker in ("母图", "空场景", "场景参考图"))
 
 
 def _has_prop_marker(value: str) -> bool:
