@@ -224,3 +224,52 @@ def build_dependency_waves(jobs: list[ImageJob]) -> list[list[ImageJob]]:
 def contains_secret_text(value: str) -> bool:
     lowered = value.casefold()
     return any(secret in lowered for secret in SECRET_KEY_NAMES)
+
+
+def _walk_json_values(value: Any) -> list[tuple[str, str]]:
+    found: list[tuple[str, str]] = []
+    if isinstance(value, dict):
+        for key, child in value.items():
+            if contains_secret_text(str(key)):
+                found.append((str(key), str(child)))
+            found.extend(_walk_json_values(child))
+    elif isinstance(value, list):
+        for child in value:
+            found.extend(_walk_json_values(child))
+    elif isinstance(value, str) and contains_secret_text(value):
+        found.append(("value", value))
+    return found
+
+
+def validate_manifest(
+    manifest: dict[str, Any], jobs: list[ImageJob], workspace: Path
+) -> list[str]:
+    errors: list[str] = []
+    if _walk_json_values(manifest):
+        errors.append("manifest must not contain secret key names")
+
+    assets = manifest.get("assets", [])
+    if not isinstance(assets, list):
+        return ["manifest assets must be a list"]
+
+    job_names = {job.asset_name for job in jobs}
+    for asset in assets:
+        if not isinstance(asset, dict):
+            errors.append("manifest asset entry must be an object")
+            continue
+        asset_name = str(asset.get("asset_name", "")).strip()
+        path_text = str(asset.get("path", "")).strip()
+        status = str(asset.get("status", "")).strip()
+
+        if job_names and asset_name and asset_name not in job_names:
+            errors.append(f"{asset_name}: manifest asset not present in jobs")
+        if path_text.startswith("生产资产/") or path_text.startswith("生产资产\\"):
+            errors.append(f"{asset_name}: generated image path must not be under 生产资产")
+        if status == "done":
+            image_path = workspace / path_text
+            if not image_path.is_file():
+                errors.append(f"{asset_name}: done asset missing local file {path_text}")
+        if status in {"failed", "blocked"} and not asset.get("last_error"):
+            errors.append(f"{asset_name}: {status} asset must record last_error")
+
+    return errors

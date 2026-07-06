@@ -1,3 +1,5 @@
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -8,6 +10,7 @@ from scripts.image_generation_core import (
     build_dependency_waves,
     load_jobs_jsonl,
     prompt_hash,
+    validate_manifest,
     validate_jobs,
 )
 
@@ -151,6 +154,104 @@ class ImageGenerationCoreTests(unittest.TestCase):
     def test_prompt_hash_is_stable_sha256(self) -> None:
         self.assertEqual(prompt_hash("abc"), prompt_hash("abc"))
         self.assertTrue(prompt_hash("abc").startswith("sha256:"))
+
+
+class ImageManifestValidationTests(unittest.TestCase):
+    def test_validate_manifest_rejects_done_asset_missing_file(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            jobs = [
+                ImageJob(
+                    job_id="j1",
+                    asset_name="林夜_黑袍造型",
+                    asset_type="character",
+                    prompt="prompt",
+                    output_dir="人设资产",
+                    output_file="林夜_黑袍造型.png",
+                    depends_on=[],
+                    reference_images=[],
+                    provider="openai-compatible",
+                    model="gpt-image-2",
+                    size="16:9",
+                    status="pending",
+                )
+            ]
+            manifest = {
+                "version": 1,
+                "provider": "openai-compatible",
+                "assets": [
+                    {
+                        "asset_name": "林夜_黑袍造型",
+                        "asset_type": "character",
+                        "path": "人设资产/林夜_黑袍造型.png",
+                        "status": "done",
+                        "prompt_hash": "sha256:abc",
+                        "model": "gpt-image-2",
+                        "size": "16:9",
+                        "attempts": 1,
+                        "depends_on": [],
+                        "references": [],
+                    }
+                ],
+            }
+
+            errors = validate_manifest(manifest, jobs, root)
+
+            self.assertIn("done asset missing local file", "; ".join(errors))
+
+    def test_validate_manifest_rejects_secret_values_and_production_image_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            jobs = []
+            manifest = {
+                "version": 1,
+                "provider": "openai-compatible",
+                "api_key": "secret-value",
+                "assets": [
+                    {
+                        "asset_name": "坏路径",
+                        "asset_type": "scene",
+                        "path": "生产资产/坏路径.png",
+                        "status": "failed",
+                        "last_error": "api_key leaked",
+                    }
+                ],
+            }
+
+            errors = validate_manifest(manifest, jobs, root)
+
+            message = "; ".join(errors)
+            self.assertIn("manifest must not contain secret key names", message)
+            self.assertIn("generated image path must not be under 生产资产", message)
+
+    def test_validate_image_manifest_cli_reports_errors(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            jobs_path = root / "image-jobs.jsonl"
+            manifest_path = root / "image-manifest.json"
+            jobs_path.write_text("", encoding="utf-8")
+            manifest_path.write_text(
+                '{"version":1,"provider":"openai-compatible","api_key":"bad","assets":[]}',
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(Path(__file__).resolve().parents[1] / "scripts" / "validate_image_manifest.py"),
+                    str(manifest_path),
+                    "--jobs",
+                    str(jobs_path),
+                    "--workspace",
+                    str(root),
+                ],
+                text=True,
+                capture_output=True,
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("Image manifest validation failed", result.stdout)
+            self.assertIn("manifest must not contain secret key names", result.stdout)
 
 
 if __name__ == "__main__":
