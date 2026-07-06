@@ -15,6 +15,7 @@ READABLE_TEXT_THAT_MUST_NOT_APPEAR_AS_MOJIBAKE = [
     "对白必须从原文摘取",
     "不主动添加站起、起身、跪下、走动、抬手、收起法器",
     "生产资产",
+    "分镜资产",
     "资产提示词",
     "全范围预扫",
     "局部烟测",
@@ -43,6 +44,9 @@ READABLE_TEXT_THAT_MUST_NOT_APPEAR_AS_MOJIBAKE = [
     "尾帧",
     "续接",
     "承接",
+    "分镜图",
+    "站位检查",
+    "站位QA",
 ]
 
 
@@ -59,6 +63,21 @@ COMMON_MOJIBAKE_FRAGMENTS = common_mojibake_fragments()
 
 
 class InitWorkspaceTests(unittest.TestCase):
+    def test_standard_asset_directories_include_storyboard_assets_in_required_order(self) -> None:
+        self.assertEqual(
+            ASSET_DIRS,
+            (
+                "场景资产",
+                "道具资产",
+                "剧本资产",
+                "人设资产",
+                "生产资产",
+                "分镜资产",
+                "视频资产",
+                "音色资产",
+            ),
+        )
+
     def test_init_workspace_creates_standard_asset_directories(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             workspace = Path(temp_dir)
@@ -143,6 +162,7 @@ class SkillTextRulesTests(unittest.TestCase):
             "agents/feed-auditor.md",
             "agents/visual-polish.md",
             "agents/production-runner.md",
+            "agents/storyboard-contact-sheet.md",
         ]
 
         for relative_path in expected_agent_refs:
@@ -314,6 +334,68 @@ class SkillTextRulesTests(unittest.TestCase):
                     "every later image prompt must carry `非Q版、非玩具感、非卡通低龄化，成熟3D国漫`",
                     text,
                 )
+
+    def test_storyboard_contact_sheet_route_is_post_asset_visual_qa_only(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
+
+        route_lines = [
+            line.strip()
+            for line in skill_text.splitlines()
+            if line.strip().startswith("- ") and "agents/storyboard-contact-sheet.md" in line
+        ]
+
+        self.assertEqual(len(route_lines), 1)
+        route_line = route_lines[0]
+        required_route_phrases = [
+            "分镜资产",
+            "分镜图",
+            "站位检查",
+            "站位QA",
+            "生成5*5的分镜图",
+            "storyboard contact sheet",
+            "blocking QA",
+            "agents/storyboard-contact-sheet.md",
+            "only after generated image assets and a valid canonical feed exist",
+        ]
+
+        for phrase in required_route_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, route_line)
+
+        self.assertIn(
+            "Narrow exception: `分镜资产` is post-asset visual QA only, not Canvas/keyframe/segment/MP4.",
+            skill_text,
+        )
+        self.assertIn("生成5*5的分镜图，分镜图上不允许有台词。", skill_text)
+        self.assertIn("生成N格分镜图，分镜图上不允许有台词。", skill_text)
+
+    def test_storyboard_contact_sheet_agent_contract_uses_real_manifest_references(
+        self,
+    ) -> None:
+        root = Path(__file__).resolve().parents[1]
+        agent_path = root.joinpath("agents", "storyboard-contact-sheet.md")
+
+        self.assertTrue(agent_path.is_file())
+        agent_text = agent_path.read_text(encoding="utf-8")
+
+        required_phrases = [
+            "post-asset visual QA",
+            "valid canonical feed",
+            "generated image assets",
+            "image-manifest",
+            "real local references",
+            "prompt-only references are forbidden",
+            "must not modify the canonical feed or copy packs",
+            "生成5*5的分镜图，分镜图上不允许有台词。",
+            "生成N格分镜图，分镜图上不允许有台词。",
+            "not Canvas, not keyframe, not segment, and not MP4",
+            "blocking QA",
+        ]
+
+        for phrase in required_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, agent_text)
 
     def test_main_skill_routes_common_intents_to_specialists(self) -> None:
         root = Path(__file__).resolve().parents[1]

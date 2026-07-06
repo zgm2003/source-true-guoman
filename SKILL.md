@@ -18,12 +18,13 @@ Default preservation stance: 原作多少字就保留多少字. Convert source t
 - Do not invent lore, factions, motives, outcomes, names, cultivation realms, props, or relationship changes not supported by the source.
 - Do not treat old `cine-make` feeds as positive examples unless the user explicitly marks one as good. Existing awkward feeds are failure samples.
 - Do not produce Canvas packages, `segment`, `S01/S02`, `keyframe`, `首帧`, `尾帧`, `续接`, `承接`, storyboard image folders, or MP4 claims.
+- Narrow exception: `分镜资产` is post-asset visual QA only, not Canvas/keyframe/segment/MP4.
 - Do not front-load long rules, negative-prompt walls, internal analysis, or test-contract language into the final feed.
 - Do not force every line into rigid `主体/景别/机位/构图/光影` chains when a shorter natural line is clearer.
 
 ## Workflow
 
-1. If the user is starting from a project/workspace directory, initialize it before processing: create `场景资产`, `道具资产`, `剧本资产`, `人设资产`, `生产资产`, `视频资产`, and `音色资产`. Use `scripts/init_workspace.py <workspace>` when available. Move root-level source script files into `剧本资产`; do not overwrite an existing archived script with the same name.
+1. If the user is starting from a project/workspace directory, initialize it before processing: create `场景资产`, `道具资产`, `剧本资产`, `人设资产`, `生产资产`, `分镜资产`, `视频资产`, and `音色资产`. Use `scripts/init_workspace.py <workspace>` when available. Move root-level source script files into `剧本资产`; do not overwrite an existing archived script with the same name.
 2. Read only the requested source scope.
 3. For long scripts or multi-scene excerpts, pre-scan the whole requested scope before writing assets. Track recurring characters, locations, props, interfaces, mounts/beasts, and speaking roles across early and later scenes.
 4. Build a private source fact sheet: characters, locations, event order, cause-effect, source terms, key dialogue, reveal order, hook.
@@ -86,6 +87,7 @@ Route by user intent:
 - "Make an index", "read the source", "track roles", continuity questions, confusing aliases, or suspected typos: read `agents/source-indexer.md` and `references/source-index-format.md`.
 - "Make assets", "who needs images", "avoid face collision", "what references upload", reusable characters, scenes, props, interfaces, beasts, vehicles, or voices: read `agents/asset-bible.md` and `references/asset-bible-format.md`.
 - "生成图片", "批量生图", "把资产图跑出来", "接入 base_url/api_key 生图", "并发生成资产图", or "根据 asset-bible 生成图片": read `agents/image-generator.md`, `references/image-generation-format.md`, and `references/image-generation-retry-rules.md`; first run `python scripts/build_image_jobs.py --asset-bible 生产资产/_内部/asset-bible.md --out 生产资产/_内部/image-jobs-style-preview.jsonl --style-stage preview`, then `python scripts/generate_images.py --jobs 生产资产/_内部/image-jobs-style-preview.jsonl --manifest 生产资产/_内部/image-manifest.json --resume`, then stop for 用户确认风格基准. After approval, run `python scripts/build_image_jobs.py --asset-bible 生产资产/_内部/asset-bible.md --out 生产资产/_内部/image-jobs.jsonl --style-stage confirmed`, set `SOURCE_TRUE_STYLE_CONFIRMED=1`, run `python scripts/generate_images.py --jobs 生产资产/_内部/image-jobs.jsonl --manifest 生产资产/_内部/image-manifest.json --resume`, and validate with `python scripts/validate_image_manifest.py 生产资产/_内部/image-manifest.json --jobs 生产资产/_内部/image-jobs.jsonl` when saved artifacts are involved. Image generation runs after asset-bible and before downstream copy-pack image bindings; it must respect dependency waves and retry relay failures.
+- "分镜资产", "分镜图", "站位检查", "站位QA", "生成5*5的分镜图", "storyboard contact sheet", or "blocking QA": read `agents/storyboard-contact-sheet.md` only after generated image assets and a valid canonical feed exist. This route is post-asset visual QA: 生成5*5的分镜图，分镜图上不允许有台词。 If the final batch has fewer than 25 panels, use partial group wording: 生成N格分镜图，分镜图上不允许有台词。 It must not create Canvas, keyframe, segment, or MP4 workflows.
 - "Write feed", "video投喂", "faithful draft", or final continuous prompt blocks: read `agents/faithful-feed.md`, `references/format.md`, and the selected camera-library reference (`references/xiaoyunque-tags.md` or `references/libtv-tags.md`).
 - "Review", "check", "audit", "有没有问题", numbering QA, tag QA, or delivery gate: read `agents/feed-auditor.md` and `references/audit-checklist.md`; run `python scripts/validate_feed.py <feed-file>` when the feed is saved in a file.
 - "Can I delete", "cut", "trim", "compress", manual deletion ranges, or platform-length pressure: read `agents/cut-safety.md` and `references/cut-safety-rules.md` only for deletion-risk review and manual cut candidates. Generic compression requests are refused as rewrites and answered with exact cut/source-span advice. cut-safety is a deletion-risk assistant, not a compression writer; it writes a risk report and must not directly modify the canonical feed or copy packs.
@@ -97,7 +99,7 @@ Default first-phase route for smoke tests or analysis-only requests: `source-ind
 
 Use `E:\xianjie` only as a regression sample unless the user explicitly asks to produce its chapters. For baseline implementation, do not generate the full five-chapter feed as part of baseline implementation; use it after implementation to check that formal multi-chapter work pre-scans the requested scope before final assets or feed output.
 
-Only use `cut-safety` after the user has chosen deletion targets or asks for cut-risk help. It may return exact line/source spans, exact cut/source-span advice, risk levels, and safer boundaries; generic compression requests are refused as rewrites, and it must not write a rewritten compressed story. Only use `visual-polish` after preserving source coverage. Only use `production-runner` after assets and faithful feed lines exist. Only use `copy-packager` after source index, asset bible, faithful feed, and feed audit exist; copy-packager creates paste-ready wrappers, not pacing groups.
+Only use `cut-safety` after the user has chosen deletion targets or asks for cut-risk help. It may return exact line/source spans, exact cut/source-span advice, risk levels, and safer boundaries; generic compression requests are refused as rewrites, and it must not write a rewritten compressed story. Only use `visual-polish` after preserving source coverage. Only use `production-runner` after assets and faithful feed lines exist. Only use `storyboard-contact-sheet` after generated image assets and a valid canonical feed exist; it is `分镜资产` post-asset visual QA only and must not modify the canonical feed or copy packs. Only use `copy-packager` after source index, asset bible, faithful feed, and feed audit exist; copy-packager creates paste-ready wrappers, not pacing groups.
 
 ## Workspace initialization
 
@@ -116,6 +118,7 @@ Create exactly these top-level folders when missing:
 - `剧本资产`
 - `人设资产`
 - `生产资产`
+- `分镜资产`
 - `视频资产`
 - `音色资产`
 
