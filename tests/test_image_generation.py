@@ -253,6 +253,147 @@ class ImageManifestValidationTests(unittest.TestCase):
             self.assertIn("Image manifest validation failed", result.stdout)
             self.assertIn("manifest must not contain secret key names", result.stdout)
 
+    def test_validate_manifest_rejects_normalized_production_paths_and_workspace_escapes(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            manifest = {
+                "version": 1,
+                "provider": "openai-compatible",
+                "assets": [
+                    {
+                        "asset_name": "normalized_production",
+                        "path": "./\u751f\u4ea7\u8d44\u4ea7/foo.png",
+                        "status": "pending",
+                    },
+                    {
+                        "asset_name": "parent_production",
+                        "path": "\u4eba\u8bbe\u8d44\u4ea7/../\u751f\u4ea7\u8d44\u4ea7/foo.png",
+                        "status": "pending",
+                    },
+                    {
+                        "asset_name": "parent_escape",
+                        "path": "../outside.png",
+                        "status": "pending",
+                    },
+                    {
+                        "asset_name": "absolute_path",
+                        "path": str(root / "asset.png"),
+                        "status": "pending",
+                    },
+                    {
+                        "asset_name": "drive_absolute",
+                        "path": r"C:\tmp\x.png",
+                        "status": "pending",
+                    },
+                    {
+                        "asset_name": "drive_relative",
+                        "path": r"C:tmp\x.png",
+                        "status": "pending",
+                    },
+                ],
+            }
+
+            errors = validate_manifest(manifest, [], root)
+
+            message = "; ".join(errors)
+            self.assertGreaterEqual(
+                message.count("generated image path must not be under"),
+                2,
+            )
+            self.assertIn("generated image path must stay under workspace", message)
+            self.assertIn("generated image path must be relative", message)
+            self.assertIn("generated image path must not use a drive prefix", message)
+
+    def test_validate_image_manifest_cli_fails_clearly_for_invalid_jobs(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            jobs_path = root / "image-jobs.jsonl"
+            manifest_path = root / "image-manifest.json"
+            jobs_path.write_text(
+                '{"job_id":"j1","asset_name":"bad","asset_type":"character","prompt":"p",'
+                '"output_dir":"\u751f\u4ea7\u8d44\u4ea7","output_file":"bad.png",'
+                '"depends_on":[],"reference_images":[],"provider":"openai-compatible",'
+                '"model":"gpt-image-2","size":"16:9","status":"pending"}' + "\n",
+                encoding="utf-8",
+            )
+            manifest_path.write_text(
+                '{"version":1,"provider":"openai-compatible","assets":[]}',
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(Path(__file__).resolve().parents[1] / "scripts" / "validate_image_manifest.py"),
+                    str(manifest_path),
+                    "--jobs",
+                    str(jobs_path),
+                    "--workspace",
+                    str(root),
+                ],
+                text=True,
+                capture_output=True,
+            )
+
+            combined = result.stdout + result.stderr
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("Image manifest validation failed", result.stdout)
+            self.assertIn("output_dir must be one of", result.stdout)
+            self.assertNotIn("Traceback", combined)
+
+    def test_validate_image_manifest_cli_fails_clearly_for_missing_and_malformed_files(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            jobs_path = root / "image-jobs.jsonl"
+            manifest_path = root / "image-manifest.json"
+            jobs_path.write_text("", encoding="utf-8")
+            manifest_path.write_text("{not json", encoding="utf-8")
+
+            cases = [
+                (root / "missing-manifest.json", jobs_path),
+                (manifest_path, root / "missing-jobs.jsonl"),
+                (manifest_path, jobs_path),
+            ]
+
+            for manifest_arg, jobs_arg in cases:
+                with self.subTest(manifest=manifest_arg.name, jobs=jobs_arg.name):
+                    result = subprocess.run(
+                        [
+                            sys.executable,
+                            str(Path(__file__).resolve().parents[1] / "scripts" / "validate_image_manifest.py"),
+                            str(manifest_arg),
+                            "--jobs",
+                            str(jobs_arg),
+                            "--workspace",
+                            str(root),
+                        ],
+                        text=True,
+                        capture_output=True,
+                    )
+
+                    combined = result.stdout + result.stderr
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn("Image manifest validation failed", result.stdout)
+                    self.assertNotIn("Traceback", combined)
+
+    def test_validate_manifest_rejects_obvious_secret_values(self) -> None:
+        manifest = {
+            "version": 1,
+            "provider": "openai-compatible",
+            "assets": [
+                {
+                    "asset_name": "secret_value",
+                    "path": "\u4eba\u8bbe\u8d44\u4ea7/secret_value.png",
+                    "status": "failed",
+                    "last_error": "request used sk-test-1234567890",
+                }
+            ],
+        }
+
+        errors = validate_manifest(manifest, [], Path("."))
+
+        self.assertIn("manifest must not contain secret key names", "; ".join(errors))
+
 
 if __name__ == "__main__":
     unittest.main()

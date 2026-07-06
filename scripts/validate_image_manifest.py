@@ -8,9 +8,25 @@ import json
 from pathlib import Path
 
 try:
-    from scripts.image_generation_core import load_jobs_jsonl, validate_manifest
+    from scripts.image_generation_core import (
+        ImageGenerationError,
+        load_jobs_jsonl,
+        validate_jobs,
+        validate_manifest,
+    )
 except ModuleNotFoundError:
-    from image_generation_core import load_jobs_jsonl, validate_manifest
+    from image_generation_core import (
+        ImageGenerationError,
+        load_jobs_jsonl,
+        validate_jobs,
+        validate_manifest,
+    )
+
+
+def print_validation_errors(errors: list[str]) -> None:
+    print("Image manifest validation failed:")
+    for error in errors:
+        print(f"- {error}")
 
 
 def main() -> int:
@@ -28,14 +44,28 @@ def main() -> int:
     jobs_path = Path(args.jobs).expanduser().resolve()
     workspace = Path(args.workspace).expanduser().resolve()
 
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    jobs = load_jobs_jsonl(jobs_path)
-    errors = validate_manifest(manifest, jobs, workspace)
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if not isinstance(manifest, dict):
+            raise ImageGenerationError("manifest must be a JSON object")
+        jobs = load_jobs_jsonl(jobs_path)
+        validate_jobs(jobs)
+        errors = validate_manifest(manifest, jobs, workspace)
+    except FileNotFoundError as error:
+        missing = Path(error.filename).name if error.filename else "input file"
+        print_validation_errors([f"input file not found: {missing}"])
+        return 1
+    except json.JSONDecodeError as error:
+        print_validation_errors(
+            [f"manifest JSON is malformed at line {error.lineno} column {error.colno}"]
+        )
+        return 1
+    except ImageGenerationError as error:
+        print_validation_errors(str(error).split("; "))
+        return 1
 
     if errors:
-        print("Image manifest validation failed:")
-        for error in errors:
-            print(f"- {error}")
+        print_validation_errors(errors)
         return 1
 
     print("Image manifest validation passed")

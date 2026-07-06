@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from dataclasses import dataclass
 from dataclasses import field
 from pathlib import Path
@@ -12,7 +13,9 @@ from typing import Any
 
 
 ALLOWED_OUTPUT_DIRS = {"人设资产", "场景资产", "道具资产"}
+PRODUCTION_OUTPUT_DIR = "生产资产"
 SECRET_KEY_NAMES = {"api_key", "authorization", "bearer", "token"}
+RAW_SECRET_VALUE_PATTERN = re.compile(r"\bsk-[A-Za-z0-9_-]{8,}\b")
 
 
 class ImageGenerationError(ValueError):
@@ -223,7 +226,10 @@ def build_dependency_waves(jobs: list[ImageJob]) -> list[list[ImageJob]]:
 
 def contains_secret_text(value: str) -> bool:
     lowered = value.casefold()
-    return any(secret in lowered for secret in SECRET_KEY_NAMES)
+    return (
+        any(secret in lowered for secret in SECRET_KEY_NAMES)
+        or RAW_SECRET_VALUE_PATTERN.search(value) is not None
+    )
 
 
 def _walk_json_values(value: Any) -> list[tuple[str, str]]:
@@ -260,16 +266,49 @@ def validate_manifest(
         asset_name = str(asset.get("asset_name", "")).strip()
         path_text = str(asset.get("path", "")).strip()
         status = str(asset.get("status", "")).strip()
+        path_errors, image_path = _validate_manifest_image_path(
+            asset_name, path_text, workspace
+        )
 
         if job_names and asset_name and asset_name not in job_names:
             errors.append(f"{asset_name}: manifest asset not present in jobs")
-        if path_text.startswith("生产资产/") or path_text.startswith("生产资产\\"):
-            errors.append(f"{asset_name}: generated image path must not be under 生产资产")
-        if status == "done":
-            image_path = workspace / path_text
+        errors.extend(path_errors)
+        if status == "done" and image_path is not None:
             if not image_path.is_file():
                 errors.append(f"{asset_name}: done asset missing local file {path_text}")
         if status in {"failed", "blocked"} and not asset.get("last_error"):
             errors.append(f"{asset_name}: {status} asset must record last_error")
 
     return errors
+
+
+def _validate_manifest_image_path(
+    asset_name: str, path_text: str, workspace: Path
+) -> tuple[list[str], Path | None]:
+    errors: list[str] = []
+    path = Path(path_text)
+
+    if not path_text:
+        errors.append(f"{asset_name}: generated image path is required")
+        return errors, None
+    if _has_drive_prefix(path_text):
+        errors.append(f"{asset_name}: generated image path must not use a drive prefix")
+    if path.is_absolute():
+        errors.append(f"{asset_name}: generated image path must be relative")
+    if errors:
+        return errors, None
+
+    workspace_path = workspace.resolve(strict=False)
+    resolved_path = (workspace_path / path).resolve(strict=False)
+    try:
+        relative_path = resolved_path.relative_to(workspace_path)
+    except ValueError:
+        errors.append(f"{asset_name}: generated image path must stay under workspace")
+        return errors, None
+
+    if relative_path.parts and relative_path.parts[0] == PRODUCTION_OUTPUT_DIR:
+        errors.append(
+            f"{asset_name}: generated image path must not be under {PRODUCTION_OUTPUT_DIR}"
+        )
+
+    return errors, resolved_path
