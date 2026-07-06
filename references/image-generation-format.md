@@ -17,6 +17,14 @@ Generated image files go to:
 
 Do not write generated images under `生产资产`.
 
+## Commands
+
+```bash
+python scripts/build_image_jobs.py --asset-bible 生产资产/_内部/asset-bible.md --out 生产资产/_内部/image-jobs.jsonl
+python scripts/generate_images.py --jobs 生产资产/_内部/image-jobs.jsonl --manifest 生产资产/_内部/image-manifest.json --resume
+python scripts/validate_image_manifest.py 生产资产/_内部/image-manifest.json --jobs 生产资产/_内部/image-jobs.jsonl
+```
+
 ## Job JSONL Shape
 
 Each line is one image job:

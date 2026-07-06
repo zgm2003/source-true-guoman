@@ -549,6 +549,32 @@ class SkillTextRulesTests(unittest.TestCase):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, retry_text)
 
+    def test_image_generation_scripts_are_documented_and_no_secret_logging_is_required(
+        self,
+    ) -> None:
+        root = Path(__file__).resolve().parents[1]
+        format_text = root.joinpath(
+            "references", "image-generation-format.md"
+        ).read_text(encoding="utf-8")
+        retry_text = root.joinpath(
+            "references", "image-generation-retry-rules.md"
+        ).read_text(encoding="utf-8")
+
+        script_paths = [
+            "scripts/build_image_jobs.py",
+            "scripts/generate_images.py",
+            "scripts/validate_image_manifest.py",
+        ]
+
+        for relative_path in script_paths:
+            with self.subTest(relative_path=relative_path):
+                self.assertTrue(root.joinpath(relative_path).is_file())
+                self.assertIn(relative_path, format_text)
+
+        self.assertIn("Do not log API keys", retry_text)
+        self.assertIn("Failed dependencies block dependent jobs", retry_text)
+        self.assertIn("resume", format_text)
+
     def test_copy_packager_uses_image_manifest_without_inventing_paths(self) -> None:
         root = Path(__file__).resolve().parents[1]
         agent_text = root.joinpath("agents", "copy-packager.md").read_text(
