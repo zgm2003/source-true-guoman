@@ -45,7 +45,7 @@ Default preservation stance: 原作多少字就保留多少字. Convert source t
 
 Default production slice: 5 chapters.
 If the user asks for more than 5 chapters in one breath, split into sequential 5-chapter production batches unless they explicitly insist on one giant batch.
-Default formal batch route: `source-indexer -> asset-bible -> faithful-feed -> feed-auditor -> copy-packager`.
+Default formal batch route: `source-indexer -> asset-bible -> image-generator(optional) -> faithful-feed -> feed-auditor -> copy-packager`.
 For each 5-chapter batch, deliver the canonical mother feed plus a paste-ready copy pack at the production-asset top level.
 
 Read `references/format.md` before writing final feed blocks. Read the selected camera-library reference before choosing the `运镜` field: `references/xiaoyunque-tags.md` for 小云雀 or `references/libtv-tags.md` for libtv.
@@ -63,9 +63,10 @@ Treat this skill as the orchestrator for a lightweight specialist agent pack. Th
 Route by user intent:
 
 - New project directory or root script file: initialize workspace first with `scripts/init_workspace.py <workspace>`, then archive root source scripts into `剧本资产`.
-- "Process these chapters", "turn this into feed", long requested scope, or formal multi-chapter production: run `source-indexer -> asset-bible -> faithful-feed -> feed-auditor -> copy-packager`.
+- "Process these chapters", "turn this into feed", long requested scope, or formal multi-chapter production: run `source-indexer -> asset-bible -> image-generator(optional) -> faithful-feed -> feed-auditor -> copy-packager`.
 - "Make an index", "read the source", "track roles", continuity questions, confusing aliases, or suspected typos: read `agents/source-indexer.md` and `references/source-index-format.md`.
 - "Make assets", "who needs images", "avoid face collision", "what references upload", reusable characters, scenes, props, interfaces, beasts, vehicles, or voices: read `agents/asset-bible.md` and `references/asset-bible-format.md`.
+- "生成图片", "批量生图", "把资产图跑出来", "接入 base_url/api_key 生图", "并发生成资产图", or "根据 asset-bible 生成图片": read `agents/image-generator.md`, `references/image-generation-format.md`, and `references/image-generation-retry-rules.md`; run `python scripts/build_image_jobs.py --asset-bible 生产资产/_内部/asset-bible.md --out 生产资产/_内部/image-jobs.jsonl`, `python scripts/generate_images.py --jobs 生产资产/_内部/image-jobs.jsonl --manifest 生产资产/_内部/image-manifest.json --resume`, and `python scripts/validate_image_manifest.py 生产资产/_内部/image-manifest.json --jobs 生产资产/_内部/image-jobs.jsonl` when saved artifacts are involved. Image generation runs after asset-bible and before downstream copy-pack image bindings; it must respect dependency waves and retry relay failures.
 - "Write feed", "video投喂", "faithful draft", or final continuous prompt blocks: read `agents/faithful-feed.md`, `references/format.md`, and the selected camera-library reference (`references/xiaoyunque-tags.md` or `references/libtv-tags.md`).
 - "Review", "check", "audit", "有没有问题", numbering QA, tag QA, or delivery gate: read `agents/feed-auditor.md` and `references/audit-checklist.md`; run `python scripts/validate_feed.py <feed-file>` when the feed is saved in a file.
 - "Can I delete", "cut", "trim", "compress", manual deletion ranges, or platform-length pressure: read `agents/cut-safety.md` and `references/cut-safety-rules.md` only for deletion-risk review and manual cut candidates. Generic compression requests are refused as rewrites and answered with exact cut/source-span advice. cut-safety is a deletion-risk assistant, not a compression writer; it writes a risk report and must not directly modify the canonical feed or copy packs.

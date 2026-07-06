@@ -97,6 +97,16 @@ Do not list every global asset in every pack. That recreates the copy burden.
 
 Do not invent references. Use stable asset names and image/voice bindings from source index and asset bible. If evidence is ambiguous, write `需人工确认` with the source-grounded asset name.
 
+When `生产资产/_内部/image-manifest.json` exists, use it for image bindings. Copy packs must not invent image paths. If a visible asset has missing, failed, or blocked manifest status, write `需人工确认（image-generator failed or blocked）`.
+
+Example manifest-aware image binding:
+
+```text
+上传参考图：
+- 角色1 = 林夜_黑袍造型 = 人设资产/林夜_黑袍造型.png
+- 场景1 = 鬼王宗宗门大殿_母图 = 需人工确认（image-generator failed or blocked）
+```
+
 In `## Pack Settings`, include `- Camera library: 小云雀` or `- Camera library: libtv` when the selected library is known. If legacy source material does not record the selected library, write `- Camera library: 需人工确认` and keep copied line tags bracketed.
 
 In `## Pack Settings`, include `- Aspect ratio: 9:16`, `- Aspect ratio: 16:9`, or `- Aspect ratio: 21:9` when the selected ratio is known. If legacy source material does not record the selected ratio, write `- Aspect ratio: 需人工确认`; for new formal production, ask `画幅比例用哪个？默认 16:9。可选：9:16（竖屏）、16:9（横屏）、21:9（电影）。如果你说默认，我就按 16:9。`

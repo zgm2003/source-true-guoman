@@ -33,6 +33,8 @@ Copy packs preserve the canonical feed's selected aspect ratio. Supported choice
 
 If source index, asset bible, faithful feed, or feed audit is missing, stop and ask to run `source-indexer -> asset-bible -> faithful-feed -> feed-auditor` first; do not invent references to fill the gap.
 
+When `生产资产/_内部/image-manifest.json` exists, use it for image bindings. Copy packs must not invent image paths. If a visible asset has missing, failed, or blocked manifest status, write `需人工确认（image-generator failed or blocked）`.
+
 ## Output
 
 Write a separate user-facing copy-pack artifact under the top level of `生产资产`, for example:

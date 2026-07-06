@@ -136,6 +136,7 @@ class SkillTextRulesTests(unittest.TestCase):
         expected_agent_refs = [
             "agents/source-indexer.md",
             "agents/asset-bible.md",
+            "agents/image-generator.md",
             "agents/faithful-feed.md",
             "agents/copy-packager.md",
             "agents/cut-safety.md",
@@ -185,7 +186,9 @@ class SkillTextRulesTests(unittest.TestCase):
             ),
             (
                 ("Process these chapters", "turn this into feed"),
-                ("source-indexer -> asset-bible -> faithful-feed -> feed-auditor",),
+                (
+                    "source-indexer -> asset-bible -> image-generator(optional) -> faithful-feed -> feed-auditor",
+                ),
             ),
             (
                 ("Make an index",),
@@ -471,6 +474,94 @@ class SkillTextRulesTests(unittest.TestCase):
         ]:
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, runner_text)
+
+    def test_image_generator_agent_is_declared_and_routed(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
+        agent_path = root.joinpath("agents", "image-generator.md")
+        format_path = root.joinpath("references", "image-generation-format.md")
+        retry_path = root.joinpath("references", "image-generation-retry-rules.md")
+
+        self.assertTrue(agent_path.is_file())
+        self.assertTrue(format_path.is_file())
+        self.assertTrue(retry_path.is_file())
+
+        route_line = next(
+            line.strip()
+            for line in skill_text.splitlines()
+            if "生成图片" in line and "agents/image-generator.md" in line
+        )
+        self.assertIn("references/image-generation-format.md", route_line)
+        self.assertIn("references/image-generation-retry-rules.md", route_line)
+        self.assertIn("scripts/generate_images.py", route_line)
+
+    def test_image_generator_docs_preserve_source_contract_and_manifest_boundary(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        agent_text = root.joinpath("agents", "image-generator.md").read_text(
+            encoding="utf-8"
+        )
+        format_text = root.joinpath(
+            "references", "image-generation-format.md"
+        ).read_text(encoding="utf-8")
+        retry_text = root.joinpath(
+            "references", "image-generation-retry-rules.md"
+        ).read_text(encoding="utf-8")
+
+        required_agent_phrases = [
+            "保真契约",
+            "不得由 AI 帮用户压缩",
+            "image-generator only executes approved image jobs",
+            "生产资产/_内部/image-manifest.json",
+            "人设资产",
+            "场景资产",
+            "道具资产",
+            "dependency waves",
+            "OpenAI-compatible",
+            "retry",
+            "resume",
+            "must not rewrite source",
+        ]
+        for phrase in required_agent_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, agent_text)
+
+        required_format_phrases = [
+            "image-jobs.jsonl",
+            "image-manifest.json",
+            "image-generation-report.md",
+            "stable asset name",
+            "depends_on",
+            "reference_images",
+            "Copy packs must not invent image paths",
+        ]
+        for phrase in required_format_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, format_text)
+
+        required_retry_phrases = [
+            "Retryable errors",
+            "Non-retryable errors",
+            "exponential backoff",
+            "Failed dependencies block dependent jobs",
+            "Do not log API keys",
+        ]
+        for phrase in required_retry_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, retry_text)
+
+    def test_copy_packager_uses_image_manifest_without_inventing_paths(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        agent_text = root.joinpath("agents", "copy-packager.md").read_text(
+            encoding="utf-8"
+        )
+        format_text = root.joinpath("references", "copy-pack-format.md").read_text(
+            encoding="utf-8"
+        )
+
+        for text in (agent_text, format_text):
+            self.assertIn("image-manifest.json", text)
+            self.assertIn("Copy packs must not invent image paths", text)
+            self.assertIn("需人工确认（image-generator failed or blocked）", text)
 
     def test_agent_pack_keeps_source_faithfulness_as_non_overridable_contract(self) -> None:
         root = Path(__file__).resolve().parents[1]
