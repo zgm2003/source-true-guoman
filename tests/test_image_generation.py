@@ -13,6 +13,7 @@ from scripts.image_generation_core import (
     validate_manifest,
     validate_jobs,
 )
+from scripts.build_image_jobs import build_jobs_from_asset_text
 
 
 class ImageGenerationCoreTests(unittest.TestCase):
@@ -393,6 +394,118 @@ class ImageManifestValidationTests(unittest.TestCase):
         errors = validate_manifest(manifest, [], Path("."))
 
         self.assertIn("manifest must not contain secret key names", "; ".join(errors))
+
+
+class BuildImageJobsTests(unittest.TestCase):
+    def test_build_jobs_from_asset_prompt_headings_preserves_order_and_infers_output_dirs(
+        self,
+    ) -> None:
+        text = """
+## 资产提示词
+
+### 图片1 = 林夜_黑袍造型
+GPT-image-2，16:9，3D国漫。角色三视图，白色背景。
+
+### 图片2 = 鬼王宗宗门大殿_母图
+GPT-image-2，16:9，3D国漫。空场景，宗门大殿，不要人物。
+
+### 图片3 = 万魂幡_单体
+GPT-image-2，16:9，道具名单体参考图，只生成一个完整主体。
+
+### 图片4 = 系统界面_惩罚弹窗
+GPT-image-2，16:9，界面风格参考图，正面屏幕。
+"""
+
+        jobs = build_jobs_from_asset_text(text, model="gpt-image-2", size="16:9")
+
+        self.assertEqual(
+            [job.asset_name for job in jobs],
+            [
+                "林夜_黑袍造型",
+                "鬼王宗宗门大殿_母图",
+                "万魂幡_单体",
+                "系统界面_惩罚弹窗",
+            ],
+        )
+        self.assertEqual(
+            [job.asset_type for job in jobs],
+            ["character", "scene", "prop", "prop"],
+        )
+        self.assertEqual(
+            [job.output_dir for job in jobs],
+            ["人设资产", "场景资产", "道具资产", "道具资产"],
+        )
+        self.assertEqual(jobs[0].output_file, "林夜_黑袍造型.png")
+
+    def test_build_jobs_extracts_upload_reference_lines_and_dedupes_dependencies(
+        self,
+    ) -> None:
+        text = """
+## 资产提示词
+
+### 图片1 = 林夜_黑袍造型
+GPT-image-2，16:9，3D国漫。角色三视图，白色背景。
+
+### 图片2 = 鬼王宗宗门大殿_母图
+GPT-image-2，16:9，3D国漫。空场景，宗门大殿，不要人物。
+
+### 图片3 = 林夜_宗门礼服
+上传参考图：林夜_黑袍造型 = 图片1（人脸身份参考）；林夜_黑袍造型 = 图片1（旧造型参考）
+上传参考图：鬼王宗宗门大殿_母图 = 图片2（场景母图参考）
+GPT-image-2，16:9，3D国漫。保持同一张脸，换宗门礼服。
+"""
+
+        jobs = build_jobs_from_asset_text(text, model="gpt-image-2", size="16:9")
+
+        variant = jobs[2]
+        self.assertEqual(variant.depends_on, ["林夜_黑袍造型", "鬼王宗宗门大殿_母图"])
+        self.assertEqual(
+            [(ref.asset_name, ref.purpose) for ref in variant.reference_images],
+            [
+                ("林夜_黑袍造型", "人脸身份参考"),
+                ("林夜_黑袍造型", "旧造型参考"),
+                ("鬼王宗宗门大殿_母图", "场景母图参考"),
+            ],
+        )
+
+    def test_build_image_jobs_cli_writes_jsonl_loadable_by_core(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            asset_bible = root / "asset-bible.md"
+            jobs_path = root / "image-jobs.jsonl"
+            asset_bible.write_text(
+                "## 资产提示词\n\n"
+                "### 图片1 = 万魂幡_单体\n"
+                "GPT-image-2，16:9，道具名单体参考图，只生成一个完整主体。\n",
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(
+                        Path(__file__).resolve().parents[1]
+                        / "scripts"
+                        / "build_image_jobs.py"
+                    ),
+                    "--asset-bible",
+                    str(asset_bible),
+                    "--out",
+                    str(jobs_path),
+                    "--provider",
+                    "openai-compatible",
+                ],
+                text=True,
+                capture_output=True,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("Wrote 1 image jobs", result.stdout)
+            jobs = load_jobs_jsonl(jobs_path)
+            self.assertEqual(len(jobs), 1)
+            self.assertEqual(jobs[0].asset_name, "万魂幡_单体")
+            self.assertEqual(jobs[0].output_dir, "道具资产")
+            self.assertEqual(jobs[0].provider, "openai-compatible")
 
 
 if __name__ == "__main__":
