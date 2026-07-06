@@ -171,6 +171,50 @@ class SkillTextRulesTests(unittest.TestCase):
                 self.assertNotIn("1:1 方屏", text)
                 self.assertNotIn("4:5 信息流", text)
 
+    def test_formal_production_requires_explicit_camera_library_and_aspect_ratio_before_artifacts(
+        self,
+    ) -> None:
+        root = Path(__file__).resolve().parents[1]
+        formal_feed_files = [
+            root.joinpath("SKILL.md"),
+            root.joinpath("references", "format.md"),
+            root.joinpath("agents", "faithful-feed.md"),
+        ]
+        copy_pack_files = [
+            root.joinpath("agents", "copy-packager.md"),
+            root.joinpath("references", "copy-pack-format.md"),
+        ]
+        hard_gate = (
+            "Formal production gate: if camera library or aspect ratio is not explicitly "
+            "selected by the user or inherited from an existing audited feed, stop before "
+            "drafting or writing the canonical feed or copy packs and ask in chat. Do not "
+            "choose defaults, do not assume 小云雀, and do not assume 16:9."
+        )
+        missing_params_prompt = (
+            "正式生产参数缺失：请先选择运镜库（小云雀 / libtv）和画幅比例"
+            "（9:16竖屏 / 16:9横屏 / 21:9电影）。收到选择前，我不会生成连续投喂稿或复制包。"
+        )
+        copy_pack_gate = (
+            "New formal copy-pack gate: if the source feed or user request does not already "
+            "record camera library and aspect ratio, stop before writing copy packs and ask "
+            "in chat; legacy material may be marked 需人工确认 only when it predates this gate."
+        )
+
+        for path in formal_feed_files:
+            with self.subTest(path=path.name):
+                text = path.read_text(encoding="utf-8")
+                self.assertIn(hard_gate, text)
+                self.assertIn(missing_params_prompt, text)
+                self.assertNotIn("16:9` is the default aspect ratio unless", text)
+                self.assertNotIn("gives no preference after being asked", text)
+
+        for path in copy_pack_files:
+            with self.subTest(path=path.name):
+                text = path.read_text(encoding="utf-8")
+                self.assertIn(copy_pack_gate, text)
+                self.assertIn(missing_params_prompt, text)
+                self.assertNotIn("gives no preference after being asked", text)
+
     def test_main_skill_routes_common_intents_to_specialists(self) -> None:
         root = Path(__file__).resolve().parents[1]
         route_lines = [

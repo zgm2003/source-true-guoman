@@ -9,7 +9,7 @@ description: Use when turning Chinese web-novel chapters, excerpts, scripts, or 
 
 Produce a **lightweight 3D国漫 production feed**, not a director textbook. Keep source reading, director judgment, asset decisions, and risk checks mostly internal. The final text should be easy for a video model to follow.
 
-Default style: `3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9`; `16:9` is the default aspect ratio unless the user chooses another supported ratio.
+Default visual style after production parameters are selected: `3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续`; append the user-selected aspect ratio. Use 16:9 only when the user explicitly chooses `16:9` or says `默认` after being asked.
 
 Default preservation stance: 原作多少字就保留多少字. Convert source text into continuous numbered feed lines and 把呼吸感、停顿、删减权留给用户. 不得由 AI 帮用户压缩、概括、改短、润色原作对白或剧情；压缩请求只能输出原文切点、连续编号建议, or tell the user which exact source spans they may manually remove.
 
@@ -34,14 +34,16 @@ Default preservation stance: 原作多少字就保留多少字. Convert source t
 9. Reconcile early anonymous roles with later named roles before emitting assets. If a “路人/NPC/弟子/店小二/黑衣人/侍女/守卫” later gets a name, repeated appearances, dialogue, or plot function, upgrade it to one stable reusable asset and bind all appearances to that identity.
 10. If identity is plausible but not confirmed, mark it privately as a suspected same asset. Do not invent confirmation, do not merge faces in output, and do not create strong contradictions; wait for source evidence or user confirmation.
 11. Draft shots internally: one video line = one visible action target, one main emotion or beat, one camera movement.
-12. For any formal production standard, production mother feed, or formal copy-pack batch, confirm the camera library before writing final video lines if the user has not already specified it: ask whether to use `小云雀` or `libtv`. If an existing audited feed already declares or clearly uses one selected library, keep that library unless the user asks to switch.
-13. For any formal production standard, production mother feed, or formal copy-pack batch, confirm the aspect ratio before writing final video lines if the user has not already specified it: ask `画幅比例用哪个？默认 16:9。可选：9:16（竖屏）、16:9（横屏）、21:9（电影）。如果你说默认，我就按 16:9。` Only offer these three ratios. Do not offer `1:1` or `4:5`. If an existing audited feed already declares or clearly uses one selected ratio, keep that ratio unless the user asks to switch.
-14. Emit only the final package:
+12. Formal production gate: if camera library or aspect ratio is not explicitly selected by the user or inherited from an existing audited feed, stop before drafting or writing the canonical feed or copy packs and ask in chat. Do not choose defaults, do not assume 小云雀, and do not assume 16:9.
+13. Use this exact chat prompt when formal production parameters are missing: `正式生产参数缺失：请先选择运镜库（小云雀 / libtv）和画幅比例（9:16竖屏 / 16:9横屏 / 21:9电影）。收到选择前，我不会生成连续投喂稿或复制包。`
+14. For any formal production standard, production mother feed, or formal copy-pack batch, confirm the camera library before writing final video lines if the user has not already specified it: ask whether to use `小云雀` or `libtv`. If an existing audited feed already declares or clearly uses one selected library, keep that library unless the user asks to switch.
+15. For any formal production standard, production mother feed, or formal copy-pack batch, confirm the aspect ratio before writing final video lines if the user has not already specified it: ask `画幅比例用哪个？默认 16:9。可选：9:16（竖屏）、16:9（横屏）、21:9（电影）。如果你说默认，我就按 16:9。` Only offer these three ratios. Do not offer `1:1` or `4:5`. If an existing audited feed already declares or clearly uses one selected ratio, keep that ratio unless the user asks to switch.
+16. Emit only the final package:
    - `## 资产提示词`
    - `## 视频投喂块`
-15. In `## 视频投喂块`, start with the global `统一要求` line using the selected aspect ratio, then number lines continuously from `1` to the end. Do not create 15-second groups, `第N组`, group titles, group footers, or per-group pacing blocks.
-16. Before delivery, check source fidelity, dialogue preservation, asset reuse, selected camera-library tags, selected aspect ratio, angle-bracketed camera/storyboard marking, continuous numbering, and multi-chapter coverage.
-17. For formal production batches, run `copy-packager` after source index, asset bible, faithful feed, and feed audit exist; keep copy packs in a separate `生产资产` artifact.
+17. In `## 视频投喂块`, start with the global `统一要求` line using the selected aspect ratio, then number lines continuously from `1` to the end. Do not create 15-second groups, `第N组`, group titles, group footers, or per-group pacing blocks.
+18. Before delivery, check source fidelity, dialogue preservation, asset reuse, selected camera-library tags, selected aspect ratio, angle-bracketed camera/storyboard marking, continuous numbering, and multi-chapter coverage.
+19. For formal production batches, run `copy-packager` after source index, asset bible, faithful feed, and feed audit exist; keep copy packs in a separate `生产资产` artifact.
 
 Default production slice: 5 chapters.
 If the user asks for more than 5 chapters in one breath, split into sequential 5-chapter production batches unless they explicitly insist on one giant batch.
@@ -198,7 +200,7 @@ Final video lines must describe what is visible in the frame. Keep them light.
 Continuous numbering:
 
 - Do not create 15-second groups. Do not write `第1组`, `第1-5条`, group titles, group footers, or any fixed 3-7 line pacing rule.
-- Start `## 视频投喂块` with the selected-ratio global `统一要求` line. 默认 16:9: `统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。`
+- Start `## 视频投喂块` with the selected-ratio global `统一要求` line. When the user explicitly chooses 16:9 or says `默认`, use: `统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。`
 - Supported aspect ratios are only `9:16（竖屏）`, `16:9（横屏）`, and `21:9（电影）`.
 - After the `统一要求` line, number video lines continuously from `1` to the end. Do not reset numbering by scene, chapter, or asset.
 - The video feed should stay source-content-first: original events, exact dialogue/OS/system prompts, source-grounded visible reactions, and necessary environmental/action audio.
@@ -245,7 +247,7 @@ Video block header:
 统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。
 ```
 
-Use the selected supported aspect ratio in this line; 默认 16:9. The only supported choices are `9:16（竖屏）`, `16:9（横屏）`, and `21:9（电影）`.
+Use the selected supported aspect ratio in this line. The only supported choices are `9:16（竖屏）`, `16:9（横屏）`, and `21:9（电影）`; 16:9 is used only when the user explicitly chooses it or says `默认` after being asked.
 
 Do not repeat this line as a footer. Do not add per-group `上传参考图`, `音色`, or `音色资产` blocks under video lines. Put reusable images and voices in `## 资产提示词` or one compact asset list only when the user needs it.
 

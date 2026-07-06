@@ -17,6 +17,10 @@ The canonical source truth remains the `连续投喂稿`: `## 视频投喂块`, 
 
 Copy packs preserve the canonical feed's selected aspect ratio. Supported choices are only `9:16（竖屏）`, `16:9（横屏）`, and `21:9（电影）`; 默认 16:9 when the user says default. Do not offer `1:1` or `4:5`.
 
+New formal copy-pack gate: if the source feed or user request does not already record camera library and aspect ratio, stop before writing copy packs and ask in chat; legacy material may be marked 需人工确认 only when it predates this gate.
+
+Use this exact chat prompt when formal production parameters are missing: `正式生产参数缺失：请先选择运镜库（小云雀 / libtv）和画幅比例（9:16竖屏 / 16:9横屏 / 21:9电影）。收到选择前，我不会生成连续投喂稿或复制包。`
+
 ## Required References
 
 - Read `references/copy-pack-format.md` before writing any copy-pack artifact.
@@ -55,8 +59,8 @@ Do not insert copy packs into `## 视频投喂块` and do not change the faithfu
 6. Collect only visible dependencies needed by the copied lines: scene, visible characters, props/interfaces, and speaking voices.
 7. Use stable asset names and existing image or voice bindings from source index and asset bible.
 8. If a needed binding is ambiguous, write `需人工确认` with the stable source-grounded name. Do not invent a new image, voice, scene, or character reference.
-9. Include `- Camera library: 小云雀`, `- Camera library: libtv`, or `- Camera library: 需人工确认` in `## Pack Settings`.
-10. Include `- Aspect ratio: 9:16`, `- Aspect ratio: 16:9`, `- Aspect ratio: 21:9`, or `- Aspect ratio: 需人工确认` in `## Pack Settings`. For a new formal batch without a selected ratio, ask `画幅比例用哪个？默认 16:9。可选：9:16（竖屏）、16:9（横屏）、21:9（电影）。如果你说默认，我就按 16:9。`
+9. Include `- Camera library: 小云雀` or `- Camera library: libtv` in `## Pack Settings` when the selected library is known. Use `- Camera library: 需人工确认` only for legacy material that predates this gate; for new formal batches, stop and ask instead of writing copy packs.
+10. Include `- Aspect ratio: 9:16`, `- Aspect ratio: 16:9`, or `- Aspect ratio: 21:9` in `## Pack Settings` when the selected ratio is known. Use `- Aspect ratio: 需人工确认` only for legacy material that predates this gate. For a new formal batch without a selected ratio, ask `画幅比例用哪个？默认 16:9。可选：9:16（竖屏）、16:9（横屏）、21:9（电影）。如果你说默认，我就按 16:9。`
 11. Keep each copied video line text unchanged, including `<...>` camera tags. If copied lines use bare camera words, stop and update the canonical feed first; do not patch copy packs directly.
 12. After saving the artifact, run `python scripts/validate_copy_packs.py <copy-pack-file> --source-feed <feed-file> --pack-size <N>` when a source feed file is available.
 

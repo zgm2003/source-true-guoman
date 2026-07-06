@@ -15,7 +15,11 @@ For formal production standards, production mother feeds, and formal copy-pack b
 
 Write the raw selected-library tag inside angle brackets in both the production mother feed and copy packs: `<固定镜头>`, `<镜头前推>`, `<第一视角>`. Do not write bare camera-library terms. If both libraries contain the same raw tag, still mark only the raw tag in the line, e.g. `<第一人称>`; keep the selected library as task/package context, not inside the tag.
 
-For formal production standards, production mother feeds, and formal copy-pack batches, ask the user to choose an aspect ratio when it is not already specified: `画幅比例用哪个？默认 16:9。可选：9:16（竖屏）、16:9（横屏）、21:9（电影）。如果你说默认，我就按 16:9。` Only offer these three ratios. Do not offer `1:1` or `4:5`. Use the selected ratio anywhere the global requirement or prompt text carries a ratio; 默认 16:9.
+Formal production gate: if camera library or aspect ratio is not explicitly selected by the user or inherited from an existing audited feed, stop before drafting or writing the canonical feed or copy packs and ask in chat. Do not choose defaults, do not assume 小云雀, and do not assume 16:9.
+
+Use this exact chat prompt when formal production parameters are missing: `正式生产参数缺失：请先选择运镜库（小云雀 / libtv）和画幅比例（9:16竖屏 / 16:9横屏 / 21:9电影）。收到选择前，我不会生成连续投喂稿或复制包。`
+
+For formal production standards, production mother feeds, and formal copy-pack batches, ask the user to choose an aspect ratio when it is not already specified: `画幅比例用哪个？默认 16:9。可选：9:16（竖屏）、16:9（横屏）、21:9（电影）。如果你说默认，我就按 16:9。` Only offer these three ratios. Do not offer `1:1` or `4:5`. Use the selected ratio anywhere the global requirement or prompt text carries a ratio; use 16:9 only when the user explicitly chooses it or says `默认` after being asked.
 
 ```text
 ## 资产提示词
@@ -45,7 +49,7 @@ Any operation that changes video line text, line numbers, or asset bindings must
 
 The first line after `统一要求` should enter source content quickly: a source event, exact source dialogue/OS/system prompt, conflict, visible decision, or one brief establishing shot tied to the source.
 
-The global requirement line must use one supported aspect ratio only: `9:16（竖屏）`, `16:9（横屏）`, or `21:9（电影）`. 默认 16:9 when the user says default or gives no preference after being asked.
+The global requirement line must use one supported aspect ratio only: `9:16（竖屏）`, `16:9（横屏）`, or `21:9（电影）`. Use 16:9 only when the user explicitly chooses it or says `默认` after being asked; otherwise stop and ask before writing production artifacts.
 
 把呼吸感交给用户. Do not decide pauses by making 15-second blocks, do not enforce a 100-character spoken limit, and do not add pacing commentary. The user decides where to pause, cut, merge, or split after receiving the continuous source-faithful feed.
 
