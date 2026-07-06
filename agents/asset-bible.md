@@ -22,7 +22,7 @@ Use this specialist when reusable assets need to be planned before image or vide
 
 ## Output
 
-Create `生产资产/asset-bible.md`, or a compact `## 资产提示词` plan when the user only needs asset prompts inside a feed package. Use `references/asset-bible-format.md` for the structure.
+Create `生产资产/_内部/asset-bible.md`, or a compact `## 资产提示词` plan when the user only needs asset prompts inside a feed package. Use `references/asset-bible-format.md` for the structure. Keep internal asset-bible files out of the production-asset top level; the top level is for the mother feed and copy packs.
 
 Scope mode policy: 正式多章任务必须先预扫完整请求范围. 局部烟测必须显式标记已阅读范围. 局部烟测资产不得当作全局定稿.
 
@@ -34,7 +34,7 @@ Asset status must be visible near the top of the output:
 
 ## Procedure
 
-1. Check the source-index status before making asset calls: final asset decisions require `全范围预扫`. For formal multi-chapter work, do not finalize reusable identities, scene families, or production dependencies from an unread tail.
+1. Check the source-index status before making asset calls: final asset decisions require `全范围预扫`. For formal multi-chapter work, do not finalize reusable identities, scene families, or production dependencies from an unread tail. When scope exceeds 5 chapters, review each 5-chapter batch ledger before pruning assets so named local roles, speaking roles, and repeated props do not disappear from the bible.
 2. Reuse existing assets first. Only add new assets that stabilize identity, setting, conflict, action, interface, or repeated continuity. Temporary posture, blocking, camera position, seat, and one-off action stay in video lines.
 3. Classify every visible person into one tier: `主角/高频配角`, `命名低频角色`, `群像模板`, or `一次性背景人`.
 4. Give `主角/高频配角` individual tri-view assets. Use group templates for repeated nameless disciples, guards, villagers, vendors, or soldiers. Keep `一次性背景人` in shot description unless identity or later continuity makes them reusable.

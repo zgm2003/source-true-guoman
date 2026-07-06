@@ -12,7 +12,7 @@ Any operation that changes video line text, line numbers, or asset bindings must
 
 ## File Location
 
-Write copy-pack files under `生产资产`, for example:
+Write copy-pack files at the user-facing top level under `生产资产`, while source-index, asset-bible, audit reports, and other evidence stay under `生产资产/_内部/`, for example:
 
 ```text
 生产资产/seedance-copy-packs-production-ch01-05.md

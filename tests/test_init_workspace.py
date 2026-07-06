@@ -225,7 +225,7 @@ class SkillTextRulesTests(unittest.TestCase):
             "Only use `cut-safety` after the user has chosen deletion targets or asks for cut-risk help",
             "Only use `visual-polish` after preserving source coverage",
             "Only use `production-runner` after assets and faithful feed lines exist",
-            "run `copy-packager` after source index, asset bible, faithful feed, and feed audit exist; keep copy packs in a separate `生产资产` artifact",
+            "For formal production batches, run `copy-packager` after source index, asset bible, faithful feed, and feed audit exist; keep copy packs as a user-facing `生产资产` artifact.",
             "Only use `copy-packager` after source index, asset bible, faithful feed, and feed audit exist",
             "copy-packager creates paste-ready wrappers, not pacing groups",
         ]
@@ -502,19 +502,55 @@ class SkillTextRulesTests(unittest.TestCase):
             skill_text,
         )
 
-    def test_workspace_storage_policy_puts_feed_text_in_production_assets(self) -> None:
+    def test_workspace_storage_policy_keeps_production_assets_user_facing(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
+        faithful_feed_text = root.joinpath("agents", "faithful-feed.md").read_text(
+            encoding="utf-8"
+        )
+        source_indexer_text = root.joinpath("agents", "source-indexer.md").read_text(
+            encoding="utf-8"
+        )
+        asset_bible_text = root.joinpath("agents", "asset-bible.md").read_text(
+            encoding="utf-8"
+        )
+        copy_packager_text = root.joinpath("agents", "copy-packager.md").read_text(
+            encoding="utf-8"
+        )
+
+        for text in (skill_text, faithful_feed_text):
+            self.assertIn("生产资产顶层只放用户交付件：连续投喂稿和复制投喂包", text)
+            self.assertIn("内部证据写入 `生产资产/_内部/`", text)
+            self.assertIn("视频资产只放最终视频文件或渲染结果", text)
+
+        self.assertIn("生产资产/_内部/source-index.md", skill_text)
+        self.assertIn("生产资产/_内部/source-index.md", source_indexer_text)
+        self.assertIn("生产资产/_内部/asset-bible.md", asset_bible_text)
+        self.assertIn("生产资产/_内部/", copy_packager_text)
+        self.assertNotIn("投喂稿、source-index、asset-bible、审计报告、剪辑风险报告属于生产资产", skill_text)
+        self.assertNotIn("working-directory source index", skill_text)
+        self.assertNotIn("Keep the index in the working directory", skill_text)
+
+    def test_formal_production_defaults_to_five_chapter_copy_pack_batches(self) -> None:
         root = Path(__file__).resolve().parents[1]
         skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
         faithful_feed_text = root.joinpath("agents", "faithful-feed.md").read_text(
             encoding="utf-8"
         )
 
-        for text in (skill_text, faithful_feed_text):
-            self.assertIn("投喂稿、source-index、asset-bible、审计报告、剪辑风险报告属于生产资产", text)
-            self.assertIn("视频资产只放最终视频文件或渲染结果", text)
-        self.assertIn("生产资产/source-index.md", skill_text)
-        self.assertNotIn("working-directory source index", skill_text)
-        self.assertNotIn("Keep the index in the working directory", skill_text)
+        required_skill_phrases = [
+            "Default production slice: 5 chapters.",
+            "If the user asks for more than 5 chapters in one breath, split into sequential 5-chapter production batches unless they explicitly insist on one giant batch.",
+            "Default formal batch route: `source-indexer -> asset-bible -> faithful-feed -> feed-auditor -> copy-packager`.",
+            "For each 5-chapter batch, deliver the canonical mother feed plus a paste-ready copy pack at the production-asset top level.",
+        ]
+
+        for phrase in required_skill_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, skill_text)
+
+        self.assertIn("make a private chapter beat ledger per 5-chapter batch", faithful_feed_text)
+        self.assertIn("do not let a 30-chapter request skip locally important named roles", faithful_feed_text)
 
     def test_faithful_feed_requires_index_assets_and_coverage_audit(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -663,7 +699,7 @@ class SkillTextRulesTests(unittest.TestCase):
         )
 
         required_phrases = [
-            "生产资产/source-index.md",
+            "生产资产/_内部/source-index.md",
             "全范围预扫",
             "局部烟测",
             "索引状态",

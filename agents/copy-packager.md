@@ -24,8 +24,8 @@ The canonical source truth remains the `连续投喂稿`: `## 视频投喂块`, 
 ## Inputs
 
 - Faithful feed file or final faithful feed text.
-- `生产资产/source-index.md` or equivalent source index.
-- `生产资产/asset-bible.md` or equivalent asset bible.
+- `生产资产/_内部/source-index.md` or equivalent source index.
+- `生产资产/_内部/asset-bible.md` or equivalent asset bible.
 - Feed audit result or saved audit report.
 - Existing image and voice filenames or image numbers when available.
 
@@ -33,7 +33,7 @@ If source index, asset bible, faithful feed, or feed audit is missing, stop and 
 
 ## Output
 
-Write a separate copy-pack artifact under `生产资产`, for example:
+Write a separate user-facing copy-pack artifact under the top level of `生产资产`, for example:
 
 ```text
 生产资产/seedance-copy-packs-production-ch01-05.md
