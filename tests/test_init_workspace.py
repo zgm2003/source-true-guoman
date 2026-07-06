@@ -1788,6 +1788,45 @@ class SkillTextRulesTests(unittest.TestCase):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, reference_text)
 
+    def test_prop_assets_default_to_single_subject_and_require_labeled_triviews(
+        self,
+    ) -> None:
+        root = Path(__file__).resolve().parents[1]
+        skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
+        agent_text = root.joinpath("agents", "asset-bible.md").read_text(
+            encoding="utf-8"
+        )
+        format_text = root.joinpath("references", "format.md").read_text(
+            encoding="utf-8"
+        )
+        bible_format_text = root.joinpath("references", "asset-bible-format.md").read_text(
+            encoding="utf-8"
+        )
+        continuity_text = root.joinpath("references", "asset-continuity-rules.md").read_text(
+            encoding="utf-8"
+        )
+
+        required_phrases = [
+            "道具默认生成单体参考图",
+            "只生成一个完整主体",
+            "生产需要三视图的道具必须显式标注正面、背面、侧面",
+            "手机等需要前后侧信息的道具可以使用道具三视图",
+            "不要把普通一次性道具升级成三视图",
+        ]
+
+        for text in (skill_text, agent_text, format_text, continuity_text):
+            for phrase in required_phrases:
+                with self.subTest(phrase=phrase):
+                    self.assertIn(phrase, text)
+
+        for phrase in [
+            "View requirement: single-subject / prop tri-view",
+            "Required labeled views: 正面 / 背面 / 侧面",
+            "Front/back/side notes:",
+        ]:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, bible_format_text)
+
     def test_commercial_upgrade_feed_alignment_reference_is_routed(self) -> None:
         root = Path(__file__).resolve().parents[1]
         agent_text = root.joinpath("agents", "faithful-feed.md").read_text(

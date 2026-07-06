@@ -54,7 +54,10 @@ Use this file when creating `asset-bible.md` or a compact asset plan.
   - Value gate:
   - Dependency gate:
   - Variant type:
+  - View requirement: single-subject / prop tri-view
   - Single-subject image requirement:
+  - Required labeled views: 正面 / 背面 / 侧面
+  - Front/back/side notes:
   - Parent character/scene reference:
   - Parent reference purpose:
   - Interface orientation:

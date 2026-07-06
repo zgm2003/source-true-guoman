@@ -43,7 +43,7 @@ Asset status must be visible near the top of the output:
 7. For every derived outfit/state asset, require previous face/identity references. Keep the same face, age band, facial structure, hairstyle logic, body type, and identity marks while changing only the source-justified outfit, injury, disguise, battle state, or transformed state.
 8. Separate similar important characters before writing prompts when they share same sect, same uniform, same gender/age band, or similar protagonist styling. Record contrast anchors for face shape, brows/eyes, nose bridge, mouth, jawline, hairstyle silhouette, height/build, posture, temperament, and identity marks.
 9. Bind parent-child references explicitly: outfit variants to face references, sub-scenes to scene mother images, props/interfaces to owner or parent scene, and interface variants to the previous screen language when continuity depends on them.
-10. Create prop/interface/beast/vehicle assets only when they carry identity, action, interface, or repeated continuity. Use clean single-subject images for high-value props and interfaces; do not generate a separate asset for every incidental object.
+10. Create prop/interface/beast/vehicle assets only when they carry identity, action, interface, or repeated continuity. 道具默认生成单体参考图; use clean single-subject images for high-value props and interfaces, and 只生成一个完整主体. 手机等需要前后侧信息的道具可以使用道具三视图, but 生产需要三视图的道具必须显式标注正面、背面、侧面. 不要把普通一次性道具升级成三视图 or generate a separate asset for every incidental object.
 11. Create voice assets for speaking roles in the requested scope. Do not create voice assets for silent background people.
 12. List reference upload purposes with clear labels: `人脸身份参考`, `旧造型参考`, `避撞脸参考`, `同门服制参考`, `场景母图参考`, `局部场景参考`, `材质风格参考`, `界面风格参考`.
 13. Cite source/index evidence for each reusable asset, derived asset, similar-character separation, reference dependency, and user-confirmation wait state.
@@ -53,6 +53,7 @@ Continuity gates:
 - Keep a character variant matrix for each reusable identity. A derived variant must name the parent outfit/state and bind a face/identity reference.
 - Apply similar-character separation before prompt writing when important characters could share face, uniform, silhouette, or protagonist styling.
 - Apply the prop/interface double gate: create the asset only when it has both value and dependency; keep incidental props in video lines.
+- For prop view choice, default to a single-subject prop reference. Use a labeled prop tri-view only when production needs distinct front/back/side information, such as phone front screen, back camera/body, and side thickness/buttons.
 - Use a scene mother reference for sub-scenes, close details, and local sets that must inherit architecture, materials, light logic, or world identity.
 - Record the voice asset trigger as source dialogue or recurring voice continuity in the requested scope.
 

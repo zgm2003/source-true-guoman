@@ -10,6 +10,8 @@ Track each important character by source identity, current outfit/state, parent 
 
 Create a prop or interface asset only when it passes both value and dependency. The value gate asks whether it carries identity, action, interface content, plot conflict, or repeated continuity. The dependency gate asks whether later prompts need a reusable image, parent scene/owner style, screen orientation, or material reference. Incidental props that fail either gate stay in video lines.
 
+道具默认生成单体参考图: use clean single-subject prop references and 只生成一个完整主体. 手机等需要前后侧信息的道具可以使用道具三视图, but 生产需要三视图的道具必须显式标注正面、背面、侧面. 不要把普通一次性道具升级成三视图. Use prop tri-views only when production continuity depends on distinct front/back/side information, such as phone screen/front, back camera/body, and side buttons or thickness.
+
 ## Scene mother and sub-scene dependencies
 
 Treat large reusable locations as scene mother references. Sub-scenes such as rooms, gates, corridors, stalls, altars, counters, close-up corners, or screen details should bind the scene mother reference when architecture, materials, light logic, palette, or world identity must match.
