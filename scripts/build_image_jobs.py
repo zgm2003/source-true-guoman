@@ -20,6 +20,7 @@ except ModuleNotFoundError:
 
 ASSET_BLOCK_RE = re.compile(r"^##\s+资产提示词\s*$")
 HEADING_RE = re.compile(r"^###\s+图片\d+\s*=\s*(.+?)\s*$")
+MARKDOWN_HEADING_RE = re.compile(r"^#{1,6}\s+")
 REFERENCE_LINE_MARKER = "上传参考图"
 REFERENCE_RE = re.compile(r"(.+?)\s*=\s*图片\d+\s*(?:（([^）]+)）|\(([^)]+)\))")
 
@@ -84,6 +85,7 @@ def build_jobs_from_asset_text(
     in_asset_block = False
 
     def flush_current() -> None:
+        nonlocal current_name, current_lines
         if current_name is None:
             return
 
@@ -106,20 +108,30 @@ def build_jobs_from_asset_text(
                 status="pending",
             )
         )
+        current_name = None
+        current_lines = []
 
     for raw_line in text.splitlines():
         stripped = raw_line.strip()
-        if ASSET_BLOCK_RE.match(stripped):
-            in_asset_block = True
-            continue
-        if not in_asset_block:
-            continue
 
         match = HEADING_RE.match(stripped)
         if match:
             flush_current()
+            in_asset_block = True
             current_name = match.group(1).strip()
             current_lines = []
+            continue
+
+        if ASSET_BLOCK_RE.match(stripped):
+            flush_current()
+            in_asset_block = True
+            continue
+
+        if current_name is not None and MARKDOWN_HEADING_RE.match(stripped):
+            flush_current()
+            continue
+
+        if not in_asset_block:
             continue
         if current_name is not None:
             current_lines.append(raw_line)

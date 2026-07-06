@@ -507,6 +507,40 @@ GPT-image-2，16:9，3D国漫。保持同一张脸，换宗门礼服。
             self.assertEqual(jobs[0].output_dir, "道具资产")
             self.assertEqual(jobs[0].provider, "openai-compatible")
 
+    def test_build_jobs_stops_prompt_before_following_markdown_heading(self) -> None:
+        text = """
+## 资产提示词
+### 图片1 = 林夜_黑袍造型
+GPT-image-2 prompt for character concept.
+## VIDEO FEED
+1 This downstream section is not an image prompt.
+"""
+
+        jobs = build_jobs_from_asset_text(text, model="gpt-image-2", size="16:9")
+
+        self.assertEqual(len(jobs), 1)
+        self.assertEqual(jobs[0].prompt, "GPT-image-2 prompt for character concept.")
+        self.assertNotIn("VIDEO FEED", jobs[0].prompt)
+        self.assertNotIn("downstream section", jobs[0].prompt)
+
+    def test_build_jobs_accepts_compact_image_sections_without_asset_block_heading(
+        self,
+    ) -> None:
+        text = """
+### 图片1 = 林夜_黑袍造型
+GPT-image-2 prompt for character concept.
+### 图片2 = 鬼王宗宗门大殿_母图
+GPT-image-2 prompt for empty scene.
+"""
+
+        jobs = build_jobs_from_asset_text(text, model="gpt-image-2", size="16:9")
+
+        self.assertEqual(
+            [job.asset_name for job in jobs],
+            ["林夜_黑袍造型", "鬼王宗宗门大殿_母图"],
+        )
+        self.assertEqual([job.output_dir for job in jobs], ["人设资产", "场景资产"])
+
 
 if __name__ == "__main__":
     unittest.main()
