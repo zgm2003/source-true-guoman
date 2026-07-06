@@ -289,9 +289,13 @@ class SkillTextRulesTests(unittest.TestCase):
             root.joinpath("references", "audit-checklist.md"),
         ]
         required_phrases = [
-            "全局风格基准图",
-            "环境风格基准",
-            "非Q版、非玩具感、非卡通低龄化，成熟3D国漫",
+            "风格确认波次",
+            "第一个场景和第一个人设",
+            "场景风格基准参考",
+            "人设风格基准参考",
+            "用户确认风格基准",
+            "不要写死非Q版、非玩具感、非卡通低龄化",
+            "如果用户选择 Q版",
             "真实上传/编码参考图",
             "prompt-only reference is forbidden",
             "character with identity props remains a character asset",
@@ -306,6 +310,10 @@ class SkillTextRulesTests(unittest.TestCase):
                 text = path.read_text(encoding="utf-8")
                 for phrase in required_phrases:
                     self.assertIn(phrase, text)
+                self.assertNotIn(
+                    "every later image prompt must carry `非Q版、非玩具感、非卡通低龄化，成熟3D国漫`",
+                    text,
+                )
 
     def test_main_skill_routes_common_intents_to_specialists(self) -> None:
         root = Path(__file__).resolve().parents[1]

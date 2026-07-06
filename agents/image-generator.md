@@ -23,7 +23,7 @@ Generated image files belong in:
 
 Internal jobs, logs, reports, and manifests belong under `生产资产/_内部/`.
 
-Image QA gate: create or bind `全局风格基准图` as an 环境风格基准 before dependent image batches; every later image prompt must carry `非Q版、非玩具感、非卡通低龄化，成熟3D国漫`. Reference-dependent jobs must use 真实上传/编码参考图; prompt-only reference is forbidden. character with identity props remains a character asset: `鬼财神_财神殿执掌者铁算盘造型` belongs in `人设资产`, not `道具资产`. Asset family: `天机一型手机_三视图` is the phone mother asset; system mall, Douyin UI, and phone screen variants must reference it and keep body, camera, border, screen ratio, and material consistent.
+Image QA gate: image generation must start with environment preflight, then a 风格确认波次 that generates only 第一个场景和第一个人设. Stop and ask for 用户确认风格基准 before generating dependent assets. After confirmation, later characters must upload 人设风格基准参考; later scenes, props, and interfaces must upload 场景风格基准参考 plus any asset-family mother image. Do not write fixed style bans: 不要写死非Q版、非玩具感、非卡通低龄化. 如果用户选择 Q版, the first confirmed scene/character baselines define the Q版 style and later images follow those references. Reference-dependent jobs must use 真实上传/编码参考图; prompt-only reference is forbidden. character with identity props remains a character asset: `鬼财神_财神殿执掌者铁算盘造型` belongs in `人设资产`, not `道具资产`. Asset family: `天机一型手机_三视图` is the phone mother asset; system mall, Douyin UI, and phone screen variants must reference it and keep body, camera, border, screen ratio, and material consistent.
 
 ## Required References
 
@@ -45,16 +45,19 @@ Image QA gate: create or bind `全局风格基准图` as an 环境风格基准 b
 
 ## Procedure
 
-1. Build image jobs from stable asset prompts and reference-purpose labels.
-2. Validate jobs before generation: unique ids, stable asset names, supported output folders, existing dependencies, no cycles, and no output under `生产资产`.
-3. Schedule jobs by dependency waves. Jobs in the same wave may run concurrently; jobs with `depends_on` wait for successful parent images.
-4. Use the configured OpenAI-compatible provider. Treat the relay as unreliable.
-5. Retry retryable failures with exponential backoff and jitter. Do not retry non-retryable configuration, authentication, or job-validation errors.
-6. Save successful API outputs as local `.png` files.
-7. Update `image-manifest.json` after each completed, failed, or blocked job.
-8. Write a generation report with failures first, then blocked jobs, then successes.
-9. Never write API keys into manifest or report.
-10. Use `--resume` to skip already successful outputs; without `--resume`, run jobs from the current job file.
+1. Run environment preflight: confirm base URL, API key, `SOURCE_TRUE_IMAGE_REFERENCE_MODE=data-url`, workspace root, output folders, and concurrency settings.
+2. Build the style preview jobs with `python scripts/build_image_jobs.py --asset-bible 生产资产/_内部/asset-bible.md --out 生产资产/_内部/image-jobs-style-preview.jsonl --style-stage preview`.
+3. Generate only the preview jobs, show the first scene and first character images, and stop for 用户确认风格基准.
+4. After user approval, build the full jobs with `--style-stage confirmed`; set `SOURCE_TRUE_STYLE_CONFIRMED=1` before running the full generation.
+5. Validate jobs before generation: unique ids, stable asset names, supported output folders, existing dependencies, no cycles, and no output under `生产资产`.
+6. Schedule jobs by dependency waves. Jobs in the same wave may run concurrently; jobs with `depends_on` wait for successful parent images.
+7. Use the configured OpenAI-compatible provider. Treat the relay as unreliable.
+8. Retry retryable failures with exponential backoff and jitter. Do not retry non-retryable configuration, authentication, style-confirmation, or job-validation errors.
+9. Save successful API outputs as local `.png` files.
+10. Update `image-manifest.json` after each completed, failed, or blocked job.
+11. Write a generation report with failures first, then blocked jobs, then successes.
+12. Never write API keys into manifest or report.
+13. Use `--resume` to skip already successful outputs; without `--resume`, run jobs from the current job file.
 
 ## Copy-Pack Boundary
 

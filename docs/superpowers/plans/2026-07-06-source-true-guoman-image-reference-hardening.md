@@ -90,7 +90,7 @@ Update `validate_jobs` to reject reference entries with missing `asset_name`, `p
 
 Run: `python -m unittest tests.test_image_generation.BuildImageJobsTests`
 
-### Task 4: Style Baseline Enforcement
+### Task 4: User-Confirmed Style Baseline Wave
 
 **Files:**
 - Modify: `scripts/build_image_jobs.py`
@@ -101,19 +101,19 @@ Run: `python -m unittest tests.test_image_generation.BuildImageJobsTests`
 
 - [ ] **Step 1: Write failing style baseline tests**
 
-Add tests requiring a `全局风格基准图` job to be generated as a scene asset and automatically attached to later jobs as `全局风格基准参考`. Add text-rule tests for `非Q版`, `非玩具感`, and `成熟3D国漫`.
+Add tests requiring `--style-stage preview` to output only the first scene and first character from the requested range. Add tests proving Q版 prompts stay Q版 and no fixed `非Q版/非玩具感/非卡通低龄化` guard is appended.
 
 - [ ] **Step 2: Run targeted tests and confirm failure**
 
 Run: `python -m unittest tests.test_image_generation.BuildImageJobsTests tests.test_init_workspace.SkillTextRulesTests`
 
-- [ ] **Step 3: Implement style job detection**
+- [ ] **Step 3: Implement style preview and confirmed stages**
 
-Treat `## Global Style Baseline` or asset names containing `全局风格基准` as scene assets. Attach that reference to all other image jobs unless already present.
+In preview stage, emit only the first scene and first character. In confirmed stage, attach `人设风格基准参考` to later characters and `场景风格基准参考` to later scenes, props, and interfaces.
 
-- [ ] **Step 4: Append style guard text**
+- [ ] **Step 4: Add user confirmation gate**
 
-Ensure every generated job prompt carries the compact guard: `非Q版、非玩具感、非卡通低龄化，成熟3D国漫`.
+Require `SOURCE_TRUE_STYLE_CONFIRMED=1` before generating jobs that depend on `人设风格基准参考` or `场景风格基准参考`.
 
 - [ ] **Step 5: Re-run targeted tests**
 

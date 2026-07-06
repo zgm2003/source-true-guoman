@@ -294,6 +294,69 @@ class ProviderRetryTests(unittest.TestCase):
             ],
         )
 
+    def test_run_job_blocks_style_dependent_assets_until_user_confirms_baseline(
+        self,
+    ) -> None:
+        job = self.make_job()
+        job.reference_images = [
+            ReferenceImage(
+                asset_name="林夜_黑袍造型",
+                path="人设资产/林夜_黑袍造型.png",
+                purpose="人设风格基准参考",
+            )
+        ]
+        config = self.make_config()
+        config.reference_mode = "data-url"
+        provider_called = False
+
+        def provider(current_job: ImageJob, current_config: ImageGenerationConfig) -> bytes:
+            nonlocal provider_called
+            provider_called = True
+            return b"image"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            reference_path = root / "人设资产" / "林夜_黑袍造型.png"
+            reference_path.parent.mkdir(parents=True, exist_ok=True)
+            reference_path.write_bytes(b"baseline")
+            config.reference_workspace = str(root)
+
+            result = run_job_with_retry(job, config, root, provider=provider)
+
+        self.assertFalse(provider_called)
+        self.assertEqual(result["status"], "failed")
+        self.assertEqual(result["attempts"], 0)
+        self.assertIn("style baseline requires user confirmation", result["last_error"])
+
+    def test_run_job_allows_style_dependent_assets_after_user_confirmation(
+        self,
+    ) -> None:
+        job = self.make_job()
+        job.reference_images = [
+            ReferenceImage(
+                asset_name="林夜_黑袍造型",
+                path="人设资产/林夜_黑袍造型.png",
+                purpose="人设风格基准参考",
+            )
+        ]
+        config = self.make_config()
+        config.reference_mode = "data-url"
+        config.style_confirmed = True
+
+        def provider(current_job: ImageJob, current_config: ImageGenerationConfig) -> bytes:
+            return b"image"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            reference_path = root / "人设资产" / "林夜_黑袍造型.png"
+            reference_path.parent.mkdir(parents=True, exist_ok=True)
+            reference_path.write_bytes(b"baseline")
+            config.reference_workspace = str(root)
+
+            result = run_job_with_retry(job, config, root, provider=provider)
+
+        self.assertEqual(result["status"], "done")
+
     def test_transient_retry_succeeds_on_third_attempt_and_writes_image(self) -> None:
         job = self.make_job()
         config = self.make_config(max_retries=3)
@@ -1690,6 +1753,7 @@ GPT-image-2，16:9，3D国漫。保持同一张脸，换宗门礼服。
         self.assertEqual(
             [(ref.asset_name, ref.purpose) for ref in variant.reference_images],
             [
+                ("林夜_黑袍造型", "人设风格基准参考"),
                 ("林夜_黑袍造型", "人脸身份参考"),
                 ("林夜_黑袍造型", "旧造型参考"),
                 ("鬼王宗宗门大殿_母图", "场景母图参考"),
@@ -1698,6 +1762,7 @@ GPT-image-2，16:9，3D国漫。保持同一张脸，换宗门礼服。
         self.assertEqual(
             [ref.path for ref in variant.reference_images],
             [
+                "人设资产/林夜_黑袍造型.png",
                 "人设资产/林夜_黑袍造型.png",
                 "人设资产/林夜_黑袍造型.png",
                 "场景资产/鬼王宗宗门大殿_母图.png",
@@ -1829,12 +1894,24 @@ GPT-image-2 prompt for character concept.
         jobs = build_jobs_from_asset_text(text, model="gpt-image-2", size="16:9")
 
         self.assertEqual(len(jobs), 1)
-        self.assertTrue(
-            jobs[0].prompt.startswith("GPT-image-2 prompt for character concept.")
-        )
-        self.assertIn("非Q版、非玩具感、非卡通低龄化，成熟3D国漫", jobs[0].prompt)
+        self.assertEqual(jobs[0].prompt, "GPT-image-2 prompt for character concept.")
         self.assertNotIn("VIDEO FEED", jobs[0].prompt)
         self.assertNotIn("downstream section", jobs[0].prompt)
+
+    def test_build_jobs_preserves_user_requested_q_style_without_hardcoded_guard(
+        self,
+    ) -> None:
+        text = """
+### 图片1 = 林夜_Q版黑袍造型
+GPT-image-2，16:9，3D Q版国漫，二头身，可爱夸张，白色背景。
+"""
+
+        jobs = build_jobs_from_asset_text(text, model="gpt-image-2", size="16:9")
+
+        self.assertIn("3D Q版国漫", jobs[0].prompt)
+        self.assertNotIn("非Q版", jobs[0].prompt)
+        self.assertNotIn("非玩具感", jobs[0].prompt)
+        self.assertNotIn("非卡通低龄化", jobs[0].prompt)
 
     def test_build_jobs_accepts_compact_image_sections_without_asset_block_heading(
         self,
@@ -1901,39 +1978,108 @@ GPT-image-2，16:9，手机屏幕 UI，商城卡片必须保持手机外形、�
         self.assertEqual(interface_job.reference_images[0].purpose, "手机母资产参考")
         self.assertEqual(interface_job.reference_images[0].path, "道具资产/天机一型手机_三视图.png")
 
-    def test_build_jobs_adds_global_style_baseline_to_later_jobs(self) -> None:
+    def test_build_jobs_preview_stage_outputs_only_first_scene_and_first_character(
+        self,
+    ) -> None:
         text = """
-## Global Style Baseline
-### 图片1 = 全局风格基准图
-GPT-image-2，16:9，空场景环境风格基准图，国风仙侠材质和光照。
+## Scene Assets
+### 图片1 = 鬼王宗财神殿_母图
+GPT-image-2，16:9，场景母图，财神殿。
 
 ## Character Assets
 ### 图片2 = 林夜_黑袍造型
 GPT-image-2，16:9，角色三视图，白色背景。
+
+### 图片3 = 鬼财神_财神殿执掌者铁算盘造型
+GPT-image-2，16:9，角色三视图，铁算盘是身份道具。
+
+## Prop, Interface, Beast, Vehicle Assets
+### 图片4 = 天机一型手机_三视图
+GPT-image-2，16:9，道具三视图，手机。
 """
 
-        jobs = build_jobs_from_asset_text(text, model="gpt-image-2", size="16:9")
+        jobs = build_jobs_from_asset_text(
+            text,
+            model="gpt-image-2",
+            size="16:9",
+            style_stage="preview",
+        )
 
-        style_job = jobs[0]
-        character_job = jobs[1]
-        self.assertEqual(style_job.asset_type, "scene")
-        self.assertEqual(style_job.output_dir, "场景资产")
-        self.assertIn("非Q版、非玩具感、非卡通低龄化，成熟3D国漫", style_job.prompt)
-        self.assertIn("全局风格基准图", character_job.depends_on)
+        self.assertEqual(
+            [job.asset_name for job in jobs],
+            ["鬼王宗财神殿_母图", "林夜_黑袍造型"],
+        )
+        self.assertEqual([job.asset_type for job in jobs], ["scene", "character"])
+        self.assertEqual([job.reference_images for job in jobs], [[], []])
+
+    def test_build_jobs_after_style_confirmation_references_first_scene_and_character(
+        self,
+    ) -> None:
+        text = """
+## Scene Assets
+### 图片1 = 鬼王宗财神殿_母图
+GPT-image-2，16:9，Q版暗黑财神殿，场景母图。
+
+### 图片2 = 财神殿侧廊_局部
+GPT-image-2，16:9，侧廊局部场景。
+
+## Character Assets
+### 图片3 = 林夜_Q版黑袍造型
+GPT-image-2，16:9，3D Q版国漫，二头身，可爱夸张，白色背景。
+
+### 图片4 = 鬼财神_财神殿执掌者铁算盘造型
+GPT-image-2，16:9，角色三视图，铁算盘是身份道具。
+
+## Prop, Interface, Beast, Vehicle Assets
+### 图片5 = 天机一型手机_三视图
+GPT-image-2，16:9，道具三视图，手机。
+
+### 图片6 = 神级文娱系统界面_商城状态
+上传参考图：天机一型手机_三视图 = 图片5（手机母资产参考）
+GPT-image-2，16:9，手机屏幕 UI。
+"""
+
+        jobs = build_jobs_from_asset_text(
+            text,
+            model="gpt-image-2",
+            size="16:9",
+            style_stage="confirmed",
+        )
+
+        scene_variant = jobs[1]
+        first_character = jobs[2]
+        character_variant = jobs[3]
+        phone = jobs[4]
+        interface = jobs[5]
+
+        self.assertEqual(scene_variant.depends_on, ["鬼王宗财神殿_母图"])
+        self.assertEqual(
+            [(ref.asset_name, ref.path, ref.purpose) for ref in scene_variant.reference_images],
+            [("鬼王宗财神殿_母图", "场景资产/鬼王宗财神殿_母图.png", "场景风格基准参考")],
+        )
+        self.assertEqual(first_character.reference_images, [])
+        self.assertEqual(
+            [(ref.asset_name, ref.path, ref.purpose) for ref in character_variant.reference_images],
+            [("林夜_Q版黑袍造型", "人设资产/林夜_Q版黑袍造型.png", "人设风格基准参考")],
+        )
+        self.assertEqual(
+            [(ref.asset_name, ref.path, ref.purpose) for ref in phone.reference_images],
+            [("鬼王宗财神殿_母图", "场景资产/鬼王宗财神殿_母图.png", "场景风格基准参考")],
+        )
         self.assertEqual(
             [
                 (ref.asset_name, ref.path, ref.purpose)
-                for ref in character_job.reference_images
+                for ref in interface.reference_images
             ],
             [
-                (
-                    "全局风格基准图",
-                    "场景资产/全局风格基准图.png",
-                    "全局风格基准参考",
-                )
+                ("鬼王宗财神殿_母图", "场景资产/鬼王宗财神殿_母图.png", "场景风格基准参考"),
+                ("天机一型手机_三视图", "道具资产/天机一型手机_三视图.png", "手机母资产参考"),
             ],
         )
-        self.assertIn("非Q版、非玩具感、非卡通低龄化，成熟3D国漫", character_job.prompt)
+        for job in jobs:
+            self.assertNotIn("非Q版", job.prompt)
+            self.assertNotIn("非玩具感", job.prompt)
+            self.assertNotIn("非卡通低龄化", job.prompt)
 
 
 if __name__ == "__main__":

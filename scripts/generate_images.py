@@ -71,6 +71,7 @@ class ImageGenerationConfig:
     concurrency: int
     reference_mode: str = "unsupported"
     reference_workspace: str = ""
+    style_confirmed: bool = False
 
 
 ProviderCallable = Callable[[ImageJob, ImageGenerationConfig], bytes]
@@ -101,6 +102,7 @@ def load_config_from_env() -> ImageGenerationConfig:
             "unsupported",
         ).strip()
         or "unsupported",
+        style_confirmed=_bool_env("SOURCE_TRUE_STYLE_CONFIRMED", False),
     )
     _validate_config(config)
     return config
@@ -178,6 +180,7 @@ def run_job_with_retry(
     attempts = 0
     try:
         output_path = _workspace_output_path(workspace, job)
+        _validate_style_confirmation(job, config)
     except NonRetryableProviderError as error:
         last_error = _sanitize_error(str(error), config)
         LOGGER.warning(
@@ -452,6 +455,18 @@ def _int_env(name: str, default: int) -> int:
         raise ImageGenerationError(f"{name} must be an integer") from error
 
 
+def _bool_env(name: str, default: bool) -> bool:
+    value = os.environ.get(name)
+    if value is None or not value.strip():
+        return default
+    normalized = value.strip().casefold()
+    if normalized in {"1", "true", "yes", "y", "on"}:
+        return True
+    if normalized in {"0", "false", "no", "n", "off"}:
+        return False
+    raise ImageGenerationError(f"{name} must be a boolean")
+
+
 def _validate_config(config: ImageGenerationConfig) -> None:
     errors: list[str] = []
     if not math.isfinite(config.timeout_seconds):
@@ -530,6 +545,23 @@ def _image_bytes_from_response(body: bytes, config: ImageGenerationConfig) -> by
         return download_image(url.strip(), config.timeout_seconds)
 
     raise RetryableProviderError("provider response did not include image bytes or URL")
+
+
+def _validate_style_confirmation(
+    job: ImageJob,
+    config: ImageGenerationConfig,
+) -> None:
+    if config.style_confirmed:
+        return
+    if any(
+        reference.purpose in {"场景风格基准参考", "人设风格基准参考"}
+        for reference in job.reference_images
+    ):
+        raise NonRetryableProviderError(
+            f"{job.asset_name}: style baseline requires user confirmation "
+            "before generating dependent assets; set SOURCE_TRUE_STYLE_CONFIRMED=1 "
+            "after the user approves the preview images"
+        )
 
 
 def _reference_images_payload(

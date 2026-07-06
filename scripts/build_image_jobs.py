@@ -34,14 +34,13 @@ REFERENCE_RE = re.compile(r"(.+?)\s*=\s*图片\d+\s*(?:（([^）]+)）|\(([^)]+)
 CHARACTER_OUTPUT_DIR = "人设资产"
 SCENE_OUTPUT_DIR = "场景资产"
 PROP_OUTPUT_DIR = "道具资产"
-STYLE_GUARD = "非Q版、非玩具感、非卡通低龄化，成熟3D国漫"
-STYLE_BASELINE_PURPOSE = "全局风格基准参考"
+SCENE_STYLE_BASELINE_PURPOSE = "场景风格基准参考"
+CHARACTER_STYLE_BASELINE_PURPOSE = "人设风格基准参考"
 
 SECTION_ASSET_TYPES = {
     "character": ("character", CHARACTER_OUTPUT_DIR),
     "scene": ("scene", SCENE_OUTPUT_DIR),
     "prop": ("prop", PROP_OUTPUT_DIR),
-    "style": ("scene", SCENE_OUTPUT_DIR),
 }
 
 
@@ -56,8 +55,6 @@ def infer_asset_type(
         line for line in prompt.splitlines() if REFERENCE_LINE_MARKER not in line
     )
 
-    if _is_style_baseline(asset_name):
-        return "scene", SCENE_OUTPUT_DIR
     if _has_prop_marker(asset_name):
         return "prop", PROP_OUTPUT_DIR
     if _has_scene_marker(asset_name):
@@ -100,8 +97,15 @@ def extract_references(prompt: str) -> tuple[list[str], list[ReferenceImage]]:
 
 
 def build_jobs_from_asset_text(
-    text: str, model: str, size: str, provider: str = "openai-compatible"
+    text: str,
+    model: str,
+    size: str,
+    provider: str = "openai-compatible",
+    style_stage: str = "confirmed",
 ) -> list[ImageJob]:
+    if style_stage not in {"preview", "confirmed", "none"}:
+        raise ImageGenerationError("style_stage must be preview, confirmed, or none")
+
     jobs: list[ImageJob] = []
     current_name: str | None = None
     current_lines: list[str] = []
@@ -177,8 +181,10 @@ def build_jobs_from_asset_text(
 
     flush_current()
     _resolve_reference_paths(jobs)
-    _apply_global_style_baseline(jobs)
-    _apply_style_guard(jobs)
+    if style_stage == "preview":
+        jobs = _style_preview_jobs(jobs)
+    elif style_stage == "confirmed":
+        _apply_confirmed_style_baselines(jobs)
     validate_jobs(jobs)
     return jobs
 
@@ -190,6 +196,12 @@ def main() -> int:
     parser.add_argument("--model", default="gpt-image-2")
     parser.add_argument("--size", default="16:9")
     parser.add_argument("--provider", default="openai-compatible")
+    parser.add_argument(
+        "--style-stage",
+        choices=("preview", "confirmed", "none"),
+        default="confirmed",
+        help="preview writes only the first scene and first character for user style confirmation; confirmed writes the full job set with style references.",
+    )
     args = parser.parse_args()
 
     asset_bible_path = Path(args.asset_bible).expanduser().resolve()
@@ -200,6 +212,7 @@ def main() -> int:
             model=args.model,
             size=args.size,
             provider=args.provider,
+            style_stage=args.style_stage,
         )
         validate_jobs(jobs)
         write_jobs_jsonl(out_path, jobs)
@@ -240,13 +253,7 @@ def _section_kind(stripped_heading: str) -> str | None:
         return "prop"
     if heading_text in {"Prop Assets", "道具资产", "Interface Assets", "界面资产"}:
         return "prop"
-    if heading_text in {"Global Style Baseline", "全局风格基准图"}:
-        return "style"
     return None
-
-
-def _is_style_baseline(asset_name: str) -> bool:
-    return "全局风格基准" in asset_name
 
 
 def _resolve_reference_paths(jobs: list[ImageJob]) -> None:
@@ -257,42 +264,86 @@ def _resolve_reference_paths(jobs: list[ImageJob]) -> None:
                 reference.path = paths_by_asset[reference.asset_name]
 
 
-def _apply_global_style_baseline(jobs: list[ImageJob]) -> None:
-    style_job = next((job for job in jobs if _is_style_baseline(job.asset_name)), None)
-    if style_job is None:
+def _style_preview_jobs(jobs: list[ImageJob]) -> list[ImageJob]:
+    first_scene, first_character = _style_baseline_jobs(jobs)
+    preview_jobs = [
+        job
+        for job in jobs
+        if job is first_scene or job is first_character
+    ]
+    return preview_jobs
+
+
+def _style_baseline_jobs(
+    jobs: list[ImageJob],
+) -> tuple[ImageJob | None, ImageJob | None]:
+    first_scene = next((job for job in jobs if job.asset_type == "scene"), None)
+    first_character = next((job for job in jobs if job.asset_type == "character"), None)
+    return first_scene, first_character
+
+
+def _apply_confirmed_style_baselines(jobs: list[ImageJob]) -> None:
+    first_scene, first_character = _style_baseline_jobs(jobs)
+    for job in jobs:
+        if first_character is not None and job.asset_type == "character":
+            if job is first_character:
+                continue
+            _prepend_reference(
+                job,
+                first_character,
+                CHARACTER_STYLE_BASELINE_PURPOSE,
+            )
+            continue
+        if first_scene is not None and job.asset_type in {"scene", "prop"}:
+            if job is first_scene:
+                continue
+            _prepend_reference(
+                job,
+                first_scene,
+                SCENE_STYLE_BASELINE_PURPOSE,
+            )
+
+
+def _prepend_reference(
+    job: ImageJob,
+    reference_job: ImageJob,
+    purpose: str,
+) -> None:
+    if job.asset_name == reference_job.asset_name:
         return
-    style_path = style_job.output_path.as_posix()
-    for job in jobs:
-        if job is style_job:
-            continue
-        if style_job.asset_name not in job.depends_on:
-            job.depends_on.insert(0, style_job.asset_name)
-        existing_reference = next(
-            (
-                reference
-                for reference in job.reference_images
-                if reference.asset_name == style_job.asset_name
-            ),
-            None,
-        )
-        if existing_reference is not None:
-            existing_reference.path = existing_reference.path or style_path
-            existing_reference.purpose = existing_reference.purpose or STYLE_BASELINE_PURPOSE
-            continue
-        job.reference_images.insert(
-            0,
-            ReferenceImage(
-                asset_name=style_job.asset_name,
-                path=style_path,
-                purpose=STYLE_BASELINE_PURPOSE,
-            ),
-        )
-
-
-def _apply_style_guard(jobs: list[ImageJob]) -> None:
-    for job in jobs:
-        if STYLE_GUARD not in job.prompt:
-            job.prompt = f"{job.prompt}\n风格硬约束：{STYLE_GUARD}。".strip()
+    if reference_job.asset_name not in job.depends_on:
+        job.depends_on.insert(0, reference_job.asset_name)
+    reference_path = reference_job.output_path.as_posix()
+    existing_reference = next(
+        (
+            reference
+            for reference in job.reference_images
+            if reference.asset_name == reference_job.asset_name
+            and reference.purpose == purpose
+        ),
+        None,
+    )
+    if existing_reference is not None:
+        existing_reference.path = existing_reference.path or reference_path
+        return
+    insert_index = 0
+    while (
+        insert_index < len(job.reference_images)
+        and job.reference_images[insert_index].purpose
+        in {
+            SCENE_STYLE_BASELINE_PURPOSE,
+            CHARACTER_STYLE_BASELINE_PURPOSE,
+        }
+    ):
+        insert_index += 1
+    job.reference_images.insert(
+        insert_index,
+        ReferenceImage(
+            asset_name=reference_job.asset_name,
+            path=reference_path,
+            purpose=purpose,
+        ),
+    )
 
 
 if __name__ == "__main__":
