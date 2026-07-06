@@ -19,7 +19,7 @@ The canonical source truth remains the `连续投喂稿`: `## 视频投喂块`, 
 
 - Read `references/copy-pack-format.md` before writing any copy-pack artifact.
 - Read `references/format.md` only to confirm the canonical faithful feed shape and exact `统一要求` line.
-- Read `references/xiaoyunque-tags.md` only when checking that copied video lines still contain one valid raw tag.
+- Read `references/xiaoyunque-tags.md` or `references/libtv-tags.md` only when checking that copied video lines still contain one valid selected-library tag marked with `<...>`.
 
 ## Inputs
 
@@ -51,8 +51,9 @@ Do not insert copy packs into `## 视频投喂块` and do not change the faithfu
 6. Collect only visible dependencies needed by the copied lines: scene, visible characters, props/interfaces, and speaking voices.
 7. Use stable asset names and existing image or voice bindings from source index and asset bible.
 8. If a needed binding is ambiguous, write `需人工确认` with the stable source-grounded name. Do not invent a new image, voice, scene, or character reference.
-9. Keep each copied video line text unchanged. The packager may duplicate wrapper metadata, but it must not alter source content.
-10. After saving the artifact, run `python scripts/validate_copy_packs.py <copy-pack-file> --source-feed <feed-file> --pack-size <N>` when a source feed file is available.
+9. Include `- Camera library: 小云雀`, `- Camera library: libtv`, or `- Camera library: 需人工确认` in `## Pack Settings`.
+10. Keep each copied video line text unchanged, including `<...>` camera tags. If copied lines use bare camera words, stop and update the canonical feed first; do not patch copy packs directly.
+11. After saving the artifact, run `python scripts/validate_copy_packs.py <copy-pack-file> --source-feed <feed-file> --pack-size <N>` when a source feed file is available.
 
 ## Output Discipline
 

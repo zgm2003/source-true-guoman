@@ -15,7 +15,8 @@ Use this checklist when reviewing a source-true-guoman feed.
 - Numbering starts at `1` and stays continuous.
 - No groups, old workflow terms, storyboard folder language, Canvas package, or MP4 claim.
 - No `segment`, `S01/S02`, keyframe language, `首帧`, `尾帧`, `续接`, or `承接`.
-- Each video line uses exactly one Xiaoyunque raw tag, optionally followed by parentheses.
+- Each video line uses exactly one selected-library camera tag wrapped in angle brackets, optionally followed by parentheses, e.g. `<镜头前推>（压迫靠近）`.
+- No bare camera-library terms such as `固定镜头` or `镜头前推` appear as the video-line `运镜` value.
 - Check that scope status is explicit when the artifact is a smoke test.
 
 ## Human/Agent Source-Fidelity Checks

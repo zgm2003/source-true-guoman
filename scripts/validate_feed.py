@@ -50,23 +50,39 @@ FORBIDDEN_TERMS = tuple(
 )
 
 NUMBERED_LINE_RE = re.compile(r"^(\d+)\s+")
+CAMERA_TAG_FILES = ("xiaoyunque-tags.md", "libtv-tags.md")
 
 
 def load_camera_tags(root: Path) -> set[str]:
-    tag_file = root / "references" / "xiaoyunque-tags.md"
     tags: set[str] = set()
-    for line in tag_file.read_text(encoding="utf-8").splitlines():
-        stripped = line.strip()
-        if stripped.startswith("- "):
-            tags.add(stripped[2:].strip())
+    for filename in CAMERA_TAG_FILES:
+        tag_file = root / "references" / filename
+        if not tag_file.exists():
+            continue
+        for line in tag_file.read_text(encoding="utf-8").splitlines():
+            stripped = line.strip()
+            if stripped.startswith("- "):
+                tags.add(stripped[2:].strip())
     return tags
 
 
 def line_camera_tags(line: str, tags: set[str]) -> list[str]:
     found_tags: list[str] = []
-    for tag in tags:
+    for tag in sorted(tags, key=len, reverse=True):
         matches = re.findall(
-            rf"(?<!\S){re.escape(tag)}(?:（[^）]*）)?(?=\s|$)", line
+            rf"(?<!\S)<{re.escape(tag)}>(?:（[^）]*）)?(?=\s|$)", line
+        )
+        found_tags.extend([tag] * len(matches))
+    return found_tags
+
+
+def unmarked_camera_tags(line: str, tags: set[str]) -> list[str]:
+    line_without_marked_tags = re.sub(r"<[^>\n]+>(?:（[^）]*）)?", "", line)
+    found_tags: list[str] = []
+    for tag in sorted(tags, key=len, reverse=True):
+        matches = re.findall(
+            rf"(?<!\S){re.escape(tag)}(?:（[^）]*）)?(?=\s|$)",
+            line_without_marked_tags,
         )
         found_tags.extend([tag] * len(matches))
     return found_tags
@@ -130,6 +146,12 @@ def validate_feed(path: Path, root: Path) -> list[str]:
         if len(found_tags) != 1:
             errors.append(
                 f"line {line_number}: invalid camera tag count {len(found_tags)}"
+            )
+        unmarked_tags = unmarked_camera_tags(stripped, tags)
+        if unmarked_tags:
+            formatted_tags = ", ".join(dict.fromkeys(unmarked_tags))
+            errors.append(
+                f"line {line_number}: camera tag must be wrapped in angle brackets: {formatted_tags}"
             )
 
     if not saw_numbered_line:

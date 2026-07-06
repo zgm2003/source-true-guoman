@@ -9,7 +9,11 @@ Emit only these two user-facing blocks:
 - `## 资产提示词`
 - `## 视频投喂块`
 
-Each numbered video line should carry one visible action target, one main beat, and one Xiaoyunque camera tag.
+Each numbered video line should carry one visible action target, one main beat, and one selected-library camera tag marked with angle brackets.
+
+For formal production standards, production mother feeds, and formal copy-pack batches, ask the user to choose `小云雀` or `libtv` when the camera library is not already specified. Read `references/xiaoyunque-tags.md` or `references/libtv-tags.md` according to that choice.
+
+Write the raw selected-library tag inside angle brackets in both the production mother feed and copy packs: `<固定镜头>`, `<镜头前推>`, `<第一视角>`. Do not write bare camera-library terms. If both libraries contain the same raw tag, still mark only the raw tag in the line, e.g. `<第一人称>`; keep the selected library as task/package context, not inside the tag.
 
 ```text
 ## 资产提示词
@@ -23,7 +27,7 @@ GPT-image-2，16:9，3D国漫，国风仙侠，轻喜剧反差，角色表演夸
 ## 视频投喂块
 统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。
 
-1 日 内 场景 人物 可见行为画面 镜头概念 运镜 音频/对白
+1 日 内 场景 人物 可见行为画面 镜头概念 <运镜> 音频/对白
 2 ...
 3 ...
 4 ...
@@ -72,29 +76,30 @@ For similar important characters, use reference labels that preserve shared sect
 ## Video line shape
 
 ```text
-序号 日/夜 内/外 具体场景 人物 可见行为画面 镜头概念 运镜 音频/对白
+序号 日/夜 内/外 具体场景 人物 可见行为画面 镜头概念 <运镜> 音频/对白
 ```
 
 Good opening continuous feed:
 
 ```text
 统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。
-1 日 内 鬼王宗宗门大殿 林夜 黑袍白发的林夜面无表情坐在漆黑石椅上，十名魔门首领分坐两侧，冷雾贴地压低 中景 + 轻微低机位 + 王座居中 + 两侧席位 固定镜头 环境音：大殿低鸣、衣袖摩擦，无对白
-2 日 内 鬼王宗宗门大殿 骨灵教老者 枯瘦老者坐在左侧第二席，正面半身阴沉开口，画面只显示说话人，后景虚化暗柱和席位边缘 中近景 + 正面半身 + 单人主镜头 + 后景虚化 镜头前推 骨灵教老者：宗主大人，昨日我骨灵教内又发现了一名正道奸细，今日一早我就已经把他剥皮抽筋，将他的一身骨头炼制成了法器，神魂也收入到了万魂幡中。
-3 日 内 鬼王宗宗门大殿 骨灵教老者 老者不改变坐姿，语气平静补上后续安排，骨纹袖口被冷光压住 中近景 + 正面半身 + 单人主镜头 + 袖口细节 固定镜头 骨灵教老者：明日一早我就安排弟子将他的皮囊丢到烈阳宗。
-4 日 内 鬼王宗宗门大殿 林夜 林夜眼皮子不由自主跳了跳，冷脸差点没绷住，手指在扶手边缘轻轻收紧 近景 + 正面半身 + 面瘫反差 + 扶手细节 急速变焦 音效：心跳一顿，无对白
+1 日 内 鬼王宗宗门大殿 林夜 黑袍白发的林夜面无表情坐在漆黑石椅上，十名魔门首领分坐两侧，冷雾贴地压低 中景 + 轻微低机位 + 王座居中 + 两侧席位 <固定镜头> 环境音：大殿低鸣、衣袖摩擦，无对白
+2 日 内 鬼王宗宗门大殿 骨灵教老者 枯瘦老者坐在左侧第二席，正面半身阴沉开口，画面只显示说话人，后景虚化暗柱和席位边缘 中近景 + 正面半身 + 单人主镜头 + 后景虚化 <镜头前推> 骨灵教老者：宗主大人，昨日我骨灵教内又发现了一名正道奸细，今日一早我就已经把他剥皮抽筋，将他的一身骨头炼制成了法器，神魂也收入到了万魂幡中。
+3 日 内 鬼王宗宗门大殿 骨灵教老者 老者不改变坐姿，语气平静补上后续安排，骨纹袖口被冷光压住 中近景 + 正面半身 + 单人主镜头 + 袖口细节 <固定镜头> 骨灵教老者：明日一早我就安排弟子将他的皮囊丢到烈阳宗。
+4 日 内 鬼王宗宗门大殿 林夜 林夜眼皮子不由自主跳了跳，冷脸差点没绷住，手指在扶手边缘轻轻收紧 近景 + 正面半身 + 面瘫反差 + 扶手细节 <急速变焦> 音效：心跳一顿，无对白
 ```
 
 Good line:
 
 ```text
-1 日 内 鬼王宗宗门大殿 林夜 白发黑袍的林夜坐在黑石王座上，两侧魔门首领低头列席，血色符纹映在他冷脸上 中景 + 轻微低机位 + 王座居中 + 两侧压迫 固定镜头 环境音：大殿低鸣、衣袖摩擦，无对白
+1 日 内 鬼王宗宗门大殿 林夜 白发黑袍的林夜坐在黑石王座上，两侧魔门首领低头列席，血色符纹映在他冷脸上 中景 + 轻微低机位 + 王座居中 + 两侧压迫 <固定镜头> 环境音：大殿低鸣、衣袖摩擦，无对白
 ```
 
 Avoid:
 
 - Long slash chains that read like a checklist instead of a shot.
 - Multiple actions and multiple dialogue lines in one video line.
+- Bare camera-library terms such as `固定镜头` or `镜头前推` without `<...>` marking.
 - Rewritten dialogue, invented dialogue, or later source dialogue used before its setup.
 - `第N组`, 15-second grouping, group footers, or any AI-made breathing/pacing blocks.
 - Invented blocking such as making a seated speaker stand up, raise a prop, or put a prop away when the source did not say that.

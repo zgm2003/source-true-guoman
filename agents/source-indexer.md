@@ -22,7 +22,7 @@ Use this specialist when source reading is the bottleneck: long chapters, multi-
 
 ## Output
 
-Create or update `生产资产/_内部/source-index.md` unless the user explicitly asks for a visible root-level working index. Use `references/source-index-format.md`.
+Create or update `生产资产/_内部/source-index.md` unless the user explicitly asks for a visible root-level working index. Legacy notes may call the visible path `生产资产/source-index.md`; keep the default internal path for formal production evidence. Use `references/source-index-format.md`.
 
 Do not output a video feed; do not output a synopsis replacement. Do not summarize chapters as a replacement for source coverage. Use evidence anchors for every merge, correction, relationship claim, reveal handling, face reference, scene reference, or reusable asset decision; also cite outfit/state changes and unresolved doubts.
 

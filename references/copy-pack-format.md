@@ -10,6 +10,8 @@ The canonical source truth remains the `连续投喂稿`: `## 视频投喂块`, 
 
 Any operation that changes video line text, line numbers, or asset bindings must update the canonical continuous feed first, then re-run feed audit and regenerate copy packs. Do not edit copy packs as the source of truth.
 
+Copied video lines must already contain one selected-library camera tag marked with angle brackets, such as `<固定镜头>` or `<镜头前推>`. If a source feed contains bare camera terms, fix and audit the canonical mother feed first, then regenerate copy packs.
+
 ## File Location
 
 Write copy-pack files at the user-facing top level under `生产资产`, while source-index, asset-bible, audit reports, and other evidence stay under `生产资产/_内部/`, for example:
@@ -27,6 +29,7 @@ Write copy-pack files at the user-facing top level under `生产资产`, while s
 - Source feed: 生产资产/seedance-all-reference-feed-production-ch01-05.md
 - Pack size: 5
 - Numbering: preserve original continuous line numbers
+- Camera library: 小云雀
 - Contract: copy convenience only; not pacing or compression
 
 ### 投喂包 001｜原始行 1-5
@@ -43,11 +46,11 @@ Write copy-pack files at the user-facing top level under `生产资产`, while s
 - 音色1 = 林夜.mp3
 - 音色2 = 骨灵教枯瘦老者.mp3
 
-1 日 内 鬼王宗宗门大殿 林夜 黑袍白发的林夜面无表情坐在漆黑石椅上，十名魔门首领分坐两侧，冷雾贴地压低 中景 + 轻微低机位 + 王座居中 + 两侧席位 固定镜头 环境音：大殿低鸣、衣袖摩擦，无对白
-2 日 内 鬼王宗宗门大殿 骨灵教老者 枯瘦老者坐在左侧第二席，正面半身阴沉开口，画面只显示说话人，后景虚化暗柱和席位边缘 中近景 + 正面半身 + 单人主镜头 + 后景虚化 镜头前推 骨灵教老者：宗主大人。
-3 日 内 鬼王宗宗门大殿 骨灵教老者 老者不改变坐姿，语气平静补上后续安排，骨纹袖口被冷光压住 中近景 + 正面半身 + 单人主镜头 + 袖口细节 固定镜头 骨灵教老者：明日一早我就安排弟子将他的皮囊丢到烈阳宗。
-4 日 内 鬼王宗宗门大殿 林夜 林夜眼皮子不由自主跳了跳，冷脸差点没绷住，手指在扶手边缘轻轻收紧 近景 + 正面半身 + 面瘫反差 + 扶手细节 急速变焦 音效：心跳一顿，无对白
-5 日 内 鬼王宗宗门大殿 林夜 林夜维持宗主威严，喉结轻动压住反差表情，殿内冷雾从扶手下方滑过 中近景 + 正面半身 + 克制喜剧反差 固定镜头 环境音：冷雾低鸣，无对白
+1 日 内 鬼王宗宗门大殿 林夜 黑袍白发的林夜面无表情坐在漆黑石椅上，十名魔门首领分坐两侧，冷雾贴地压低 中景 + 轻微低机位 + 王座居中 + 两侧席位 <固定镜头> 环境音：大殿低鸣、衣袖摩擦，无对白
+2 日 内 鬼王宗宗门大殿 骨灵教老者 枯瘦老者坐在左侧第二席，正面半身阴沉开口，画面只显示说话人，后景虚化暗柱和席位边缘 中近景 + 正面半身 + 单人主镜头 + 后景虚化 <镜头前推> 骨灵教老者：宗主大人。
+3 日 内 鬼王宗宗门大殿 骨灵教老者 老者不改变坐姿，语气平静补上后续安排，骨纹袖口被冷光压住 中近景 + 正面半身 + 单人主镜头 + 袖口细节 <固定镜头> 骨灵教老者：明日一早我就安排弟子将他的皮囊丢到烈阳宗。
+4 日 内 鬼王宗宗门大殿 林夜 林夜眼皮子不由自主跳了跳，冷脸差点没绷住，手指在扶手边缘轻轻收紧 近景 + 正面半身 + 面瘫反差 + 扶手细节 <急速变焦> 音效：心跳一顿，无对白
+5 日 内 鬼王宗宗门大殿 林夜 林夜维持宗主威严，喉结轻动压住反差表情，殿内冷雾从扶手下方滑过 中近景 + 正面半身 + 克制喜剧反差 <固定镜头> 环境音：冷雾低鸣，无对白
 ```
 
 Next pack heading:
@@ -77,6 +80,7 @@ The final pack may contain fewer lines when the source feed line count is not di
 - Preserve original continuous line numbers; do not renumber from 1 inside each pack.
 - A heading range must match copied numbered lines, for example `### 投喂包 001｜原始行 1-5` contains lines `1` through `5`.
 - The next pack continues with the next original line number.
+- Preserve the bracketed camera tag exactly as it appears in the canonical feed. Do not convert `<固定镜头>` back to `固定镜头`.
 
 ## Reference Binding
 
@@ -89,6 +93,8 @@ List only references needed by the copied lines:
 Do not list every global asset in every pack. That recreates the copy burden.
 
 Do not invent references. Use stable asset names and image/voice bindings from source index and asset bible. If evidence is ambiguous, write `需人工确认` with the source-grounded asset name.
+
+In `## Pack Settings`, include `- Camera library: 小云雀` or `- Camera library: libtv` when the selected library is known. If legacy source material does not record the selected library, write `- Camera library: 需人工确认` and keep copied line tags bracketed.
 
 ## Forbidden Shape
 

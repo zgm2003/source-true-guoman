@@ -13,7 +13,7 @@ Use this specialist after a faithful feed exists; this agent requires an existin
 
 - Existing faithful feed.
 - Source/index when needed to judge whether an added micro-action is allowed.
-- Xiaoyunque tag list.
+- Selected camera-library tag list (`小云雀` or `libtv`).
 
 ## Required References
 
@@ -27,7 +27,7 @@ Visual-polish may return notes without editing files. Return revised video lines
 
 1. Confirm faithful feed already exists; visual polish must not create first-pass story coverage.
 2. Keep every original event and exact dialogue intact; this agent must not remove, shorten, reorder, or rewrite source dialogue.
-3. Improve only visible framing, scene depth, lighting, ambient/action audio, legal micro-performance, and Xiaoyunque tag choice.
+3. Improve only visible framing, scene depth, lighting, ambient/action audio, legal micro-performance, and selected-library camera tag choice. Keep camera tags marked as `<raw tag>`.
 4. Avoid making dialogue a row of isolated faces; retain speaker posture, seat/scene context, and nearby reactions.
 5. Do not upgrade micro-performance into new body movement or prop handling.
 6. If applying polish changes video line text, update the canonical feed first, then re-run feed audit and regenerate copy packs.

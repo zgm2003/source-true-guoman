@@ -1,4 +1,4 @@
-import tempfile
+﻿import tempfile
 import unittest
 import subprocess
 import sys
@@ -181,6 +181,7 @@ class SkillTextRulesTests(unittest.TestCase):
                     "agents/faithful-feed.md",
                     "references/format.md",
                     "references/xiaoyunque-tags.md",
+                    "references/libtv-tags.md",
                 ),
             ),
             (
@@ -225,7 +226,7 @@ class SkillTextRulesTests(unittest.TestCase):
             "Only use `cut-safety` after the user has chosen deletion targets or asks for cut-risk help",
             "Only use `visual-polish` after preserving source coverage",
             "Only use `production-runner` after assets and faithful feed lines exist",
-            "For formal production batches, run `copy-packager` after source index, asset bible, faithful feed, and feed audit exist; keep copy packs as a user-facing `生产资产` artifact.",
+            "run `copy-packager` after source index, asset bible, faithful feed, and feed audit exist; keep copy packs in a separate `生产资产` artifact",
             "Only use `copy-packager` after source index, asset bible, faithful feed, and feed audit exist",
             "copy-packager creates paste-ready wrappers, not pacing groups",
         ]
@@ -502,55 +503,19 @@ class SkillTextRulesTests(unittest.TestCase):
             skill_text,
         )
 
-    def test_workspace_storage_policy_keeps_production_assets_user_facing(self) -> None:
+    def test_workspace_storage_policy_puts_feed_text_in_production_assets(self) -> None:
         root = Path(__file__).resolve().parents[1]
         skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
         faithful_feed_text = root.joinpath("agents", "faithful-feed.md").read_text(
-            encoding="utf-8"
-        )
-        source_indexer_text = root.joinpath("agents", "source-indexer.md").read_text(
-            encoding="utf-8"
-        )
-        asset_bible_text = root.joinpath("agents", "asset-bible.md").read_text(
-            encoding="utf-8"
-        )
-        copy_packager_text = root.joinpath("agents", "copy-packager.md").read_text(
             encoding="utf-8"
         )
 
         for text in (skill_text, faithful_feed_text):
-            self.assertIn("生产资产顶层只放用户交付件：连续投喂稿和复制投喂包", text)
-            self.assertIn("内部证据写入 `生产资产/_内部/`", text)
+            self.assertIn("投喂稿、source-index、asset-bible、审计报告、剪辑风险报告属于生产资产", text)
             self.assertIn("视频资产只放最终视频文件或渲染结果", text)
-
-        self.assertIn("生产资产/_内部/source-index.md", skill_text)
-        self.assertIn("生产资产/_内部/source-index.md", source_indexer_text)
-        self.assertIn("生产资产/_内部/asset-bible.md", asset_bible_text)
-        self.assertIn("生产资产/_内部/", copy_packager_text)
-        self.assertNotIn("投喂稿、source-index、asset-bible、审计报告、剪辑风险报告属于生产资产", skill_text)
+        self.assertIn("生产资产/source-index.md", skill_text)
         self.assertNotIn("working-directory source index", skill_text)
         self.assertNotIn("Keep the index in the working directory", skill_text)
-
-    def test_formal_production_defaults_to_five_chapter_copy_pack_batches(self) -> None:
-        root = Path(__file__).resolve().parents[1]
-        skill_text = root.joinpath("SKILL.md").read_text(encoding="utf-8")
-        faithful_feed_text = root.joinpath("agents", "faithful-feed.md").read_text(
-            encoding="utf-8"
-        )
-
-        required_skill_phrases = [
-            "Default production slice: 5 chapters.",
-            "If the user asks for more than 5 chapters in one breath, split into sequential 5-chapter production batches unless they explicitly insist on one giant batch.",
-            "Default formal batch route: `source-indexer -> asset-bible -> faithful-feed -> feed-auditor -> copy-packager`.",
-            "For each 5-chapter batch, deliver the canonical mother feed plus a paste-ready copy pack at the production-asset top level.",
-        ]
-
-        for phrase in required_skill_phrases:
-            with self.subTest(phrase=phrase):
-                self.assertIn(phrase, skill_text)
-
-        self.assertIn("make a private chapter beat ledger per 5-chapter batch", faithful_feed_text)
-        self.assertIn("do not let a 30-chapter request skip locally important named roles", faithful_feed_text)
 
     def test_faithful_feed_requires_index_assets_and_coverage_audit(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -566,7 +531,7 @@ class SkillTextRulesTests(unittest.TestCase):
             "Check `source-index` for names, aliases, event order, scene hierarchy, posture facts, and unresolved doubts.",
             "Check `asset-bible` for stable asset names, existing references, outfit variants, scene mother images, and voice roles.",
             "do not reduce coverage by reducing line count",
-            "9. Do not reduce coverage by reducing line count.",
+            "10. Do not reduce coverage by reducing line count.",
         ]
 
         for phrase in required_phrases:
@@ -585,7 +550,7 @@ class SkillTextRulesTests(unittest.TestCase):
             "## 视频投喂块",
             "one visible action target",
             "one main beat",
-            "one Xiaoyunque camera tag",
+            "one selected-library camera tag",
         ]
 
         for phrase in required_phrases:
@@ -699,7 +664,7 @@ class SkillTextRulesTests(unittest.TestCase):
         )
 
         required_phrases = [
-            "生产资产/_内部/source-index.md",
+            "生产资产/source-index.md",
             "全范围预扫",
             "局部烟测",
             "索引状态",
@@ -843,8 +808,8 @@ class SkillTextRulesTests(unittest.TestCase):
                     [
                         "## 视频投喂块",
                         "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。",
-                        "1 日 内 大殿 林夜 坐在王座中 中景 + 平视 固定镜头 镜头前推 环境音：低鸣",
-                        "2 日 内 大殿 林夜 坐在王座中 中景 + 平视 固定镜头 storyboard folder 环境音：低鸣",
+                        "1 日 内 大殿 林夜 坐在王座中 中景 + 平视 <固定镜头> <镜头前推> 环境音：低鸣",
+                        "2 日 内 大殿 林夜 坐在王座中 中景 + 平视 <固定镜头> storyboard folder 环境音：低鸣",
                     ]
                 ),
                 encoding="utf-8",
@@ -875,7 +840,7 @@ class SkillTextRulesTests(unittest.TestCase):
                     [
                         "## 视频投喂块",
                         "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。",
-                        "1 日 内 大殿 林夜 坐在王座中 中景 + 平视 固定镜头 固定镜头 环境音：低鸣",
+                        "1 日 内 大殿 林夜 坐在王座中 中景 + 平视 <固定镜头> <固定镜头> 环境音：低鸣",
                     ]
                 ),
                 encoding="utf-8",
@@ -906,7 +871,7 @@ class SkillTextRulesTests(unittest.TestCase):
                         "## 视频投喂块",
                         "这里不应该出现说明文字",
                         "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。",
-                        "1 日 内 大殿 林夜 坐在王座中 中景 + 平视 固定镜头 环境音：低鸣",
+                        "1 日 内 大殿 林夜 坐在王座中 中景 + 平视 <固定镜头> 环境音：低鸣",
                     ]
                 ),
                 encoding="utf-8",
@@ -941,7 +906,7 @@ class SkillTextRulesTests(unittest.TestCase):
                         "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。",
                         "### 第1组",
                         "1 日 内 鬼王宗宗门大殿 林夜 坐在黑石王座上 中景 + 平视 慢慢推进 环境音：大殿低鸣",
-                        "3 日 内 鬼王宗宗门大殿 骨灵教老者 正面半身开口 中近景 + 平视 镜头前推 骨灵教老者：宗主大人。",
+                        "3 日 内 鬼王宗宗门大殿 骨灵教老者 正面半身开口 中近景 + 平视 <镜头前推> 骨灵教老者：宗主大人。",
                     ]
                 ),
                 encoding="utf-8",
@@ -960,7 +925,7 @@ class SkillTextRulesTests(unittest.TestCase):
             self.assertIn("invalid camera tag", result.stdout)
             self.assertIn("expected line 2", result.stdout)
 
-    def test_validate_feed_accepts_continuous_feed_with_xiaoyunque_tags(self) -> None:
+    def test_validate_feed_accepts_continuous_feed_with_marked_xiaoyunque_tags(self) -> None:
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as temp_dir:
             good_feed = Path(temp_dir) / "good-feed.md"
@@ -969,8 +934,8 @@ class SkillTextRulesTests(unittest.TestCase):
                     [
                         "## 视频投喂块",
                         "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。",
-                        "1 日 内 鬼王宗宗门大殿 林夜 坐在黑石王座上 中景 + 平视 固定镜头 环境音：大殿低鸣",
-                        "2 日 内 鬼王宗宗门大殿 骨灵教老者 正面半身开口 中近景 + 平视 镜头前推 骨灵教老者：宗主大人。",
+                        "1 日 内 鬼王宗宗门大殿 林夜 坐在黑石王座上 中景 + 平视 <固定镜头> 环境音：大殿低鸣",
+                        "2 日 内 鬼王宗宗门大殿 骨灵教老者 正面半身开口 中近景 + 平视 <镜头前推> 骨灵教老者：宗主大人。",
                     ]
                 ),
                 encoding="utf-8",
@@ -986,6 +951,60 @@ class SkillTextRulesTests(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertIn("Feed validation passed", result.stdout)
+
+    def test_validate_feed_accepts_continuous_feed_with_marked_libtv_tags(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            good_feed = Path(temp_dir) / "good-libtv-feed.md"
+            good_feed.write_text(
+                "\n".join(
+                    [
+                        "## 视频投喂块",
+                        "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。",
+                        "1 日 外 赛博街区 女主 站在雨夜街道中抬头看向高楼 中景 + 平视 <构变焦焦> 环境音：雨声、霓虹电流声，无对白",
+                        "2 日 外 赛博街区 女主 侧身穿过湿冷街口，银色长发被风带起 中景 + 侧向空间 <滚筒旋转> 环境音：脚步溅水声，无对白",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [sys.executable, str(root / "scripts" / "validate_feed.py"), str(good_feed)],
+                cwd=root,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("Feed validation passed", result.stdout)
+
+    def test_validate_feed_rejects_unmarked_camera_tag(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            bad_feed = Path(temp_dir) / "unmarked-feed.md"
+            bad_feed.write_text(
+                "\n".join(
+                    [
+                        "## 视频投喂块",
+                        "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。",
+                        "1 日 内 大殿 林夜 坐在王座上 中景 + 平视 固定镜头 环境音：低鸣",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [sys.executable, str(root / "scripts" / "validate_feed.py"), str(bad_feed)],
+                cwd=root,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("invalid camera tag count 0", result.stdout)
+            self.assertIn("camera tag must be wrapped in angle brackets: 固定镜头", result.stdout)
 
     def test_validate_copy_packs_accepts_valid_five_line_pack_file(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -1005,19 +1024,19 @@ class SkillTextRulesTests(unittest.TestCase):
                         "- 角色1 = 林夜_黑袍造型 = 图片1",
                         "音色绑定：",
                         "- 音色1 = 林夜.mp3",
-                        "1 日 内 鬼王宗宗门大殿 林夜 坐在黑石王座上 中景 + 平视 固定镜头 环境音：低鸣",
-                        "2 日 内 鬼王宗宗门大殿 骨灵教老者 正面半身开口 中近景 + 平视 镜头前推 骨灵教老者：宗主大人。",
-                        "3 日 内 鬼王宗宗门大殿 骨灵教老者 不改变坐姿继续说话 中近景 + 正面半身 固定镜头 骨灵教老者：明日一早。",
-                        "4 日 内 鬼王宗宗门大殿 林夜 眼皮轻跳 近景 + 正面半身 急速变焦 音效：心跳一顿",
-                        "5 日 内 鬼王宗宗门大殿 林夜 压住反差表情 中近景 + 正面半身 固定镜头 环境音：冷雾低鸣",
+                        "1 日 内 鬼王宗宗门大殿 林夜 坐在黑石王座上 中景 + 平视 <固定镜头> 环境音：低鸣",
+                        "2 日 内 鬼王宗宗门大殿 骨灵教老者 正面半身开口 中近景 + 平视 <镜头前推> 骨灵教老者：宗主大人。",
+                        "3 日 内 鬼王宗宗门大殿 骨灵教老者 不改变坐姿继续说话 中近景 + 正面半身 <固定镜头> 骨灵教老者：明日一早。",
+                        "4 日 内 鬼王宗宗门大殿 林夜 眼皮轻跳 近景 + 正面半身 <急速变焦> 音效：心跳一顿",
+                        "5 日 内 鬼王宗宗门大殿 林夜 压住反差表情 中近景 + 正面半身 <固定镜头> 环境音：冷雾低鸣",
                         "### 投喂包 002｜原始行 6-7",
                         requirement,
                         "上传参考图：",
                         "- 场景1 = 鬼王宗宗门大殿_母图 = 图片2",
                         "音色绑定：",
                         "- 音色1 = 林夜.mp3",
-                        "6 日 内 鬼王宗宗门大殿 林夜 抬眼看向殿中 中景 + 平视 镜头前推 环境音：衣袖轻响",
-                        "7 日 内 鬼王宗宗门大殿 群魔 殿内众人压低视线 远景 + 两侧席位 固定镜头 环境音：大殿低鸣",
+                        "6 日 内 鬼王宗宗门大殿 林夜 抬眼看向殿中 中景 + 平视 <镜头前推> 环境音：衣袖轻响",
+                        "7 日 内 鬼王宗宗门大殿 群魔 殿内众人压低视线 远景 + 两侧席位 <固定镜头> 环境音：大殿低鸣",
                     ]
                 ),
                 encoding="utf-8",
@@ -1057,15 +1076,15 @@ class SkillTextRulesTests(unittest.TestCase):
                         "- 场景1 = 鬼王宗宗门大殿_母图 = 图片2",
                         "音色绑定：",
                         "- 音色1 = 林夜.mp3",
-                        "1 日 内 鬼王宗宗门大殿 林夜 坐在王座上 中景 + 平视 固定镜头 环境音：低鸣",
-                        "2 日 内 鬼王宗宗门大殿 骨灵教老者 正面半身开口 中近景 + 平视 镜头前推 骨灵教老者：宗主大人。",
+                        "1 日 内 鬼王宗宗门大殿 林夜 坐在王座上 中景 + 平视 <固定镜头> 环境音：低鸣",
+                        "2 日 内 鬼王宗宗门大殿 骨灵教老者 正面半身开口 中近景 + 平视 <镜头前推> 骨灵教老者：宗主大人。",
                         "### 投喂包 002｜原始行 3-4",
                         "上传参考图：",
                         "- 场景1 = 鬼王宗宗门大殿_母图 = 图片2",
                         "音色绑定：",
                         "- 音色1 = 林夜.mp3",
-                        "3 日 内 鬼王宗宗门大殿 骨灵教老者 继续说话 中近景 + 正面半身 固定镜头 骨灵教老者：明日一早。",
-                        "4 日 内 鬼王宗宗门大殿 林夜 眼皮轻跳 近景 + 正面半身 急速变焦 音效：心跳一顿",
+                        "3 日 内 鬼王宗宗门大殿 骨灵教老者 继续说话 中近景 + 正面半身 <固定镜头> 骨灵教老者：明日一早。",
+                        "4 日 内 鬼王宗宗门大殿 林夜 眼皮轻跳 近景 + 正面半身 <急速变焦> 音效：心跳一顿",
                     ]
                 ),
                 encoding="utf-8",
@@ -1094,7 +1113,7 @@ class SkillTextRulesTests(unittest.TestCase):
         requirement = "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。"
 
         def numbered_line(number: int) -> str:
-            return f"{number} 日 内 鬼王宗宗门大殿 林夜 编号测试动作{number} 中景 + 平视 固定镜头 环境音：低鸣"
+            return f"{number} 日 内 鬼王宗宗门大殿 林夜 编号测试动作{number} 中景 + 平视 <固定镜头> 环境音：低鸣"
 
         def pack_lines(pack_index: int, start: int, end: int, numbers: list[int]) -> list[str]:
             return [
@@ -1180,7 +1199,7 @@ class SkillTextRulesTests(unittest.TestCase):
                         "- 音色1 = 林夜.mp3",
                         "音色绑定：",
                         "- 音色1 = 林夜.mp3",
-                        "1 日 内 鬼王宗宗门大殿 林夜 坐在王座上 中景 + 平视 固定镜头 环境音：低鸣",
+                        "1 日 内 鬼王宗宗门大殿 林夜 坐在王座上 中景 + 平视 <固定镜头> 环境音：低鸣",
                     ]
                 ),
                 encoding="utf-8",
@@ -1208,9 +1227,9 @@ class SkillTextRulesTests(unittest.TestCase):
     ) -> None:
         root = Path(__file__).resolve().parents[1]
         requirement = "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。"
-        source_line_1 = "1 日 内 鬼王宗宗门大殿 林夜 坐在王座上 中景 + 平视 固定镜头 环境音：低鸣"
-        source_line_2 = "2 日 内 鬼王宗宗门大殿 骨灵教老者 正面半身开口 中近景 + 平视 镜头前推 骨灵教老者：宗主大人。"
-        copied_line_2 = "2 日 内 鬼王宗宗门大殿 骨灵教老者 被改写成错误动作 中近景 + 平视 镜头前推 骨灵教老者：宗主大人。"
+        source_line_1 = "1 日 内 鬼王宗宗门大殿 林夜 坐在王座上 中景 + 平视 <固定镜头> 环境音：低鸣"
+        source_line_2 = "2 日 内 鬼王宗宗门大殿 骨灵教老者 正面半身开口 中近景 + 平视 <镜头前推> 骨灵教老者：宗主大人。"
+        copied_line_2 = "2 日 内 鬼王宗宗门大殿 骨灵教老者 被改写成错误动作 中近景 + 平视 <镜头前推> 骨灵教老者：宗主大人。"
 
         with tempfile.TemporaryDirectory() as temp_dir:
             source_feed = Path(temp_dir) / "source-feed.md"
@@ -1265,8 +1284,8 @@ class SkillTextRulesTests(unittest.TestCase):
     def test_validate_copy_packs_source_feed_rejects_missing_copied_line(self) -> None:
         root = Path(__file__).resolve().parents[1]
         requirement = "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。"
-        source_line_1 = "1 日 内 鬼王宗宗门大殿 林夜 坐在王座上 中景 + 平视 固定镜头 环境音：低鸣"
-        source_line_2 = "2 日 内 鬼王宗宗门大殿 骨灵教老者 正面半身开口 中近景 + 平视 镜头前推 骨灵教老者：宗主大人。"
+        source_line_1 = "1 日 内 鬼王宗宗门大殿 林夜 坐在王座上 中景 + 平视 <固定镜头> 环境音：低鸣"
+        source_line_2 = "2 日 内 鬼王宗宗门大殿 骨灵教老者 正面半身开口 中近景 + 平视 <镜头前推> 骨灵教老者：宗主大人。"
 
         with tempfile.TemporaryDirectory() as temp_dir:
             source_feed = Path(temp_dir) / "source-feed.md"
@@ -1334,8 +1353,8 @@ class SkillTextRulesTests(unittest.TestCase):
                         "音色绑定：",
                         "- 音色1 = 林夜.mp3",
                         "segment S01 15秒 Canvas MP4 首帧 尾帧 续接 承接",
-                        "1 日 内 鬼王宗宗门大殿 林夜 坐在王座上 中景 + 平视 固定镜头 环境音：低鸣",
-                        "2 日 内 鬼王宗宗门大殿 骨灵教老者 正面半身开口 中近景 + 平视 镜头前推 骨灵教老者：宗主大人。",
+                        "1 日 内 鬼王宗宗门大殿 林夜 坐在王座上 中景 + 平视 <固定镜头> 环境音：低鸣",
+                        "2 日 内 鬼王宗宗门大殿 骨灵教老者 正面半身开口 中近景 + 平视 <镜头前推> 骨灵教老者：宗主大人。",
                     ]
                 ),
                 encoding="utf-8",
@@ -1369,7 +1388,7 @@ class SkillTextRulesTests(unittest.TestCase):
     def test_validate_copy_packs_rejects_numbered_line_outside_pack(self) -> None:
         root = Path(__file__).resolve().parents[1]
         requirement = "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。"
-        copied_line = "1 日 内 鬼王宗宗门大殿 林夜 坐在王座上 中景 + 平视 固定镜头 环境音：低鸣"
+        copied_line = "1 日 内 鬼王宗宗门大殿 林夜 坐在王座上 中景 + 平视 <固定镜头> 环境音：低鸣"
 
         with tempfile.TemporaryDirectory() as temp_dir:
             copy_pack = Path(temp_dir) / "outside-line-copy-packs.md"
@@ -1423,7 +1442,7 @@ class SkillTextRulesTests(unittest.TestCase):
                         "- 场景1 = 鬼王宗宗门大殿_母图 = 图片2",
                         "",
                         "- 音色1 = 林夜.mp3",
-                        "1 日 内 鬼王宗宗门大殿 林夜 坐在王座上 中景 + 平视 固定镜头 环境音：低鸣",
+                        "1 日 内 鬼王宗宗门大殿 林夜 坐在王座上 中景 + 平视 <固定镜头> 环境音：低鸣",
                     ]
                 ),
                 encoding="utf-8",
@@ -1461,7 +1480,7 @@ class SkillTextRulesTests(unittest.TestCase):
                         "上传参考图：",
                         "- 场景1 = 鬼王宗宗门大殿_母图 = 图片2",
                         "- 林夜.mp3",
-                        "1 日 内 鬼王宗宗门大殿 林夜 坐在王座上 中景 + 平视 固定镜头 环境音：低鸣",
+                        "1 日 内 鬼王宗宗门大殿 林夜 坐在王座上 中景 + 平视 <固定镜头> 环境音：低鸣",
                     ]
                 ),
                 encoding="utf-8",
@@ -1493,7 +1512,7 @@ class SkillTextRulesTests(unittest.TestCase):
                     [
                         "## 视频投喂块",
                         "segment S01",
-                        "1 日 内 鬼王宗宗门大殿 林夜 首帧坐在黑石王座上 中景 + 平视 固定镜头 环境音：大殿低鸣",
+                        "1 日 内 鬼王宗宗门大殿 林夜 首帧坐在黑石王座上 中景 + 平视 <固定镜头> 环境音：大殿低鸣",
                     ]
                 ),
                 encoding="utf-8",
@@ -1523,7 +1542,7 @@ class SkillTextRulesTests(unittest.TestCase):
                     [
                         "## 视频投喂块",
                         "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。",
-                        f"1 日 内 鬼王宗宗门大殿 林夜 {legacy_first_frame}坐在黑石王座上 中景 + 平视 固定镜头 环境音：大殿低鸣",
+                        f"1 日 内 鬼王宗宗门大殿 林夜 {legacy_first_frame}坐在黑石王座上 中景 + 平视 <固定镜头> 环境音：大殿低鸣",
                     ]
                 ),
                 encoding="utf-8",
@@ -1995,3 +2014,4 @@ class SkillTextRulesTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

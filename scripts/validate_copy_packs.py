@@ -16,6 +16,7 @@ try:
         NUMBERED_LINE_RE,
         line_camera_tags,
         load_camera_tags,
+        unmarked_camera_tags,
     )
 except ModuleNotFoundError:
     from validate_feed import (
@@ -25,6 +26,7 @@ except ModuleNotFoundError:
         NUMBERED_LINE_RE,
         line_camera_tags,
         load_camera_tags,
+        unmarked_camera_tags,
     )
 
 
@@ -170,6 +172,12 @@ def check_pack_content(
             if len(found_tags) != 1:
                 errors.append(
                     f"line {line_number}: invalid camera tag count {len(found_tags)}"
+                )
+            unmarked_tags = unmarked_camera_tags(text, tags)
+            if unmarked_tags:
+                formatted_tags = ", ".join(dict.fromkeys(unmarked_tags))
+                errors.append(
+                    f"line {line_number}: camera tag must be wrapped in angle brackets: {formatted_tags}"
                 )
 
         is_final_pack = pack_position == len(packs) - 1

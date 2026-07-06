@@ -1,7 +1,7 @@
 interface:
   display_name: "Source True Guoman"
-  short_description: "原著保真3D国漫短剧资产、连续投喂稿与复制投喂包"
-  default_prompt: "Use $source-true-guoman to turn this novel chapter into source-faithful 3D guoman asset prompts, continuous video feed blocks, and optional paste-ready copy packs."
+  short_description: "原著保真3D国漫短剧资产、连续投喂稿、运镜库选择与复制投喂包"
+  default_prompt: "Use $source-true-guoman to turn this novel chapter into source-faithful 3D guoman asset prompts, continuous video feed blocks with a selected camera library, and optional paste-ready copy packs."
 
 policy:
   allow_implicit_invocation: true

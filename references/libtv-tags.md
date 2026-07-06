@@ -1,6 +1,6 @@
-# 小云雀运镜标签
+# libtv 运镜标签
 
-This is the 小云雀 camera library. Use these exact raw tags in the `运镜` field when the user chooses 小云雀. Do not replace them with loose synonyms.
+This is the libtv camera library transcribed from the user-provided screenshots. Use these exact raw tags in the `运镜` field when the user chooses libtv. Do not correct or normalize screenshot wording unless the user confirms the library changed.
 
 Production feeds and copy packs must mark the chosen raw tag with angle brackets: `<固定镜头>`, `<镜头前推>`, `<第一视角>`. Do not write a bare raw tag in a video line.
 
@@ -17,39 +17,23 @@ Production feeds and copy packs must mark the chosen raw tag with angle brackets
 - 镜头右移
 - 镜头前推
 - 镜头后移
-- 变焦推进
-- 变焦拉远
 
-## 人物跟拍
+## 旋转与变焦
 
-- 跟随拍摄
-- 迎面跟拍
-- 侧面跟拍
-- 手持拍摄
-- 第一视角
-
-## 提示转场
-
-- 横滑揭示
-- 前景擦过
-- 甩摇
-- 焦点转移
-
-## 情绪强化
-
-- 急速变焦
-- 希区柯克
-- 环绕拍摄
 - 盘旋抬升
 - 盘旋下降
+- 变焦推进
+- 变焦拉远
+- 构变焦焦
+- 环绕拍摄
+- 滚筒旋转
 
-## 空间航拍
+## 跟拍与视角
 
-- 穿越机运镜
-- 稳定器行进
-- 穿越镜头
+- 跟随拍摄
+- 第一视角
+- 无人机
 - 高空航拍
-- 俯冲下降
-- 拉开离场
+- 手持拍摄
 
 Modifiers may be added after the bracketed raw tag, e.g. `<镜头前推>（压迫靠近）`. The raw tag inside `<...>` must remain intact.
