@@ -662,10 +662,12 @@ class ImageGenerationRunnerTests(unittest.TestCase):
             self.make_job("child", depends_on=["bad_parent"]),
         ]
         calls: list[str] = []
+        calls_lock = threading.Lock()
         config = self.make_config(concurrency=2)
 
         def provider(job: ImageJob, current_config: ImageGenerationConfig) -> bytes:
-            calls.append(job.asset_name)
+            with calls_lock:
+                calls.append(job.asset_name)
             if job.asset_name == "bad_parent":
                 raise RuntimeError(
                     f"boom from {current_config.base_url} with {current_config.api_key}"
@@ -683,13 +685,17 @@ class ImageGenerationRunnerTests(unittest.TestCase):
         by_name = {asset["asset_name"]: asset for asset in manifest["assets"]}
         manifest_text = json.dumps(manifest, ensure_ascii=False, sort_keys=True)
         self.assertEqual(by_name["bad_parent"]["status"], "failed")
+        self.assertIn("boom from", by_name["bad_parent"]["last_error"])
+        self.assertIn("with [redacted]", by_name["bad_parent"]["last_error"])
         self.assertEqual(by_name["good_sibling"]["status"], "done")
         self.assertEqual(by_name["child"]["status"], "blocked")
         self.assertEqual(by_name["child"]["attempts"], 0)
         self.assertIn("bad_parent", by_name["child"]["last_error"])
         self.assertNotIn(config.base_url, manifest_text)
         self.assertNotIn(config.api_key, manifest_text)
-        self.assertEqual(sorted(calls), ["bad_parent", "good_sibling"])
+        with calls_lock:
+            recorded_calls = sorted(calls)
+        self.assertEqual(recorded_calls, ["bad_parent", "good_sibling"])
 
     def test_resume_in_workspace_wrong_path_does_not_skip(self) -> None:
         job = self.make_job("wrong_path_asset")
