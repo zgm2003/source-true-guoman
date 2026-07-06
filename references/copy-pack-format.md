@@ -12,6 +12,8 @@ Any operation that changes video line text, line numbers, or asset bindings must
 
 Copied video lines must already contain one selected-library camera tag marked with angle brackets, such as `<固定镜头>` or `<镜头前推>`. If a source feed contains bare camera terms, fix and audit the canonical mother feed first, then regenerate copy packs.
 
+Copied packs must preserve the canonical feed's selected aspect ratio. Supported choices are only `9:16（竖屏）`, `16:9（横屏）`, and `21:9（电影）`; 默认 16:9 when the user says default. Do not offer `1:1` or `4:5`.
+
 ## File Location
 
 Write copy-pack files at the user-facing top level under `生产资产`, while source-index, asset-bible, audit reports, and other evidence stay under `生产资产/_内部/`, for example:
@@ -30,6 +32,7 @@ Write copy-pack files at the user-facing top level under `生产资产`, while s
 - Pack size: 5
 - Numbering: preserve original continuous line numbers
 - Camera library: 小云雀
+- Aspect ratio: 16:9
 - Contract: copy convenience only; not pacing or compression
 
 ### 投喂包 001｜原始行 1-5
@@ -95,6 +98,8 @@ Do not list every global asset in every pack. That recreates the copy burden.
 Do not invent references. Use stable asset names and image/voice bindings from source index and asset bible. If evidence is ambiguous, write `需人工确认` with the source-grounded asset name.
 
 In `## Pack Settings`, include `- Camera library: 小云雀` or `- Camera library: libtv` when the selected library is known. If legacy source material does not record the selected library, write `- Camera library: 需人工确认` and keep copied line tags bracketed.
+
+In `## Pack Settings`, include `- Aspect ratio: 9:16`, `- Aspect ratio: 16:9`, or `- Aspect ratio: 21:9` when the selected ratio is known. If legacy source material does not record the selected ratio, write `- Aspect ratio: 需人工确认`; for new formal production, ask `画幅比例用哪个？默认 16:9。可选：9:16（竖屏）、16:9（横屏）、21:9（电影）。如果你说默认，我就按 16:9。`
 
 ## Forbidden Shape
 

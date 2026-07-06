@@ -15,6 +15,8 @@ For formal production standards, production mother feeds, and formal copy-pack b
 
 Write the raw selected-library tag inside angle brackets in both the production mother feed and copy packs: `<固定镜头>`, `<镜头前推>`, `<第一视角>`. Do not write bare camera-library terms. If both libraries contain the same raw tag, still mark only the raw tag in the line, e.g. `<第一人称>`; keep the selected library as task/package context, not inside the tag.
 
+For formal production standards, production mother feeds, and formal copy-pack batches, ask the user to choose an aspect ratio when it is not already specified: `画幅比例用哪个？默认 16:9。可选：9:16（竖屏）、16:9（横屏）、21:9（电影）。如果你说默认，我就按 16:9。` Only offer these three ratios. Do not offer `1:1` or `4:5`. Use the selected ratio anywhere the global requirement or prompt text carries a ratio; 默认 16:9.
+
 ```text
 ## 资产提示词
 
@@ -42,6 +44,8 @@ This is the canonical continuous feed. 连续投喂稿 is the canonical mother f
 Any operation that changes video line text, line numbers, or asset bindings must update the canonical continuous feed first, then re-run feed audit and regenerate copy packs. Do not edit copy packs as the source of truth.
 
 The first line after `统一要求` should enter source content quickly: a source event, exact source dialogue/OS/system prompt, conflict, visible decision, or one brief establishing shot tied to the source.
+
+The global requirement line must use one supported aspect ratio only: `9:16（竖屏）`, `16:9（横屏）`, or `21:9（电影）`. 默认 16:9 when the user says default or gives no preference after being asked.
 
 把呼吸感交给用户. Do not decide pauses by making 15-second blocks, do not enforce a 100-character spoken limit, and do not add pacing commentary. The user decides where to pause, cut, merge, or split after receiving the continuous source-faithful feed.
 

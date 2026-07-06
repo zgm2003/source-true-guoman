@@ -26,7 +26,7 @@ Emit only these two user-facing blocks:
 ## 视频投喂块
 ```
 
-Start the video block with the exact global `统一要求` line from `references/format.md`, then number from `1` to the end. Do not create `第N组`, 15-second blocks, `segment`, `S01/S02`, keyframes, first/last-frame instructions, Canvas packages, storyboard folders, or MP4 claims.
+Start the video block with the selected-ratio global `统一要求` line from `references/format.md`, then number from `1` to the end. 默认 16:9. Supported choices are only `9:16（竖屏）`, `16:9（横屏）`, and `21:9（电影）`. Do not create `第N组`, 15-second blocks, `segment`, `S01/S02`, keyframes, first/last-frame instructions, Canvas packages, storyboard folders, or MP4 claims.
 
 For long or multi-chapter scope, the feed depends on `source-index` and `asset-bible` decisions before drafting. Formal multi-chapter output requires either a `全范围预扫` source index or an explicit full requested-scope pre-scan.
 
@@ -42,13 +42,14 @@ Scope mode policy: 正式多章任务必须先预扫完整请求范围. 局部�
 4. Check `asset-bible` for stable asset names, existing references, outfit variants, scene mother images, and voice roles.
 5. Make a private chapter beat ledger before drafting: opening state, key conflict, source dialogue anchor, action turn, result, and hook. For formal production, make a private chapter beat ledger per 5-chapter batch and do not let a 30-chapter request skip locally important named roles.
 6. For formal production standard or mother-feed output, ask the user to choose `小云雀` or `libtv` before drafting if the camera library is not already specified. Do not mix libraries in one feed unless the user explicitly asks for a migration or comparison.
+7. For formal production standard or mother-feed output, ask the user to choose an aspect ratio before drafting if it is not already specified: `画幅比例用哪个？默认 16:9。可选：9:16（竖屏）、16:9（横屏）、21:9（电影）。如果你说默认，我就按 16:9。` If an existing audited feed already declares a ratio, keep it unless the user asks to switch.
 
 For long or dense source spans, make a private line/span plan before drafting: use source-span alignment to map source spans to feed line ranges, preserve source order and coverage, and run a local continuity check against the previous visible state before finalizing each line. Do not import fixed-second timelines, fixed-duration groups, or time slices.
 
-7. Use one visible action target, one main beat, and one selected-library camera tag per numbered line. Write the camera tag as `<raw tag>`, e.g. `<固定镜头>` or `<镜头前推>`. Modifiers may follow the bracketed tag.
-8. Keep speaker-focused dialogue shots with the speaker as the primary subject, usually front half-body or medium shots with spatial context.
-9. Preserve long dialogue in adjacent continuous lines; never shorten to reduce line count.
-10. Do not reduce coverage by reducing line count.
-11. Run a coverage audit before delivery for multi-chapter work.
+8. Use one visible action target, one main beat, and one selected-library camera tag per numbered line. Write the camera tag as `<raw tag>`, e.g. `<固定镜头>` or `<镜头前推>`. Modifiers may follow the bracketed tag.
+9. Keep speaker-focused dialogue shots with the speaker as the primary subject, usually front half-body or medium shots with spatial context.
+10. Preserve long dialogue in adjacent continuous lines; never shorten to reduce line count.
+11. Do not reduce coverage by reducing line count.
+12. Run a coverage audit before delivery for multi-chapter work.
 
 Compatibility anchors (do not copy into feed output): formal multi-chapter output requires either a `全范围预扫` source index or an explicit full requested-scope pre-scan; do not reduce coverage by reducing line count.

@@ -150,6 +150,26 @@ class SkillTextRulesTests(unittest.TestCase):
                 self.assertTrue(agent_path.is_file())
                 self.assertIn(relative_path, skill_text)
 
+    def test_formal_production_aspect_ratio_options_are_limited(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        files = [
+            root.joinpath("SKILL.md"),
+            root.joinpath("references", "format.md"),
+            root.joinpath("references", "copy-pack-format.md"),
+            root.joinpath("agents", "faithful-feed.md"),
+            root.joinpath("agents", "copy-packager.md"),
+        ]
+
+        for path in files:
+            with self.subTest(path=path.name):
+                text = path.read_text(encoding="utf-8")
+                self.assertIn("9:16（竖屏）", text)
+                self.assertIn("16:9（横屏）", text)
+                self.assertIn("21:9（电影）", text)
+                self.assertIn("默认 16:9", text)
+                self.assertNotIn("1:1 方屏", text)
+                self.assertNotIn("4:5 信息流", text)
+
     def test_main_skill_routes_common_intents_to_specialists(self) -> None:
         root = Path(__file__).resolve().parents[1]
         route_lines = [
@@ -531,7 +551,7 @@ class SkillTextRulesTests(unittest.TestCase):
             "Check `source-index` for names, aliases, event order, scene hierarchy, posture facts, and unresolved doubts.",
             "Check `asset-bible` for stable asset names, existing references, outfit variants, scene mother images, and voice roles.",
             "do not reduce coverage by reducing line count",
-            "10. Do not reduce coverage by reducing line count.",
+            "11. Do not reduce coverage by reducing line count.",
         ]
 
         for phrase in required_phrases:
@@ -1006,6 +1026,59 @@ class SkillTextRulesTests(unittest.TestCase):
             self.assertIn("invalid camera tag count 0", result.stdout)
             self.assertIn("camera tag must be wrapped in angle brackets: 固定镜头", result.stdout)
 
+    def test_validate_feed_accepts_supported_aspect_ratios(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            for aspect_ratio in ("9:16", "16:9", "21:9"):
+                with self.subTest(aspect_ratio=aspect_ratio):
+                    feed = Path(temp_dir) / f"feed-{aspect_ratio.replace(':', '-')}.md"
+                    feed.write_text(
+                        "\n".join(
+                            [
+                                "## 视频投喂块",
+                                f"统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，{aspect_ratio}。",
+                                "1 日 内 大殿 林夜 坐在王座上 中景 + 平视 <固定镜头> 环境音：低鸣",
+                            ]
+                        ),
+                        encoding="utf-8",
+                    )
+
+                    result = subprocess.run(
+                        [sys.executable, str(root / "scripts" / "validate_feed.py"), str(feed)],
+                        cwd=root,
+                        text=True,
+                        capture_output=True,
+                        check=False,
+                    )
+
+                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_validate_feed_rejects_unsupported_aspect_ratio(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            bad_feed = Path(temp_dir) / "unsupported-aspect-feed.md"
+            bad_feed.write_text(
+                "\n".join(
+                    [
+                        "## 视频投喂块",
+                        "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，1:1。",
+                        "1 日 内 大殿 林夜 坐在王座上 中景 + 平视 <固定镜头> 环境音：低鸣",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [sys.executable, str(root / "scripts" / "validate_feed.py"), str(bad_feed)],
+                cwd=root,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("global requirement line must immediately follow ## 视频投喂块", result.stdout)
+
     def test_validate_copy_packs_accepts_valid_five_line_pack_file(self) -> None:
         root = Path(__file__).resolve().parents[1]
         requirement = "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。"
@@ -1058,6 +1131,48 @@ class SkillTextRulesTests(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertIn("Copy-pack validation passed", result.stdout)
+
+    def test_validate_copy_packs_accepts_supported_aspect_ratios(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            for aspect_ratio in ("9:16", "16:9", "21:9"):
+                with self.subTest(aspect_ratio=aspect_ratio):
+                    requirement = f"统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，{aspect_ratio}。"
+                    copy_pack = Path(temp_dir) / f"copy-packs-{aspect_ratio.replace(':', '-')}.md"
+                    copy_pack.write_text(
+                        "\n".join(
+                            [
+                                "# Seedance Copy Packs - ch01",
+                                "## Pack Settings",
+                                "- Pack size: 1",
+                                f"- Aspect ratio: {aspect_ratio}",
+                                "### 投喂包 001｜原始行 1-1",
+                                requirement,
+                                "上传参考图：",
+                                "- 场景1 = 鬼王宗宗门大殿_母图 = 图片2",
+                                "音色绑定：",
+                                "- 音色1 = 林夜.mp3",
+                                "1 日 内 鬼王宗宗门大殿 林夜 坐在黑石王座上 中景 + 平视 <固定镜头> 环境音：低鸣",
+                            ]
+                        ),
+                        encoding="utf-8",
+                    )
+
+                    result = subprocess.run(
+                        [
+                            sys.executable,
+                            str(root / "scripts" / "validate_copy_packs.py"),
+                            str(copy_pack),
+                            "--pack-size",
+                            "1",
+                        ],
+                        cwd=root,
+                        text=True,
+                        capture_output=True,
+                        check=False,
+                    )
+
+                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_validate_copy_packs_rejects_missing_requirement_per_pack(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -1718,7 +1833,7 @@ class SkillTextRulesTests(unittest.TestCase):
                 text,
             )
 
-        self.assertIn("Start `## 视频投喂块` with this exact line", skill_text)
+        self.assertIn("Start `## 视频投喂块` with the selected-ratio global `统一要求` line", skill_text)
         self.assertIn("The first line after `统一要求` should enter source content quickly", format_text)
         self.assertNotIn("### 第1组", format_text)
         self.assertIn(

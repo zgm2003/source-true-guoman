@@ -8,10 +8,17 @@ import re
 from pathlib import Path
 
 
-GLOBAL_REQUIREMENT = (
+SUPPORTED_ASPECT_RATIOS = ("9:16", "16:9", "21:9")
+DEFAULT_ASPECT_RATIO = "16:9"
+GLOBAL_REQUIREMENT_PREFIX = (
     "统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】"
-    "3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。"
+    "3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，"
 )
+GLOBAL_REQUIREMENTS = tuple(
+    f"{GLOBAL_REQUIREMENT_PREFIX}{aspect_ratio}。"
+    for aspect_ratio in SUPPORTED_ASPECT_RATIOS
+)
+GLOBAL_REQUIREMENT = f"{GLOBAL_REQUIREMENT_PREFIX}{DEFAULT_ASPECT_RATIO}。"
 
 GROUP_PATTERNS = (
     re.compile(r"第\s*\d+\s*组"),
@@ -94,7 +101,7 @@ def validate_feed(path: Path, root: Path) -> list[str]:
     tags = load_camera_tags(root)
     errors: list[str] = []
 
-    if GLOBAL_REQUIREMENT not in text:
+    if not any(requirement in text for requirement in GLOBAL_REQUIREMENTS):
         errors.append("missing global requirement line")
 
     try:
@@ -107,7 +114,7 @@ def validate_feed(path: Path, root: Path) -> list[str]:
         requirement_index = header_index + 1
         if (
             requirement_index >= len(lines)
-            or lines[requirement_index].strip() != GLOBAL_REQUIREMENT
+            or lines[requirement_index].strip() not in GLOBAL_REQUIREMENTS
         ):
             errors.append(
                 "global requirement line must immediately follow ## 视频投喂块"

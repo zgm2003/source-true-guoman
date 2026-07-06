@@ -15,6 +15,8 @@ Use this specialist only after source index, asset bible, faithful feed, and fee
 
 The canonical source truth remains the `连续投喂稿`: `## 视频投喂块`, one global `统一要求`, and continuous numbering from `1` to the end.
 
+Copy packs preserve the canonical feed's selected aspect ratio. Supported choices are only `9:16（竖屏）`, `16:9（横屏）`, and `21:9（电影）`; 默认 16:9 when the user says default. Do not offer `1:1` or `4:5`.
+
 ## Required References
 
 - Read `references/copy-pack-format.md` before writing any copy-pack artifact.
@@ -52,8 +54,9 @@ Do not insert copy packs into `## 视频投喂块` and do not change the faithfu
 7. Use stable asset names and existing image or voice bindings from source index and asset bible.
 8. If a needed binding is ambiguous, write `需人工确认` with the stable source-grounded name. Do not invent a new image, voice, scene, or character reference.
 9. Include `- Camera library: 小云雀`, `- Camera library: libtv`, or `- Camera library: 需人工确认` in `## Pack Settings`.
-10. Keep each copied video line text unchanged, including `<...>` camera tags. If copied lines use bare camera words, stop and update the canonical feed first; do not patch copy packs directly.
-11. After saving the artifact, run `python scripts/validate_copy_packs.py <copy-pack-file> --source-feed <feed-file> --pack-size <N>` when a source feed file is available.
+10. Include `- Aspect ratio: 9:16`, `- Aspect ratio: 16:9`, `- Aspect ratio: 21:9`, or `- Aspect ratio: 需人工确认` in `## Pack Settings`. For a new formal batch without a selected ratio, ask `画幅比例用哪个？默认 16:9。可选：9:16（竖屏）、16:9（横屏）、21:9（电影）。如果你说默认，我就按 16:9。`
+11. Keep each copied video line text unchanged, including `<...>` camera tags. If copied lines use bare camera words, stop and update the canonical feed first; do not patch copy packs directly.
+12. After saving the artifact, run `python scripts/validate_copy_packs.py <copy-pack-file> --source-feed <feed-file> --pack-size <N>` when a source feed file is available.
 
 ## Output Discipline
 

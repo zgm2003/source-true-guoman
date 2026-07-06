@@ -11,7 +11,7 @@ from pathlib import Path
 try:
     from scripts.validate_feed import (
         FORBIDDEN_TERMS,
-        GLOBAL_REQUIREMENT,
+        GLOBAL_REQUIREMENTS,
         GROUP_PATTERNS,
         NUMBERED_LINE_RE,
         line_camera_tags,
@@ -21,7 +21,7 @@ try:
 except ModuleNotFoundError:
     from validate_feed import (
         FORBIDDEN_TERMS,
-        GLOBAL_REQUIREMENT,
+        GLOBAL_REQUIREMENTS,
         GROUP_PATTERNS,
         NUMBERED_LINE_RE,
         line_camera_tags,
@@ -146,7 +146,7 @@ def check_pack_content(
     all_numbered_lines: list[tuple[int, int, str]] = []
 
     for pack_position, pack in enumerate(packs):
-        if not any(line.strip() == GLOBAL_REQUIREMENT for _, line in pack.lines):
+        if not any(line.strip() in GLOBAL_REQUIREMENTS for _, line in pack.lines):
             errors.append(f"pack {pack.index:03d} missing global requirement line")
 
         if pack.start > pack.end:
