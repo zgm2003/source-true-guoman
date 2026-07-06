@@ -32,14 +32,13 @@ Internal jobs, logs, reports, and manifests belong under `生产资产/_内部/`
 
 - `生产资产/_内部/asset-bible.md` or a saved feed package containing `## 资产提示词`.
 - Existing generated images when referenced by asset-bible.
-- Local OpenAI-compatible relay settings from environment variables or `.source-true-guoman.local.json`.
+- Local OpenAI-compatible relay settings from environment variables.
 
 ## Output
 
 - `生产资产/_内部/image-jobs.jsonl`
 - `生产资产/_内部/image-manifest.json`
 - `生产资产/_内部/image-generation-report.md`
-- `生产资产/_内部/image-generation-log.jsonl`
 - Generated images under `人设资产`, `场景资产`, or `道具资产`.
 
 ## Procedure
@@ -52,8 +51,8 @@ Internal jobs, logs, reports, and manifests belong under `生产资产/_内部/`
 6. Save successful API outputs as local `.png` files.
 7. Update `image-manifest.json` after each completed, failed, or blocked job.
 8. Write a generation report with failures first, then blocked jobs, then successes.
-9. Never write API keys into manifest, report, or logs.
-10. On resume, skip already successful outputs unless the user uses `--force`.
+9. Never write API keys into manifest or report.
+10. Use `--resume` to skip already successful outputs; without `--resume`, run jobs from the current job file.
 
 ## Copy-Pack Boundary
 

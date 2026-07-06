@@ -933,6 +933,88 @@ class ImageGenerationRunnerTests(unittest.TestCase):
         self.assertNotIn("sk-test-secret", manifest_text)
         self.assertNotIn("https://provider.example/openai", manifest_text)
 
+    def test_main_persists_manifest_and_report_after_wave_before_interruption(self) -> None:
+        parent = self.make_job("persisted_parent")
+        child = self.make_job("interrupted_child", depends_on=["persisted_parent"])
+        calls: list[str] = []
+
+        def provider(current_job: ImageJob, config: ImageGenerationConfig) -> bytes:
+            calls.append(current_job.asset_name)
+            if current_job.asset_name == child.asset_name:
+                raise KeyboardInterrupt("stop after parent wave")
+            return b"parent-image"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            jobs_path = root / "image-jobs.jsonl"
+            manifest_path = root / "image-manifest.json"
+            report_path = root / "image-generation-report.md"
+            jobs_path.write_text(
+                "".join(
+                    json.dumps(job.to_dict(), ensure_ascii=False) + "\n"
+                    for job in [parent, child]
+                ),
+                encoding="utf-8",
+            )
+            env = {
+                "SOURCE_TRUE_IMAGE_BASE_URL": "https://provider.example/openai",
+                "SOURCE_TRUE_IMAGE_API_KEY": "sk-test-secret-1234567890",
+                "SOURCE_TRUE_IMAGE_MODEL": "gpt-image-2",
+                "SOURCE_TRUE_IMAGE_SIZE": "16:9",
+                "SOURCE_TRUE_IMAGE_TIMEOUT_SECONDS": "5",
+                "SOURCE_TRUE_IMAGE_MAX_RETRIES": "0",
+                "SOURCE_TRUE_IMAGE_RETRY_BASE_SECONDS": "0",
+                "SOURCE_TRUE_IMAGE_RETRY_MAX_SECONDS": "0",
+                "SOURCE_TRUE_IMAGE_CONCURRENCY": "1",
+            }
+            argv = [
+                "generate_images.py",
+                "--jobs",
+                str(jobs_path),
+                "--manifest",
+                str(manifest_path),
+                "--workspace",
+                str(root),
+                "--report",
+                str(report_path),
+            ]
+
+            with patch.dict(os.environ, env, clear=True):
+                with patch.object(sys, "argv", argv):
+                    with patch.object(
+                        generate_images_module,
+                        "openai_compatible_provider",
+                        provider,
+                    ):
+                        with self.assertRaises(KeyboardInterrupt):
+                            generate_images_module.main()
+
+            self.assertTrue(
+                manifest_path.exists(),
+                "manifest should be persisted before interruption",
+            )
+            self.assertTrue(
+                report_path.exists(),
+                "report should be persisted before interruption",
+            )
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            report_text = report_path.read_text(encoding="utf-8")
+            persisted_text = (
+                json.dumps(manifest, ensure_ascii=False, sort_keys=True)
+                + report_text
+            )
+
+        self.assertEqual(calls, ["persisted_parent", "interrupted_child"])
+        self.assertEqual(
+            [asset["asset_name"] for asset in manifest["assets"]],
+            ["persisted_parent"],
+        )
+        self.assertEqual(manifest["assets"][0]["status"], "done")
+        self.assertIn("- persisted_parent:", report_text)
+        self.assertNotIn("api_key", persisted_text)
+        self.assertNotIn("sk-test-secret", persisted_text)
+        self.assertNotIn("https://provider.example/openai", persisted_text)
+
     def test_cli_reports_malformed_depends_on_without_traceback(self) -> None:
         job_data = self.make_job("bad_depends_on").to_dict()
         job_data["depends_on"] = None
@@ -961,6 +1043,45 @@ class ImageGenerationRunnerTests(unittest.TestCase):
 
 
 class ImageManifestValidationTests(unittest.TestCase):
+    def make_job(self, name: str = "manifest_asset") -> ImageJob:
+        return ImageJob(
+            job_id=f"job-{name}",
+            asset_name=name,
+            asset_type="character",
+            prompt=f"prompt for {name}",
+            output_dir=sorted(ALLOWED_OUTPUT_DIRS)[0],
+            output_file=f"{name}.png",
+            depends_on=[],
+            reference_images=[],
+            provider="openai-compatible",
+            model="gpt-image-2",
+            size="16:9",
+            status="pending",
+        )
+
+    def manifest_asset(
+        self,
+        job: ImageJob | None = None,
+        **overrides: object,
+    ) -> dict[str, object]:
+        if job is None:
+            job = self.make_job()
+        asset: dict[str, object] = {
+            "asset_name": job.asset_name,
+            "asset_type": job.asset_type,
+            "path": job.output_path.as_posix(),
+            "status": "failed",
+            "last_error": "provider failed",
+            "prompt_hash": prompt_hash(job.prompt),
+            "model": job.model,
+            "size": job.size,
+            "attempts": 1,
+            "depends_on": list(job.depends_on),
+            "references": [],
+        }
+        asset.update(overrides)
+        return asset
+
     def test_validate_manifest_rejects_done_asset_missing_file(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -1197,6 +1318,122 @@ class ImageManifestValidationTests(unittest.TestCase):
         errors = validate_manifest(manifest, [], Path("."))
 
         self.assertIn("manifest must not contain secret key names", "; ".join(errors))
+
+    def test_validate_manifest_rejects_paths_outside_allowed_output_dirs(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            docs_path = root / "docs" / "foo.png"
+            docs_path.parent.mkdir(parents=True, exist_ok=True)
+            docs_path.write_bytes(b"image")
+            asset = self.manifest_asset(
+                path="docs/foo.png",
+                status="done",
+            )
+            asset.pop("last_error")
+            manifest = {
+                "version": 1,
+                "provider": "openai-compatible",
+                "assets": [asset],
+            }
+
+            errors = validate_manifest(manifest, [], root)
+
+            self.assertIn(
+                "generated image path must start with one of",
+                "; ".join(errors),
+            )
+
+    def test_validate_manifest_rejects_unknown_status(self) -> None:
+        manifest = {
+            "version": 1,
+            "provider": "openai-compatible",
+            "assets": [self.manifest_asset(status="queued")],
+        }
+
+        errors = validate_manifest(manifest, [], Path("."))
+
+        self.assertIn(
+            "status must be one of",
+            "; ".join(errors),
+        )
+
+    def test_validate_manifest_rejects_missing_required_asset_fields(self) -> None:
+        required_fields = ["asset_name", "asset_type", "status"]
+
+        for field_name in required_fields:
+            with self.subTest(field_name=field_name):
+                asset = self.manifest_asset()
+                asset[field_name] = ""
+                manifest = {
+                    "version": 1,
+                    "provider": "openai-compatible",
+                    "assets": [asset],
+                }
+
+                errors = validate_manifest(manifest, [], Path("."))
+
+                self.assertIn(
+                    f"{field_name} is required",
+                    "; ".join(errors),
+                )
+
+    def test_validate_manifest_rejects_duplicate_asset_names(self) -> None:
+        asset = self.manifest_asset()
+        manifest = {
+            "version": 1,
+            "provider": "openai-compatible",
+            "assets": [asset, dict(asset)],
+        }
+
+        errors = validate_manifest(manifest, [], Path("."))
+
+        self.assertIn("duplicate asset_name: manifest_asset", "; ".join(errors))
+
+    def test_validate_manifest_rejects_done_path_that_differs_from_job_output(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            job = self.make_job("path_mismatch")
+            wrong_path = Path(job.output_dir) / "wrong.png"
+            output_path = root / wrong_path
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_bytes(b"image")
+            asset = self.manifest_asset(
+                job,
+                path=wrong_path.as_posix(),
+                status="done",
+            )
+            asset.pop("last_error")
+            manifest = {
+                "version": 1,
+                "provider": "openai-compatible",
+                "assets": [asset],
+            }
+
+            errors = validate_manifest(manifest, [job], root)
+
+            self.assertIn("path must match job output", "; ".join(errors))
+
+    def test_validate_manifest_rejects_stale_job_metadata_when_present(self) -> None:
+        job = self.make_job("stale_metadata")
+        manifest = {
+            "version": 1,
+            "provider": "openai-compatible",
+            "assets": [
+                self.manifest_asset(
+                    job,
+                    prompt_hash=prompt_hash("old prompt"),
+                    model="old-model",
+                    size="1:1",
+                )
+            ],
+        }
+
+        errors = validate_manifest(manifest, [job], Path("."))
+
+        message = "; ".join(errors)
+        self.assertIn("prompt_hash must match current job prompt", message)
+        self.assertIn("model must match current job model", message)
+        self.assertIn("size must match current job size", message)
 
 
 class BuildImageJobsTests(unittest.TestCase):

@@ -13,6 +13,7 @@ import os
 import random
 import re
 import socket
+import tempfile
 import time
 import urllib.error
 from urllib.parse import urlsplit
@@ -71,6 +72,7 @@ class ImageGenerationConfig:
 
 
 ProviderCallable = Callable[[ImageJob, ImageGenerationConfig], bytes]
+ManifestUpdateCallback = Callable[[dict[str, Any]], None]
 
 
 def load_config_from_env() -> ImageGenerationConfig:
@@ -272,12 +274,17 @@ def run_generation(
     provider: ProviderCallable = openai_compatible_provider,
     existing_manifest: dict[str, Any] | None = None,
     resume: bool = False,
+    on_manifest_update: ManifestUpdateCallback | None = None,
 ) -> dict[str, Any]:
     workspace = Path(workspace)
     waves = build_dependency_waves(jobs)
     existing = manifest_by_name(existing_manifest) if resume else {}
     done_assets: set[str] = set()
     results_by_name: dict[str, dict[str, Any]] = {}
+
+    def notify_manifest_update() -> None:
+        if on_manifest_update is not None:
+            on_manifest_update(_build_manifest(jobs, results_by_name))
 
     for wave in waves:
         runnable: list[ImageJob] = []
@@ -293,6 +300,7 @@ def run_generation(
                     job.asset_name,
                     result["last_error"],
                 )
+                notify_manifest_update()
                 continue
 
             if should_skip_job(job, config, existing, workspace, resume):
@@ -303,11 +311,11 @@ def run_generation(
                 )
                 done_assets.add(job.asset_name)
                 LOGGER.info("Skipping image asset %s on resume", job.asset_name)
+                notify_manifest_update()
                 continue
 
             runnable.append(job)
 
-        completed_results: dict[str, dict[str, Any]] = {}
         if runnable:
             with ThreadPoolExecutor(max_workers=max(1, config.concurrency)) as executor:
                 future_map = {
@@ -323,7 +331,7 @@ def run_generation(
                 for future in as_completed(future_map):
                     job = future_map[future]
                     try:
-                        completed_results[job.asset_name] = future.result()
+                        result = future.result()
                     except Exception as error:
                         last_error = _sanitize_error(str(error), config)
                         LOGGER.warning(
@@ -331,19 +339,24 @@ def run_generation(
                             job.asset_name,
                             last_error,
                         )
-                        completed_results[job.asset_name] = _failed_result(
+                        result = _failed_result(
                             job,
                             config,
                             0,
                             last_error,
                         )
+                    results_by_name[job.asset_name] = result
+                    if result.get("status") == "done":
+                        done_assets.add(job.asset_name)
+                    notify_manifest_update()
 
-        for job in runnable:
-            result = completed_results[job.asset_name]
-            results_by_name[job.asset_name] = result
-            if result.get("status") == "done":
-                done_assets.add(job.asset_name)
+    return _build_manifest(jobs, results_by_name)
 
+
+def _build_manifest(
+    jobs: list[ImageJob],
+    results_by_name: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
     return {
         "version": 1,
         "provider": "openai-compatible",
@@ -354,6 +367,13 @@ def run_generation(
             if job.asset_name in results_by_name
         ],
     }
+
+
+def write_generation_manifest(path: Path, manifest: dict[str, Any]) -> None:
+    manifest_path = Path(path)
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    text = json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    _write_text_atomic(manifest_path, text)
 
 
 def write_generation_report(path: Path, manifest: dict[str, Any]) -> None:
@@ -374,6 +394,30 @@ def write_generation_report(path: Path, manifest: dict[str, Any]) -> None:
     report_path = Path(path)
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def _write_text_atomic(path: Path, text: str) -> None:
+    temp_path: Path | None = None
+    with tempfile.NamedTemporaryFile(
+        "w",
+        encoding="utf-8",
+        dir=path.parent,
+        prefix=f".{path.name}.",
+        suffix=".tmp",
+        delete=False,
+    ) as temp_file:
+        temp_file.write(text)
+        temp_path = Path(temp_file.name)
+
+    try:
+        os.replace(temp_path, path)
+    except OSError:
+        if temp_path is not None:
+            try:
+                temp_path.unlink()
+            except OSError:
+                pass
+        raise
 
 
 def _float_env(name: str, default: float) -> float:
@@ -682,6 +726,11 @@ def main() -> int:
                 raise ImageGenerationError("existing manifest must be a JSON object")
 
         config = load_config_from_env()
+
+        def persist_manifest_update(current_manifest: dict[str, Any]) -> None:
+            write_generation_manifest(manifest_path, current_manifest)
+            write_generation_report(report_path, current_manifest)
+
         manifest = run_generation(
             jobs,
             config,
@@ -689,13 +738,10 @@ def main() -> int:
             provider=openai_compatible_provider,
             existing_manifest=existing_manifest,
             resume=args.resume,
+            on_manifest_update=persist_manifest_update,
         )
 
-        manifest_path.parent.mkdir(parents=True, exist_ok=True)
-        manifest_path.write_text(
-            json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8",
-        )
+        write_generation_manifest(manifest_path, manifest)
         write_generation_report(report_path, manifest)
     except FileNotFoundError as error:
         missing = Path(error.filename).name if error.filename else "input file"

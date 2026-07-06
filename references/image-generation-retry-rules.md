@@ -32,7 +32,7 @@ Use exponential backoff with jitter. Default settings:
 
 - max retries: `3`
 - base delay seconds: `1.0`
-- max delay seconds: `20.0`
+- max delay seconds: `30.0`
 
 ## Dependency Failure
 
@@ -40,7 +40,7 @@ Failed dependencies block dependent jobs. Blocked jobs must record which stable 
 
 ## Resume
 
-On resume, skip manifest assets with `status = done` and an existing local image path. Retry `failed`, `blocked`, and `pending` jobs after dependency validation.
+On resume, skip manifest assets with `status = done` and an existing local image path. Retry `failed` and `blocked` jobs after dependency validation; jobs absent from the manifest run normally.
 
 ## Secret Handling
 

@@ -13,6 +13,7 @@ from typing import Any
 
 
 ALLOWED_OUTPUT_DIRS = {"人设资产", "场景资产", "道具资产"}
+ALLOWED_MANIFEST_STATUSES = {"done", "failed", "blocked"}
 PRODUCTION_OUTPUT_DIR = "生产资产"
 SECRET_KEY_NAMES = {"api_key", "authorization", "bearer", "token"}
 RAW_SECRET_VALUE_PATTERN = re.compile(r"\bsk-[A-Za-z0-9_-]{8,}\b")
@@ -268,26 +269,62 @@ def validate_manifest(
     if not isinstance(assets, list):
         return ["manifest assets must be a list"]
 
-    job_names = {job.asset_name for job in jobs}
+    jobs_by_name = {job.asset_name: job for job in jobs}
+    seen_asset_names: set[str] = set()
     for asset in assets:
         if not isinstance(asset, dict):
             errors.append("manifest asset entry must be an object")
             continue
         asset_name = str(asset.get("asset_name", "")).strip()
+        asset_label = asset_name or "<missing asset_name>"
+        asset_type = str(asset.get("asset_type", "")).strip()
         path_text = str(asset.get("path", "")).strip()
         status = str(asset.get("status", "")).strip()
+
+        if not asset_name:
+            errors.append("asset_name is required")
+        elif asset_name in seen_asset_names:
+            errors.append(f"duplicate asset_name: {asset_name}")
+        if asset_name:
+            seen_asset_names.add(asset_name)
+        if not asset_type:
+            errors.append(f"{asset_label}: asset_type is required")
+        if not status:
+            errors.append(f"{asset_label}: status is required")
+        elif status not in ALLOWED_MANIFEST_STATUSES:
+            errors.append(
+                f"{asset_label}: status must be one of {sorted(ALLOWED_MANIFEST_STATUSES)}"
+            )
+
         path_errors, image_path = _validate_manifest_image_path(
-            asset_name, path_text, workspace
+            asset_label, path_text, workspace
         )
 
-        if job_names and asset_name and asset_name not in job_names:
+        job = jobs_by_name.get(asset_name)
+        if jobs_by_name and asset_name and job is None:
             errors.append(f"{asset_name}: manifest asset not present in jobs")
+        elif job is not None:
+            expected_path = job.output_path.as_posix()
+            if path_text != expected_path:
+                errors.append(
+                    f"{asset_name}: path must match job output {expected_path}"
+                )
+            expected_prompt_hash = prompt_hash(job.prompt)
+            if "prompt_hash" in asset and asset.get("prompt_hash") != expected_prompt_hash:
+                errors.append(
+                    f"{asset_name}: prompt_hash must match current job prompt"
+                )
+            if "model" in asset and asset.get("model") != job.model:
+                errors.append(f"{asset_name}: model must match current job model")
+            if "size" in asset and asset.get("size") != job.size:
+                errors.append(f"{asset_name}: size must match current job size")
+
         errors.extend(path_errors)
         if status == "done" and image_path is not None:
             if not image_path.is_file():
-                errors.append(f"{asset_name}: done asset missing local file {path_text}")
-        if status in {"failed", "blocked"} and not asset.get("last_error"):
-            errors.append(f"{asset_name}: {status} asset must record last_error")
+                errors.append(f"{asset_label}: done asset missing local file {path_text}")
+        if status in {"failed", "blocked"} and not str(asset.get("last_error", "")).strip():
+            errors.append(f"{asset_label}: {status} asset must record last_error")
 
     return errors
 
@@ -319,6 +356,11 @@ def _validate_manifest_image_path(
     if relative_path.parts and relative_path.parts[0] == PRODUCTION_OUTPUT_DIR:
         errors.append(
             f"{asset_name}: generated image path must not be under {PRODUCTION_OUTPUT_DIR}"
+        )
+    if not relative_path.parts or relative_path.parts[0] not in ALLOWED_OUTPUT_DIRS:
+        errors.append(
+            f"{asset_name}: generated image path must start with one of "
+            f"{sorted(ALLOWED_OUTPUT_DIRS)}"
         )
 
     return errors, resolved_path
