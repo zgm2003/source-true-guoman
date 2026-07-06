@@ -62,6 +62,46 @@ class ImageGenerationCoreTests(unittest.TestCase):
         self.assertIn("duplicate job_id", message)
         self.assertIn("output_dir must be one of", message)
 
+    def test_validate_jobs_rejects_missing_required_job_metadata_fields(self) -> None:
+        job = self.make_job("metadata_asset")
+        job.asset_type = ""
+        job.provider = ""
+        job.model = ""
+        job.size = ""
+        job.status = ""
+
+        with self.assertRaises(ImageGenerationError) as context:
+            validate_jobs([job])
+
+        message = str(context.exception)
+        self.assertIn("metadata_asset: asset_type is required", message)
+        self.assertIn("metadata_asset: provider is required", message)
+        self.assertIn("metadata_asset: model is required", message)
+        self.assertIn("metadata_asset: size is required", message)
+        self.assertIn("metadata_asset: status is required", message)
+
+    def test_validate_jobs_rejects_output_file_paths(self) -> None:
+        invalid_output_files = [
+            "nested/asset.png",
+            r"nested\asset.png",
+            "/tmp/asset.png",
+            r"C:\tmp\asset.png",
+            "C:asset.png",
+        ]
+
+        for output_file in invalid_output_files:
+            with self.subTest(output_file=output_file):
+                job = self.make_job("path_asset")
+                job.output_file = output_file
+
+                with self.assertRaises(ImageGenerationError) as context:
+                    validate_jobs([job])
+
+                self.assertIn(
+                    "path_asset: output_file must be a file name only",
+                    str(context.exception),
+                )
+
     def test_build_dependency_waves_orders_reference_dependencies(self) -> None:
         jobs = [
             self.make_job("林夜_黑袍造型"),

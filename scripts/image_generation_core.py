@@ -75,10 +75,10 @@ class ImageJob:
             output_file=str(data.get("output_file", "")).strip(),
             depends_on=[str(item).strip() for item in data.get("depends_on", [])],
             reference_images=references,
-            provider=str(data.get("provider", "openai-compatible")).strip(),
+            provider=str(data.get("provider", "")).strip(),
             model=str(data.get("model", "")).strip(),
             size=str(data.get("size", "")).strip(),
-            status=str(data.get("status", "pending")).strip(),
+            status=str(data.get("status", "")).strip(),
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -146,15 +146,30 @@ def validate_jobs(jobs: list[ImageJob]) -> list[str]:
             errors.append(f"duplicate asset_name: {job.asset_name}")
         asset_names.add(job.asset_name)
 
+        if not job.asset_type:
+            errors.append(f"{job.asset_name}: asset_type is required")
         if not job.prompt:
             errors.append(f"{job.asset_name}: prompt is required")
+        if not job.provider:
+            errors.append(f"{job.asset_name}: provider is required")
+        if not job.model:
+            errors.append(f"{job.asset_name}: model is required")
+        if not job.size:
+            errors.append(f"{job.asset_name}: size is required")
+        if not job.status:
+            errors.append(f"{job.asset_name}: status is required")
         if job.output_dir not in ALLOWED_OUTPUT_DIRS:
             errors.append(
                 f"{job.asset_name}: output_dir must be one of {sorted(ALLOWED_OUTPUT_DIRS)}"
             )
         if not job.output_file.endswith(".png"):
             errors.append(f"{job.asset_name}: output_file must end with .png")
-        if Path(job.output_file).name != job.output_file:
+        if (
+            "/" in job.output_file
+            or "\\" in job.output_file
+            or Path(job.output_file).is_absolute()
+            or _has_drive_prefix(job.output_file)
+        ):
             errors.append(f"{job.asset_name}: output_file must be a file name only")
 
     known_assets = {job.asset_name for job in jobs}
@@ -166,6 +181,10 @@ def validate_jobs(jobs: list[ImageJob]) -> list[str]:
     if errors:
         raise ImageGenerationError("; ".join(errors))
     return errors
+
+
+def _has_drive_prefix(path: str) -> bool:
+    return len(path) >= 2 and path[0].isalpha() and path[1] == ":"
 
 
 def build_dependency_waves(jobs: list[ImageJob]) -> list[list[ImageJob]]:
