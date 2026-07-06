@@ -252,6 +252,61 @@ class SkillTextRulesTests(unittest.TestCase):
                 self.assertIn(recommendation_rule, text)
                 self.assertIn(no_dead_end, text)
 
+    def test_formal_production_forward_index_reads_next_three_chapters_privately(
+        self,
+    ) -> None:
+        root = Path(__file__).resolve().parents[1]
+        files = [
+            root.joinpath("SKILL.md"),
+            root.joinpath("agents", "source-indexer.md"),
+            root.joinpath("references", "source-index-format.md"),
+            root.joinpath("agents", "asset-bible.md"),
+        ]
+        required_phrases = [
+            "requested output range + next 3 chapters",
+            "forward index scope",
+            "identity/continuity only",
+            "do not leak future plot into the delivered feed or copy packs",
+            "Requested output range:",
+            "Forward index range:",
+        ]
+
+        for path in files:
+            with self.subTest(path=path.name):
+                text = path.read_text(encoding="utf-8")
+                for phrase in required_phrases:
+                    self.assertIn(phrase, text)
+
+    def test_image_reference_and_style_baseline_rules_are_hard_gates(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        files = [
+            root.joinpath("SKILL.md"),
+            root.joinpath("agents", "asset-bible.md"),
+            root.joinpath("agents", "image-generator.md"),
+            root.joinpath("references", "asset-bible-format.md"),
+            root.joinpath("references", "asset-continuity-rules.md"),
+            root.joinpath("references", "image-generation-format.md"),
+            root.joinpath("references", "audit-checklist.md"),
+        ]
+        required_phrases = [
+            "全局风格基准图",
+            "环境风格基准",
+            "非Q版、非玩具感、非卡通低龄化，成熟3D国漫",
+            "真实上传/编码参考图",
+            "prompt-only reference is forbidden",
+            "character with identity props remains a character asset",
+            "鬼财神_财神殿执掌者铁算盘造型",
+            "天机一型手机_三视图",
+            "Asset family:",
+            "Image QA gate",
+        ]
+
+        for path in files:
+            with self.subTest(path=path.name):
+                text = path.read_text(encoding="utf-8")
+                for phrase in required_phrases:
+                    self.assertIn(phrase, text)
+
     def test_main_skill_routes_common_intents_to_specialists(self) -> None:
         root = Path(__file__).resolve().parents[1]
         route_lines = [

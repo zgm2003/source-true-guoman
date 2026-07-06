@@ -69,7 +69,11 @@ Workspace storage policy: 生产资产顶层只放用户交付件：连续投喂
 
 Scope mode policy: 正式多章任务必须先预扫完整请求范围. 局部烟测必须显式标记已阅读范围. 局部烟测资产不得当作全局定稿. If only a slice was read, say so in the working artifact and avoid final-sounding asset decisions beyond that slice.
 
+forward index scope: for formal multi-chapter production, read the requested output range + next 3 chapters when available before final asset identity decisions. Requested output range: only the chapters the user asked to produce are delivered in the feed and copy packs. Forward index range: the extra three chapters are identity/continuity only; do not leak future plot into the delivered feed or copy packs.
+
 Canonical artifact policy: 连续投喂稿 is the canonical mother feed. 复制投喂包 is a derived paste wrapper. Any operation that changes video line text, line numbers, or asset bindings must update the canonical continuous feed first, then re-run feed audit and regenerate copy packs. Do not edit copy packs as the source of truth.
+
+Image QA gate: create or bind `全局风格基准图` as an 环境风格基准 before dependent image batches; every later image prompt must carry `非Q版、非玩具感、非卡通低龄化，成熟3D国漫`. Reference-dependent jobs must use 真实上传/编码参考图; prompt-only reference is forbidden. character with identity props remains a character asset: `鬼财神_财神殿执掌者铁算盘造型` belongs in `人设资产`, not `道具资产`. Asset family: `天机一型手机_三视图` is the phone mother asset; system mall, Douyin UI, and phone screen variants must reference it and keep body, camera, border, screen ratio, and material consistent.
 
 ## Agent pack routing
 

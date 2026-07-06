@@ -2,17 +2,25 @@
 
 Use this file when creating `asset-bible.md` or a compact asset plan.
 
+Image QA gate: create or bind `全局风格基准图` as an 环境风格基准 before dependent image batches; every later image prompt must carry `非Q版、非玩具感、非卡通低龄化，成熟3D国漫`. Reference-dependent jobs must use 真实上传/编码参考图; prompt-only reference is forbidden. character with identity props remains a character asset: `鬼财神_财神殿执掌者铁算盘造型` belongs in `人设资产`, not `道具资产`. Asset family: `天机一型手机_三视图` is the phone mother asset; system mall, Douyin UI, and phone screen variants must reference it and keep body, camera, border, screen ratio, and material consistent.
+
 ```text
 # Asset Bible
 
 ## Scope Status
 - Asset status: 全范围预扫定稿 / 局部烟测资产
 - Requested range:
+- Requested output range:
+- Forward index range:
 - Source-index basis:
 - Slice warning: 局部烟测资产不得当作全局定稿。
+- forward index scope: requested output range + next 3 chapters, identity/continuity only; do not leak future plot into the delivered feed or copy packs.
 
 ## Character Assets
 - Asset name:
+  - Asset class: character
+  - Output directory: 人设资产
+  - Asset family:
   - Tier: 主角/高频配角 / 命名低频角色 / 群像模板 / 一次性背景人
   - Canonical source identity:
   - Source evidence:

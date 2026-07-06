@@ -15,6 +15,7 @@ from scripts.image_generation_core import (
     ALLOWED_OUTPUT_DIRS,
     ImageGenerationError,
     ImageJob,
+    ReferenceImage,
     build_dependency_waves,
     load_jobs_jsonl,
     prompt_hash,
@@ -25,6 +26,7 @@ from scripts.generate_images import (
     ImageGenerationConfig,
     NonRetryableProviderError,
     RetryableProviderError,
+    openai_compatible_provider,
     _workspace_output_path,
     load_config_from_env,
     run_job_with_retry,
@@ -201,6 +203,95 @@ class ProviderRetryTests(unittest.TestCase):
             retry_base_seconds=0.0,
             retry_max_seconds=0.0,
             concurrency=1,
+        )
+
+    def fake_image_response(self) -> object:
+        class FakeResponse:
+            def __enter__(self) -> "FakeResponse":
+                return self
+
+            def __exit__(self, *args: object) -> None:
+                return None
+
+            def read(self) -> bytes:
+                return b'{"data":[{"b64_json":"aW1hZ2U="}]}'
+
+        return FakeResponse()
+
+    def test_provider_rejects_reference_jobs_without_explicit_reference_mode(
+        self,
+    ) -> None:
+        job = self.make_job()
+        job.reference_images = [
+            ReferenceImage(
+                asset_name="base_asset",
+                path="人设资产/base_asset.png",
+                purpose="人脸身份参考",
+            )
+        ]
+        config = self.make_config()
+
+        with patch.object(
+            generate_images_module.urllib.request,
+            "urlopen",
+            return_value=self.fake_image_response(),
+        ):
+            with self.assertRaises(NonRetryableProviderError) as context:
+                openai_compatible_provider(job, config)
+
+        self.assertIn(
+            "SOURCE_TRUE_IMAGE_REFERENCE_MODE",
+            str(context.exception),
+        )
+
+    def test_provider_payload_includes_reference_image_data_urls_when_enabled(
+        self,
+    ) -> None:
+        job = self.make_job()
+        captured_payloads: list[dict[str, object]] = []
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            reference_path = root / "人设资产" / "base_asset.png"
+            reference_path.parent.mkdir(parents=True, exist_ok=True)
+            reference_path.write_bytes(b"reference-bytes")
+            job.reference_images = [
+                ReferenceImage(
+                    asset_name="base_asset",
+                    path="人设资产/base_asset.png",
+                    purpose="人脸身份参考",
+                )
+            ]
+            config = self.make_config()
+            config.reference_mode = "data-url"
+            config.reference_workspace = str(root)
+
+            def fake_urlopen(request: object, timeout: float) -> object:
+                self.assertEqual(timeout, config.timeout_seconds)
+                data = getattr(request, "data")
+                captured_payloads.append(json.loads(data.decode("utf-8")))
+                return self.fake_image_response()
+
+            with patch.object(
+                generate_images_module.urllib.request,
+                "urlopen",
+                side_effect=fake_urlopen,
+            ):
+                image_bytes = openai_compatible_provider(job, config)
+
+        self.assertEqual(image_bytes, b"image")
+        self.assertEqual(len(captured_payloads), 1)
+        reference_payload = captured_payloads[0]["reference_images"]
+        self.assertEqual(
+            reference_payload,
+            [
+                {
+                    "asset_name": "base_asset",
+                    "purpose": "人脸身份参考",
+                    "path": "人设资产/base_asset.png",
+                    "data_url": "data:image/png;base64,cmVmZXJlbmNlLWJ5dGVz",
+                }
+            ],
         )
 
     def test_transient_retry_succeeds_on_third_attempt_and_writes_image(self) -> None:
@@ -1435,6 +1526,103 @@ class ImageManifestValidationTests(unittest.TestCase):
         self.assertIn("model must match current job model", message)
         self.assertIn("size must match current job size", message)
 
+    def test_validate_jobs_rejects_reference_images_without_real_paths(self) -> None:
+        job = self.make_job("missing_reference_path")
+        job.reference_images = [
+            ReferenceImage(
+                asset_name="林夜_黑袍造型",
+                path="",
+                purpose="人脸身份参考",
+            )
+        ]
+
+        with self.assertRaises(ImageGenerationError) as context:
+            validate_jobs([job])
+
+        self.assertIn("reference path is required", str(context.exception))
+
+    def test_validate_manifest_rejects_bad_reference_entries_and_missing_files(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            child = self.make_job("林夜_宗门礼服")
+            child.reference_images = [
+                ReferenceImage(
+                    asset_name="林夜_黑袍造型",
+                    path="人设资产/林夜_黑袍造型.png",
+                    purpose="人脸身份参考",
+                )
+            ]
+            output_path = root / child.output_path
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_bytes(b"child-image")
+            manifest = {
+                "version": 1,
+                "provider": "openai-compatible",
+                "assets": [
+                    self.manifest_asset(
+                        child,
+                        status="done",
+                        references=[
+                            {
+                                "asset_name": "林夜_黑袍造型",
+                                "path": "",
+                                "purpose": "人脸身份参考",
+                            },
+                            {
+                                "asset_name": "鬼王宗宗门大殿_母图",
+                                "path": "../outside.png",
+                                "purpose": "场景母图参考",
+                            },
+                        ],
+                    )
+                ],
+            }
+
+            errors = validate_manifest(manifest, [child], root)
+
+        message = "; ".join(errors)
+        self.assertIn("reference path is required", message)
+        self.assertIn("reference path must stay under workspace", message)
+        self.assertIn("references must match current job references", message)
+
+    def test_validate_manifest_requires_reference_files_to_exist(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            child = self.make_job("林夜_宗门礼服")
+            child.reference_images = [
+                ReferenceImage(
+                    asset_name="林夜_黑袍造型",
+                    path="人设资产/林夜_黑袍造型.png",
+                    purpose="人脸身份参考",
+                )
+            ]
+            output_path = root / child.output_path
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_bytes(b"child-image")
+            asset = self.manifest_asset(
+                child,
+                status="done",
+                references=[
+                    {
+                        "asset_name": "林夜_黑袍造型",
+                        "path": "人设资产/林夜_黑袍造型.png",
+                        "purpose": "人脸身份参考",
+                    }
+                ],
+            )
+            asset.pop("last_error")
+            manifest = {
+                "version": 1,
+                "provider": "openai-compatible",
+                "assets": [asset],
+            }
+
+            errors = validate_manifest(manifest, [child], root)
+
+        self.assertIn("reference image missing local file", "; ".join(errors))
+
 
 class BuildImageJobsTests(unittest.TestCase):
     def test_build_jobs_from_asset_prompt_headings_preserves_order_and_infers_output_dirs(
@@ -1505,6 +1693,14 @@ GPT-image-2，16:9，3D国漫。保持同一张脸，换宗门礼服。
                 ("林夜_黑袍造型", "人脸身份参考"),
                 ("林夜_黑袍造型", "旧造型参考"),
                 ("鬼王宗宗门大殿_母图", "场景母图参考"),
+            ],
+        )
+        self.assertEqual(
+            [ref.path for ref in variant.reference_images],
+            [
+                "人设资产/林夜_黑袍造型.png",
+                "人设资产/林夜_黑袍造型.png",
+                "场景资产/鬼王宗宗门大殿_母图.png",
             ],
         )
 
@@ -1633,7 +1829,10 @@ GPT-image-2 prompt for character concept.
         jobs = build_jobs_from_asset_text(text, model="gpt-image-2", size="16:9")
 
         self.assertEqual(len(jobs), 1)
-        self.assertEqual(jobs[0].prompt, "GPT-image-2 prompt for character concept.")
+        self.assertTrue(
+            jobs[0].prompt.startswith("GPT-image-2 prompt for character concept.")
+        )
+        self.assertIn("非Q版、非玩具感、非卡通低龄化，成熟3D国漫", jobs[0].prompt)
         self.assertNotIn("VIDEO FEED", jobs[0].prompt)
         self.assertNotIn("downstream section", jobs[0].prompt)
 
@@ -1654,6 +1853,87 @@ GPT-image-2 prompt for empty scene.
             ["林夜_黑袍造型", "鬼王宗宗门大殿_母图"],
         )
         self.assertEqual([job.output_dir for job in jobs], ["人设资产", "场景资产"])
+
+    def test_build_jobs_uses_asset_bible_sections_before_keyword_guessing(
+        self,
+    ) -> None:
+        text = """
+# Asset Bible
+
+## Character Assets
+### 图片1 = 鬼财神_财神殿执掌者铁算盘造型
+GPT-image-2，16:9，角色三视图，白色背景。肥胖中年男子，铁算盘是身份道具，人物资产，不要做成单独道具。
+
+## Prop, Interface, Beast, Vehicle Assets
+### 图片2 = 天机一型手机_三视图
+GPT-image-2，16:9，道具三视图，正面屏幕、背面摄像头、侧面厚度。
+"""
+
+        jobs = build_jobs_from_asset_text(text, model="gpt-image-2", size="16:9")
+
+        self.assertEqual(jobs[0].asset_name, "鬼财神_财神殿执掌者铁算盘造型")
+        self.assertEqual(jobs[0].asset_type, "character")
+        self.assertEqual(jobs[0].output_dir, "人设资产")
+        self.assertEqual(jobs[1].asset_name, "天机一型手机_三视图")
+        self.assertEqual(jobs[1].asset_type, "prop")
+        self.assertEqual(jobs[1].output_dir, "道具资产")
+
+    def test_build_jobs_resolves_phone_family_references_to_local_paths(
+        self,
+    ) -> None:
+        text = """
+## Prop, Interface, Beast, Vehicle Assets
+
+### 图片1 = 天机一型手机_三视图
+GPT-image-2，16:9，道具三视图，正面屏幕、背面摄像头、侧面厚度。
+
+### 图片2 = 神级文娱系统界面_商城状态
+上传参考图：天机一型手机_三视图 = 图片1（手机母资产参考）
+GPT-image-2，16:9，手机屏幕 UI，商城卡片必须保持手机外形、边框、摄像头、屏幕比例一致。
+"""
+
+        jobs = build_jobs_from_asset_text(text, model="gpt-image-2", size="16:9")
+
+        interface_job = jobs[1]
+        self.assertEqual(interface_job.depends_on, ["天机一型手机_三视图"])
+        self.assertEqual(len(interface_job.reference_images), 1)
+        self.assertEqual(interface_job.reference_images[0].asset_name, "天机一型手机_三视图")
+        self.assertEqual(interface_job.reference_images[0].purpose, "手机母资产参考")
+        self.assertEqual(interface_job.reference_images[0].path, "道具资产/天机一型手机_三视图.png")
+
+    def test_build_jobs_adds_global_style_baseline_to_later_jobs(self) -> None:
+        text = """
+## Global Style Baseline
+### 图片1 = 全局风格基准图
+GPT-image-2，16:9，空场景环境风格基准图，国风仙侠材质和光照。
+
+## Character Assets
+### 图片2 = 林夜_黑袍造型
+GPT-image-2，16:9，角色三视图，白色背景。
+"""
+
+        jobs = build_jobs_from_asset_text(text, model="gpt-image-2", size="16:9")
+
+        style_job = jobs[0]
+        character_job = jobs[1]
+        self.assertEqual(style_job.asset_type, "scene")
+        self.assertEqual(style_job.output_dir, "场景资产")
+        self.assertIn("非Q版、非玩具感、非卡通低龄化，成熟3D国漫", style_job.prompt)
+        self.assertIn("全局风格基准图", character_job.depends_on)
+        self.assertEqual(
+            [
+                (ref.asset_name, ref.path, ref.purpose)
+                for ref in character_job.reference_images
+            ],
+            [
+                (
+                    "全局风格基准图",
+                    "场景资产/全局风格基准图.png",
+                    "全局风格基准参考",
+                )
+            ],
+        )
+        self.assertIn("非Q版、非玩具感、非卡通低龄化，成熟3D国漫", character_job.prompt)
 
 
 if __name__ == "__main__":

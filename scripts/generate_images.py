@@ -69,6 +69,8 @@ class ImageGenerationConfig:
     retry_base_seconds: float
     retry_max_seconds: float
     concurrency: int
+    reference_mode: str = "unsupported"
+    reference_workspace: str = ""
 
 
 ProviderCallable = Callable[[ImageJob, ImageGenerationConfig], bytes]
@@ -94,6 +96,11 @@ def load_config_from_env() -> ImageGenerationConfig:
         retry_base_seconds=_float_env("SOURCE_TRUE_IMAGE_RETRY_BASE_SECONDS", 1.0),
         retry_max_seconds=_float_env("SOURCE_TRUE_IMAGE_RETRY_MAX_SECONDS", 30.0),
         concurrency=_int_env("SOURCE_TRUE_IMAGE_CONCURRENCY", 1),
+        reference_mode=os.environ.get(
+            "SOURCE_TRUE_IMAGE_REFERENCE_MODE",
+            "unsupported",
+        ).strip()
+        or "unsupported",
     )
     _validate_config(config)
     return config
@@ -114,6 +121,8 @@ def openai_compatible_provider(job: ImageJob, config: ImageGenerationConfig) -> 
         "prompt": job.prompt,
         "size": _job_size(job, config),
     }
+    if job.reference_images:
+        payload["reference_images"] = _reference_images_payload(job, config)
 
     try:
         request = urllib.request.Request(
@@ -461,6 +470,8 @@ def _validate_config(config: ImageGenerationConfig) -> None:
         errors.append("SOURCE_TRUE_IMAGE_RETRY_MAX_SECONDS must be zero or greater")
     if config.concurrency < 1:
         errors.append("SOURCE_TRUE_IMAGE_CONCURRENCY must be at least one")
+    if config.reference_mode not in {"unsupported", "data-url"}:
+        errors.append("SOURCE_TRUE_IMAGE_REFERENCE_MODE must be unsupported or data-url")
     if errors:
         raise ImageGenerationError("; ".join(errors))
 
@@ -519,6 +530,85 @@ def _image_bytes_from_response(body: bytes, config: ImageGenerationConfig) -> by
         return download_image(url.strip(), config.timeout_seconds)
 
     raise RetryableProviderError("provider response did not include image bytes or URL")
+
+
+def _reference_images_payload(
+    job: ImageJob,
+    config: ImageGenerationConfig,
+) -> list[dict[str, str]]:
+    if config.reference_mode == "unsupported":
+        raise NonRetryableProviderError(
+            "reference images require SOURCE_TRUE_IMAGE_REFERENCE_MODE=data-url; "
+            "prompt-only reference is forbidden"
+        )
+    if config.reference_mode != "data-url":
+        raise NonRetryableProviderError(
+            "SOURCE_TRUE_IMAGE_REFERENCE_MODE must be data-url when reference images are present"
+        )
+
+    return [
+        _encoded_reference_image(reference, config, job.asset_name)
+        for reference in job.reference_images
+    ]
+
+
+def _encoded_reference_image(
+    reference: Any,
+    config: ImageGenerationConfig,
+    job_asset_name: str,
+) -> dict[str, str]:
+    reference_path = _resolve_reference_image_path(reference, config, job_asset_name)
+    try:
+        reference_bytes = reference_path.read_bytes()
+    except OSError as error:
+        raise NonRetryableProviderError(
+            f"{job_asset_name}: reference image missing local file {reference.path}"
+        ) from error
+    data_url = "data:image/png;base64," + base64.b64encode(reference_bytes).decode(
+        "ascii"
+    )
+    return {
+        "asset_name": reference.asset_name,
+        "purpose": reference.purpose,
+        "path": reference.path,
+        "data_url": data_url,
+    }
+
+
+def _resolve_reference_image_path(
+    reference: Any,
+    config: ImageGenerationConfig,
+    job_asset_name: str,
+) -> Path:
+    path_text = str(reference.path).strip()
+    if not path_text:
+        raise NonRetryableProviderError(f"{job_asset_name}: reference path is required")
+
+    path = Path(path_text)
+    if _has_drive_prefix(path_text) or path.is_absolute():
+        raise NonRetryableProviderError(
+            f"{job_asset_name}: reference path must be relative"
+        )
+
+    workspace = Path(config.reference_workspace or ".").expanduser().resolve(
+        strict=False
+    )
+    resolved_path = (workspace / path).resolve(strict=False)
+    try:
+        workspace_check = _containment_path_text(workspace)
+        reference_check = _containment_path_text(resolved_path)
+        if os.path.commonpath([workspace_check, reference_check]) != workspace_check:
+            raise ValueError
+    except ValueError as error:
+        raise NonRetryableProviderError(
+            f"{job_asset_name}: reference path must stay under workspace"
+        ) from error
+
+    if not path.parts or path.parts[0] not in ALLOWED_OUTPUT_DIRS:
+        raise NonRetryableProviderError(
+            f"{job_asset_name}: reference path must start with one of {sorted(ALLOWED_OUTPUT_DIRS)}"
+        )
+    return resolved_path
 
 
 def _workspace_output_path(workspace: Path, job: ImageJob) -> Path:
@@ -726,6 +816,7 @@ def main() -> int:
                 raise ImageGenerationError("existing manifest must be a JSON object")
 
         config = load_config_from_env()
+        config.reference_workspace = str(workspace)
 
         def persist_manifest_update(current_manifest: dict[str, Any]) -> None:
             write_generation_manifest(manifest_path, current_manifest)

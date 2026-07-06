@@ -34,6 +34,10 @@ Use this checklist when reviewing a source-true-guoman feed.
 - Similar important characters have separation anchors.
 - Sub-scenes bind to scene mother images when continuity depends on it.
 - Speaking roles have voice assets when voice continuity matters.
+- Image QA gate: confirm `全局风格基准图` exists as an 环境风格基准 and dependent images follow `非Q版、非玩具感、非卡通低龄化，成熟3D国漫`.
+- Confirm reference-dependent jobs used 真实上传/编码参考图; prompt-only reference is forbidden.
+- Confirm character with identity props remains a character asset, for example `鬼财神_财神殿执掌者铁算盘造型` stays under `人设资产`.
+- Confirm Asset family: `天机一型手机_三视图` is reused by phone UI variants and keeps body, camera, border, screen ratio, and material consistent.
 
 ## Commercial-Upgrade Audit
 

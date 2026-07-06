@@ -11,7 +11,10 @@ Use this file when creating or updating `source-index.md`.
 - Read range:
 - Unread range:
 - Evidence basis:
+- Requested output range:
+- Forward index range:
 - Scope statement: 正式多章任务必须先预扫完整请求范围；局部烟测必须显式标记已阅读范围；局部烟测资产不得当作全局定稿。
+- forward index scope: requested output range + next 3 chapters, identity/continuity only; do not leak future plot into the delivered feed or copy packs.
 - Smoke-test warning: Do not promote smoke-test assets to global final decisions.
 
 ## Character Index

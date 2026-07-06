@@ -28,6 +28,8 @@ Do not output a video feed; do not output a synopsis replacement. Do not summari
 
 Scope mode policy: use `全范围预扫` when formal multi-chapter work has completed the full requested pre-scan; use `局部烟测` only when a smoke-test span was read. 正式多章任务必须先预扫完整请求范围. 局部烟测必须显式标记已阅读范围. 局部烟测资产不得当作全局定稿.
 
+forward index scope: for formal multi-chapter production, read the requested output range + next 3 chapters when available before final asset identity decisions. Requested output range: only the chapters the user asked to produce are delivered in the feed and copy packs. Forward index range: the extra three chapters are identity/continuity only; do not leak future plot into the delivered feed or copy packs.
+
 ## Procedure
 
 1. Mark `索引状态`, `请求范围`, `已阅读范围`, `未阅读范围`, and `证据依据` before any character or asset decision.

@@ -181,6 +181,14 @@ def validate_jobs(jobs: list[ImageJob]) -> list[str]:
             errors.append(f"{job.asset_name}: depends_on is required")
         if not job._has_reference_images:
             errors.append(f"{job.asset_name}: reference_images is required")
+        for index, reference in enumerate(job.reference_images, start=1):
+            reference_label = f"{job.asset_name}: reference {index}"
+            if not reference.asset_name:
+                errors.append(f"{reference_label}: reference asset_name is required")
+            if not reference.path:
+                errors.append(f"{reference_label}: reference path is required")
+            if not reference.purpose:
+                errors.append(f"{reference_label}: reference purpose is required")
         if job.output_dir not in ALLOWED_OUTPUT_DIRS:
             errors.append(
                 f"{job.asset_name}: output_dir must be one of {sorted(ALLOWED_OUTPUT_DIRS)}"
@@ -320,6 +328,20 @@ def validate_manifest(
                 errors.append(f"{asset_name}: size must match current job size")
 
         errors.extend(path_errors)
+        reference_errors, normalized_references = _validate_manifest_references(
+            asset_label,
+            asset.get("references"),
+            workspace,
+        )
+        errors.extend(reference_errors)
+        if job is not None:
+            expected_references = [
+                reference.to_dict() for reference in job.reference_images
+            ]
+            if normalized_references != expected_references:
+                errors.append(
+                    f"{asset_label}: references must match current job references"
+                )
         if status == "done" and image_path is not None:
             if not image_path.is_file():
                 errors.append(f"{asset_label}: done asset missing local file {path_text}")
@@ -327,6 +349,92 @@ def validate_manifest(
             errors.append(f"{asset_label}: {status} asset must record last_error")
 
     return errors
+
+
+def _validate_manifest_references(
+    asset_name: str,
+    references_value: Any,
+    workspace: Path,
+) -> tuple[list[str], list[dict[str, str]]]:
+    errors: list[str] = []
+    normalized_references: list[dict[str, str]] = []
+
+    if references_value is None:
+        return errors, normalized_references
+    if not isinstance(references_value, list):
+        return [f"{asset_name}: references must be a list"], normalized_references
+
+    for index, reference in enumerate(references_value, start=1):
+        reference_label = f"{asset_name}: reference {index}"
+        if not isinstance(reference, dict):
+            errors.append(f"{reference_label}: reference entry must be an object")
+            continue
+
+        reference_asset_name = str(reference.get("asset_name", "")).strip()
+        path_text = str(reference.get("path", "")).strip()
+        purpose = str(reference.get("purpose", "")).strip()
+        if not reference_asset_name:
+            errors.append(f"{reference_label}: reference asset_name is required")
+        if not purpose:
+            errors.append(f"{reference_label}: reference purpose is required")
+
+        path_errors, reference_path = _validate_reference_image_path(
+            reference_label,
+            path_text,
+            workspace,
+        )
+        errors.extend(path_errors)
+        if reference_path is not None and not reference_path.is_file():
+            errors.append(
+                f"{reference_label}: reference image missing local file {path_text}"
+            )
+
+        normalized_references.append(
+            {
+                "asset_name": reference_asset_name,
+                "path": path_text,
+                "purpose": purpose,
+            }
+        )
+
+    return errors, normalized_references
+
+
+def _validate_reference_image_path(
+    reference_label: str, path_text: str, workspace: Path
+) -> tuple[list[str], Path | None]:
+    errors: list[str] = []
+    path = Path(path_text)
+
+    if not path_text:
+        errors.append(f"{reference_label}: reference path is required")
+        return errors, None
+    if _has_drive_prefix(path_text):
+        errors.append(f"{reference_label}: reference path must not use a drive prefix")
+    if path.is_absolute():
+        errors.append(f"{reference_label}: reference path must be relative")
+    if errors:
+        return errors, None
+
+    workspace_path = workspace.resolve(strict=False)
+    resolved_path = (workspace_path / path).resolve(strict=False)
+    try:
+        relative_path = resolved_path.relative_to(workspace_path)
+    except ValueError:
+        errors.append(f"{reference_label}: reference path must stay under workspace")
+        return errors, None
+
+    if relative_path.parts and relative_path.parts[0] == PRODUCTION_OUTPUT_DIR:
+        errors.append(
+            f"{reference_label}: reference path must not be under {PRODUCTION_OUTPUT_DIR}"
+        )
+    if not relative_path.parts or relative_path.parts[0] not in ALLOWED_OUTPUT_DIRS:
+        errors.append(
+            f"{reference_label}: reference path must start with one of "
+            f"{sorted(ALLOWED_OUTPUT_DIRS)}"
+        )
+
+    return errors, resolved_path
 
 
 def _validate_manifest_image_path(

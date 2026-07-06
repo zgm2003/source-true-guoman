@@ -2,6 +2,8 @@
 
 Use these rules when asset decisions must stay stable across chapters, scenes, prompts, or uploaded references.
 
+Image QA gate: create or bind `全局风格基准图` as an 环境风格基准 before dependent image batches; every later image prompt must carry `非Q版、非玩具感、非卡通低龄化，成熟3D国漫`. Reference-dependent jobs must use 真实上传/编码参考图; prompt-only reference is forbidden. character with identity props remains a character asset: `鬼财神_财神殿执掌者铁算盘造型` belongs in `人设资产`, not `道具资产`. Asset family: `天机一型手机_三视图` is the phone mother asset; system mall, Douyin UI, and phone screen variants must reference it and keep body, camera, border, screen ratio, and material consistent.
+
 ## Character variant matrix
 
 Track each important character by source identity, current outfit/state, parent asset, and required reference. A new outfit, injury, disguise, battle state, age/state change, or transformation is a derived variant. Every derived variant needs a face/identity reference or closest prior outfit reference, and similar-character separation when another important role could be confused with it.
