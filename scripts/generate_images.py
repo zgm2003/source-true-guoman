@@ -7,12 +7,14 @@ import base64
 import binascii
 import json
 import logging
+import math
 import os
 import random
 import re
 import socket
 import time
 import urllib.error
+from urllib.parse import urlsplit
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
@@ -20,10 +22,12 @@ from typing import Any
 from typing import Callable
 
 try:
+    from scripts.image_generation_core import ALLOWED_OUTPUT_DIRS
     from scripts.image_generation_core import ImageGenerationError
     from scripts.image_generation_core import ImageJob
     from scripts.image_generation_core import prompt_hash
 except ModuleNotFoundError:
+    from image_generation_core import ALLOWED_OUTPUT_DIRS
     from image_generation_core import ImageGenerationError
     from image_generation_core import ImageJob
     from image_generation_core import prompt_hash
@@ -154,14 +158,22 @@ def run_job_with_retry(
     provider: ProviderCallable = openai_compatible_provider,
 ) -> dict[str, Any]:
     attempts = 0
-    last_error = ""
+    try:
+        output_path = _workspace_output_path(workspace, job)
+    except NonRetryableProviderError as error:
+        last_error = _sanitize_error(str(error), config)
+        LOGGER.warning(
+            "Image asset %s failed before provider call: %s",
+            job.asset_name,
+            last_error,
+        )
+        return _failed_result(job, config, attempts, last_error)
 
     while True:
         attempts += 1
         LOGGER.info("Generating image asset %s, attempt %s", job.asset_name, attempts)
         try:
             image_bytes = provider(job, config)
-            output_path = _workspace_output_path(workspace, job)
             output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_bytes(image_bytes)
             return _result_base(job, config, attempts) | {"status": "done"}
@@ -198,9 +210,12 @@ def _float_env(name: str, default: float) -> float:
     if value is None or not value.strip():
         return default
     try:
-        return float(value)
+        parsed = float(value)
     except ValueError as error:
         raise ImageGenerationError(f"{name} must be a number") from error
+    if not math.isfinite(parsed):
+        raise ImageGenerationError(f"{name} must be finite")
+    return parsed
 
 
 def _int_env(name: str, default: int) -> int:
@@ -215,13 +230,19 @@ def _int_env(name: str, default: int) -> int:
 
 def _validate_config(config: ImageGenerationConfig) -> None:
     errors: list[str] = []
-    if config.timeout_seconds <= 0:
+    if not math.isfinite(config.timeout_seconds):
+        errors.append("SOURCE_TRUE_IMAGE_TIMEOUT_SECONDS must be finite")
+    elif config.timeout_seconds <= 0:
         errors.append("SOURCE_TRUE_IMAGE_TIMEOUT_SECONDS must be greater than zero")
     if config.max_retries < 0:
         errors.append("SOURCE_TRUE_IMAGE_MAX_RETRIES must be zero or greater")
-    if config.retry_base_seconds < 0:
+    if not math.isfinite(config.retry_base_seconds):
+        errors.append("SOURCE_TRUE_IMAGE_RETRY_BASE_SECONDS must be finite")
+    elif config.retry_base_seconds < 0:
         errors.append("SOURCE_TRUE_IMAGE_RETRY_BASE_SECONDS must be zero or greater")
-    if config.retry_max_seconds < 0:
+    if not math.isfinite(config.retry_max_seconds):
+        errors.append("SOURCE_TRUE_IMAGE_RETRY_MAX_SECONDS must be finite")
+    elif config.retry_max_seconds < 0:
         errors.append("SOURCE_TRUE_IMAGE_RETRY_MAX_SECONDS must be zero or greater")
     if config.concurrency < 1:
         errors.append("SOURCE_TRUE_IMAGE_CONCURRENCY must be at least one")
@@ -286,6 +307,7 @@ def _image_bytes_from_response(body: bytes, config: ImageGenerationConfig) -> by
 
 
 def _workspace_output_path(workspace: Path, job: ImageJob) -> Path:
+    _validate_job_output_policy(job)
     workspace_path = workspace.resolve(strict=False)
     output_path = (workspace_path / job.output_path).resolve(strict=False)
     try:
@@ -293,6 +315,29 @@ def _workspace_output_path(workspace: Path, job: ImageJob) -> Path:
     except ValueError as error:
         raise NonRetryableProviderError("output path must stay under workspace") from error
     return output_path
+
+
+def _validate_job_output_policy(job: ImageJob) -> None:
+    errors: list[str] = []
+    if job.output_dir not in ALLOWED_OUTPUT_DIRS:
+        errors.append(
+            f"{job.asset_name}: output_dir must be one of {sorted(ALLOWED_OUTPUT_DIRS)}"
+        )
+    if not job.output_file.endswith(".png"):
+        errors.append(f"{job.asset_name}: output_file must end with .png")
+    if (
+        "/" in job.output_file
+        or "\\" in job.output_file
+        or Path(job.output_file).is_absolute()
+        or _has_drive_prefix(job.output_file)
+    ):
+        errors.append(f"{job.asset_name}: output_file must be a file name only")
+    if errors:
+        raise NonRetryableProviderError("; ".join(errors))
+
+
+def _has_drive_prefix(path: str) -> bool:
+    return len(path) >= 2 and path[0].isalpha() and path[1] == ":"
 
 
 def _result_base(
@@ -339,7 +384,15 @@ def _job_size(job: ImageJob, config: ImageGenerationConfig) -> str:
 
 def _sanitize_error(message: str, config: ImageGenerationConfig) -> str:
     sanitized = message
-    for secret in {config.api_key, config.base_url, config.base_url.rstrip("/")}:
+    parsed_base_url = urlsplit(config.base_url)
+    secret_fragments = {
+        config.api_key,
+        config.base_url,
+        config.base_url.rstrip("/"),
+        parsed_base_url.netloc,
+        parsed_base_url.hostname or "",
+    }
+    for secret in secret_fragments:
         if secret:
             sanitized = sanitized.replace(secret, "[redacted]")
     sanitized = SECRET_VALUE_PATTERN.sub("[redacted]", sanitized)

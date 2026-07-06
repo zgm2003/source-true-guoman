@@ -1,9 +1,11 @@
 import json
+import os
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from scripts.image_generation_core import (
     ImageGenerationError,
@@ -18,6 +20,8 @@ from scripts.generate_images import (
     ImageGenerationConfig,
     NonRetryableProviderError,
     RetryableProviderError,
+    _workspace_output_path,
+    load_config_from_env,
     run_job_with_retry,
 )
 from scripts.build_image_jobs import build_jobs_from_asset_text
@@ -171,7 +175,7 @@ class ProviderRetryTests(unittest.TestCase):
             asset_name="provider_asset",
             asset_type="character",
             prompt="A production-ready character concept image.",
-            output_dir="generated",
+            output_dir="人设资产",
             output_file="provider_asset.png",
             depends_on=["base_asset"],
             reference_images=[],
@@ -270,6 +274,104 @@ class ProviderRetryTests(unittest.TestCase):
         self.assertEqual(result["status"], "failed")
         self.assertNotIn(config.api_key, result_text)
         self.assertNotIn(config.base_url, result_text)
+
+    def test_output_path_escape_fails_before_provider_is_called(self) -> None:
+        job = self.make_job()
+        job.output_dir = ".."
+        config = self.make_config(max_retries=3)
+        provider_called = False
+
+        def provider(current_job: ImageJob, current_config: ImageGenerationConfig) -> bytes:
+            nonlocal provider_called
+            provider_called = True
+            return b"should-not-be-written"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            result = run_job_with_retry(job, config, Path(temp_dir), provider=provider)
+
+        self.assertFalse(provider_called)
+        self.assertEqual(result["status"], "failed")
+        self.assertEqual(result["attempts"], 0)
+        self.assertIn("output_dir", result["last_error"])
+
+    def test_workspace_output_path_rejects_invalid_output_dir_directly(self) -> None:
+        job = self.make_job()
+        job.output_dir = "generated"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with self.assertRaises(NonRetryableProviderError) as context:
+                _workspace_output_path(Path(temp_dir), job)
+
+        self.assertIn("output_dir", str(context.exception))
+
+    def test_result_and_logs_redact_provider_host_and_api_key(self) -> None:
+        job = self.make_job()
+        config = self.make_config(max_retries=0)
+        config.base_url = "https://relay.internal.example/openai"
+
+        def provider(current_job: ImageJob, current_config: ImageGenerationConfig) -> bytes:
+            raise RetryableProviderError(
+                "HTTP 502 from relay.internal.example using sk-test-secret-1234567890"
+            )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with self.assertLogs("scripts.generate_images", level="WARNING") as logs:
+                result = run_job_with_retry(job, config, Path(temp_dir), provider=provider)
+
+        result_text = json.dumps(result, ensure_ascii=False, sort_keys=True)
+        log_text = "\n".join(logs.output)
+        self.assertEqual(result["status"], "failed")
+        self.assertNotIn("relay.internal.example", result_text)
+        self.assertNotIn(config.api_key, result_text)
+        self.assertNotIn("relay.internal.example", log_text)
+        self.assertNotIn(config.api_key, log_text)
+
+    def test_load_config_from_env_requires_credentials(self) -> None:
+        with patch.dict(os.environ, {}, clear=True):
+            with self.assertRaises(ImageGenerationError) as context:
+                load_config_from_env()
+
+        self.assertIn("SOURCE_TRUE_IMAGE_BASE_URL", str(context.exception))
+        self.assertIn("SOURCE_TRUE_IMAGE_API_KEY", str(context.exception))
+
+    def test_load_config_from_env_rejects_bad_int(self) -> None:
+        env = {
+            "SOURCE_TRUE_IMAGE_BASE_URL": "https://provider.example/",
+            "SOURCE_TRUE_IMAGE_API_KEY": "sk-test-secret-1234567890",
+            "SOURCE_TRUE_IMAGE_CONCURRENCY": "many",
+        }
+
+        with patch.dict(os.environ, env, clear=True):
+            with self.assertRaises(ImageGenerationError) as context:
+                load_config_from_env()
+
+        self.assertIn("SOURCE_TRUE_IMAGE_CONCURRENCY must be an integer", str(context.exception))
+
+    def test_load_config_from_env_rejects_nan_float(self) -> None:
+        env = {
+            "SOURCE_TRUE_IMAGE_BASE_URL": "https://provider.example/",
+            "SOURCE_TRUE_IMAGE_API_KEY": "sk-test-secret-1234567890",
+            "SOURCE_TRUE_IMAGE_TIMEOUT_SECONDS": "nan",
+        }
+
+        with patch.dict(os.environ, env, clear=True):
+            with self.assertRaises(ImageGenerationError) as context:
+                load_config_from_env()
+
+        self.assertIn("SOURCE_TRUE_IMAGE_TIMEOUT_SECONDS must be finite", str(context.exception))
+
+    def test_load_config_from_env_rejects_inf_float(self) -> None:
+        env = {
+            "SOURCE_TRUE_IMAGE_BASE_URL": "https://provider.example/",
+            "SOURCE_TRUE_IMAGE_API_KEY": "sk-test-secret-1234567890",
+            "SOURCE_TRUE_IMAGE_RETRY_MAX_SECONDS": "inf",
+        }
+
+        with patch.dict(os.environ, env, clear=True):
+            with self.assertRaises(ImageGenerationError) as context:
+                load_config_from_env()
+
+        self.assertIn("SOURCE_TRUE_IMAGE_RETRY_MAX_SECONDS must be finite", str(context.exception))
 
 
 class ImageManifestValidationTests(unittest.TestCase):
