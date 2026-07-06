@@ -1,3 +1,4 @@
+import json
 import subprocess
 import sys
 import tempfile
@@ -12,6 +13,12 @@ from scripts.image_generation_core import (
     prompt_hash,
     validate_manifest,
     validate_jobs,
+)
+from scripts.generate_images import (
+    ImageGenerationConfig,
+    NonRetryableProviderError,
+    RetryableProviderError,
+    run_job_with_retry,
 )
 from scripts.build_image_jobs import build_jobs_from_asset_text
 
@@ -155,6 +162,114 @@ class ImageGenerationCoreTests(unittest.TestCase):
     def test_prompt_hash_is_stable_sha256(self) -> None:
         self.assertEqual(prompt_hash("abc"), prompt_hash("abc"))
         self.assertTrue(prompt_hash("abc").startswith("sha256:"))
+
+
+class ProviderRetryTests(unittest.TestCase):
+    def make_job(self) -> ImageJob:
+        return ImageJob(
+            job_id="job-provider-asset",
+            asset_name="provider_asset",
+            asset_type="character",
+            prompt="A production-ready character concept image.",
+            output_dir="generated",
+            output_file="provider_asset.png",
+            depends_on=["base_asset"],
+            reference_images=[],
+            provider="openai-compatible",
+            model="gpt-image-2",
+            size="16:9",
+            status="pending",
+        )
+
+    def make_config(self, max_retries: int = 2) -> ImageGenerationConfig:
+        return ImageGenerationConfig(
+            base_url="https://provider.example",
+            api_key="sk-test-secret-1234567890",
+            model="gpt-image-2",
+            size="16:9",
+            timeout_seconds=30.0,
+            max_retries=max_retries,
+            retry_base_seconds=0.0,
+            retry_max_seconds=0.0,
+            concurrency=1,
+        )
+
+    def test_transient_retry_succeeds_on_third_attempt_and_writes_image(self) -> None:
+        job = self.make_job()
+        config = self.make_config(max_retries=3)
+        attempts = 0
+
+        def provider(current_job: ImageJob, current_config: ImageGenerationConfig) -> bytes:
+            nonlocal attempts
+            attempts += 1
+            self.assertIs(current_job, job)
+            self.assertIs(current_config, config)
+            if attempts < 3:
+                raise RetryableProviderError("HTTP 429 rate limited")
+            return b"image-bytes"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+
+            result = run_job_with_retry(job, config, workspace, provider=provider)
+
+            self.assertEqual(result["status"], "done")
+            self.assertEqual(result["attempts"], 3)
+            self.assertEqual(result["path"], job.output_path.as_posix())
+            self.assertEqual((workspace / job.output_path).read_bytes(), b"image-bytes")
+            self.assertEqual(result["depends_on"], ["base_asset"])
+            self.assertEqual(result["references"], [])
+
+    def test_retry_budget_exhausted_returns_failed_result(self) -> None:
+        job = self.make_job()
+        config = self.make_config(max_retries=2)
+
+        def provider(current_job: ImageJob, current_config: ImageGenerationConfig) -> bytes:
+            raise RetryableProviderError("HTTP 504 upstream timeout")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            result = run_job_with_retry(job, config, Path(temp_dir), provider=provider)
+
+        self.assertEqual(result["status"], "failed")
+        self.assertEqual(result["attempts"], config.max_retries + 1)
+        self.assertIn("HTTP 504", result["last_error"])
+        self.assertEqual(result["depends_on"], ["base_asset"])
+        self.assertEqual(result["references"], [])
+
+    def test_non_retryable_provider_error_fails_after_one_attempt(self) -> None:
+        job = self.make_job()
+        config = self.make_config(max_retries=5)
+        attempts = 0
+
+        def provider(current_job: ImageJob, current_config: ImageGenerationConfig) -> bytes:
+            nonlocal attempts
+            attempts += 1
+            raise NonRetryableProviderError("HTTP 401 authentication failed")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            result = run_job_with_retry(job, config, Path(temp_dir), provider=provider)
+
+        self.assertEqual(result["status"], "failed")
+        self.assertEqual(result["attempts"], 1)
+        self.assertEqual(attempts, 1)
+        self.assertIn("HTTP 401", result["last_error"])
+
+    def test_result_dicts_do_not_include_api_key_or_base_url(self) -> None:
+        job = self.make_job()
+        config = self.make_config(max_retries=0)
+
+        def provider(current_job: ImageJob, current_config: ImageGenerationConfig) -> bytes:
+            raise RetryableProviderError(
+                f"HTTP 429 from {current_config.base_url} using {current_config.api_key}"
+            )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            result = run_job_with_retry(job, config, Path(temp_dir), provider=provider)
+
+        result_text = json.dumps(result, ensure_ascii=False, sort_keys=True)
+        self.assertEqual(result["status"], "failed")
+        self.assertNotIn(config.api_key, result_text)
+        self.assertNotIn(config.base_url, result_text)
 
 
 class ImageManifestValidationTests(unittest.TestCase):
