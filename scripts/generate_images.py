@@ -482,10 +482,24 @@ def _workspace_output_path(workspace: Path, job: ImageJob) -> Path:
     workspace_path = workspace.resolve(strict=False)
     output_path = (workspace_path / job.output_path).resolve(strict=False)
     try:
-        output_path.relative_to(workspace_path)
+        workspace_check = _containment_path_text(workspace_path)
+        output_check = _containment_path_text(output_path)
+        if os.path.commonpath([workspace_check, output_check]) != workspace_check:
+            raise ValueError
     except ValueError as error:
         raise NonRetryableProviderError("output path must stay under workspace") from error
     return output_path
+
+
+def _containment_path_text(path: Path) -> str:
+    path_text = str(path)
+    if os.name == "nt":
+        if path_text.startswith("\\\\?\\UNC\\"):
+            path_text = "\\\\" + path_text[8:]
+        elif path_text.startswith("\\\\?\\"):
+            path_text = path_text[4:]
+        return os.path.normcase(os.path.normpath(path_text))
+    return os.path.normpath(path_text)
 
 
 def _validate_job_output_policy(job: ImageJob) -> None:

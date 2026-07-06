@@ -309,6 +309,38 @@ class ProviderRetryTests(unittest.TestCase):
 
         self.assertIn("output_dir", str(context.exception))
 
+    def test_workspace_output_path_accepts_windows_extended_prefix_equivalent_path(
+        self,
+    ) -> None:
+        if os.name != "nt":
+            self.skipTest("Windows extended-length prefix behavior is Windows-specific")
+
+        job = self.make_job()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            expected_workspace = workspace.resolve(strict=False)
+            expected_output = (expected_workspace / job.output_path).resolve(
+                strict=False
+            )
+            extended_output = Path("\\\\?\\" + str(expected_output))
+            original_resolve = Path.resolve
+
+            def resolve_with_extended_output(
+                path: Path,
+                *args: object,
+                **kwargs: object,
+            ) -> Path:
+                resolved = original_resolve(path, *args, **kwargs)
+                if resolved == expected_output:
+                    return extended_output
+                return resolved
+
+            with patch.object(Path, "resolve", resolve_with_extended_output):
+                output_path = _workspace_output_path(workspace, job)
+
+        self.assertEqual(output_path, extended_output)
+
     def test_result_and_logs_redact_provider_host_and_api_key(self) -> None:
         job = self.make_job()
         config = self.make_config(max_retries=0)
