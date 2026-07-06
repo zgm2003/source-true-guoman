@@ -50,6 +50,19 @@ If the user asks for more than 5 chapters in one breath, split into sequential 5
 Default formal batch route: `source-indexer -> asset-bible -> image-generator(optional) -> faithful-feed -> feed-auditor -> copy-packager`.
 For each 5-chapter batch, deliver the canonical mother feed plus a paste-ready copy pack at the production-asset top level.
 
+Formal production completion handoff: after a formal production batch has written and verified the canonical feed, audit, and copy packs, the final chat response must include a concise next-step plan with exactly these three options. Do not execute any option unless the user chooses it or already asked for it.
+
+```text
+下一步建议（3选1）：
+1. 自动化生图 - run `image-generator`: 根据 asset-bible 生成/续跑图片任务、写入 image-manifest，并让复制包绑定本地图片路径。
+2. 安全剪辑 - run `cut-safety`: 按连续行号和原文跨度给删减风险、低/中/高风险、可替代边界，不改写剧情。
+3. 视频增强 - run `visual-polish`: 在保留原文覆盖和对白的前提下增强镜头表现；如改动视频行，先改母稿，再审计并重生复制包。
+```
+
+Recommended plan: if required images are not all generated and validated, recommend 自动化生图 first; if images are complete and the user mentions length, platform duration, deletion, or pacing pressure, recommend 安全剪辑; otherwise recommend 视频增强 when the next goal is stronger visual performance.
+
+Do not end a completed formal production response with only artifact paths, test results, or a generic done message.
+
 Read `references/format.md` before writing final feed blocks. Read the selected camera-library reference before choosing the `运镜` field: `references/xiaoyunque-tags.md` for 小云雀 or `references/libtv-tags.md` for libtv.
 
 Workspace storage policy: 生产资产顶层只放用户交付件：连续投喂稿和复制投喂包. 投喂稿、source-index、asset-bible、审计报告、剪辑风险报告属于生产资产. 内部证据写入 `生产资产/_内部/`: source-index, asset-bible, audit reports, cut-risk reports, ledgers, and QA notes. 视频资产只放最终视频文件或渲染结果.

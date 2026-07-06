@@ -69,3 +69,16 @@ Do not insert copy packs into `## 视频投喂块` and do not change the faithfu
 Use `投喂包` wording, not `第N组`, `15秒组`, `分镜组`, `节奏组`, or `呼吸组`.
 
 Every pack should be paste-ready, but compact. Do not list every global asset in every pack. List only references the user needs to paste that pack.
+
+Formal production completion handoff: after copy packs are written and validated, the final chat response must include a concise next-step plan with exactly these three options. Do not execute any option unless the user chooses it or already asked for it.
+
+```text
+下一步建议（3选1）：
+1. 自动化生图 - run `image-generator`: 根据 asset-bible 生成/续跑图片任务、写入 image-manifest，并让复制包绑定本地图片路径。
+2. 安全剪辑 - run `cut-safety`: 按连续行号和原文跨度给删减风险、低/中/高风险、可替代边界，不改写剧情。
+3. 视频增强 - run `visual-polish`: 在保留原文覆盖和对白的前提下增强镜头表现；如改动视频行，先改母稿，再审计并重生复制包。
+```
+
+Recommended plan: if required images are not all generated and validated, recommend 自动化生图 first; if images are complete and the user mentions length, platform duration, deletion, or pacing pressure, recommend 安全剪辑; otherwise recommend 视频增强 when the next goal is stronger visual performance.
+
+Do not end a completed formal production response with only artifact paths, test results, or a generic done message.

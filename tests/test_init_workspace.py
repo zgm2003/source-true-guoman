@@ -215,6 +215,43 @@ class SkillTextRulesTests(unittest.TestCase):
                 self.assertIn(missing_params_prompt, text)
                 self.assertNotIn("gives no preference after being asked", text)
 
+    def test_formal_production_completion_recommends_three_next_step_options(
+        self,
+    ) -> None:
+        root = Path(__file__).resolve().parents[1]
+        files = [
+            root.joinpath("SKILL.md"),
+            root.joinpath("agents", "copy-packager.md"),
+            root.joinpath("agents", "production-runner.md"),
+        ]
+        handoff = "Formal production completion handoff"
+        next_step_header = "下一步建议（3选1）："
+        options = [
+            "1. 自动化生图 - run `image-generator`",
+            "2. 安全剪辑 - run `cut-safety`",
+            "3. 视频增强 - run `visual-polish`",
+        ]
+        recommendation_rule = (
+            "Recommended plan: if required images are not all generated and validated, "
+            "recommend 自动化生图 first; if images are complete and the user mentions length, "
+            "platform duration, deletion, or pacing pressure, recommend 安全剪辑; otherwise "
+            "recommend 视频增强 when the next goal is stronger visual performance."
+        )
+        no_dead_end = (
+            "Do not end a completed formal production response with only artifact paths, "
+            "test results, or a generic done message."
+        )
+
+        for path in files:
+            with self.subTest(path=path.name):
+                text = path.read_text(encoding="utf-8")
+                self.assertIn(handoff, text)
+                self.assertIn(next_step_header, text)
+                for option in options:
+                    self.assertIn(option, text)
+                self.assertIn(recommendation_rule, text)
+                self.assertIn(no_dead_end, text)
+
     def test_main_skill_routes_common_intents_to_specialists(self) -> None:
         root = Path(__file__).resolve().parents[1]
         route_lines = [
