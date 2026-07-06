@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import base64
 import binascii
 import json
@@ -16,6 +17,8 @@ import time
 import urllib.error
 from urllib.parse import urlsplit
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import as_completed
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -25,11 +28,15 @@ try:
     from scripts.image_generation_core import ALLOWED_OUTPUT_DIRS
     from scripts.image_generation_core import ImageGenerationError
     from scripts.image_generation_core import ImageJob
+    from scripts.image_generation_core import build_dependency_waves
+    from scripts.image_generation_core import load_jobs_jsonl
     from scripts.image_generation_core import prompt_hash
 except ModuleNotFoundError:
     from image_generation_core import ALLOWED_OUTPUT_DIRS
     from image_generation_core import ImageGenerationError
     from image_generation_core import ImageJob
+    from image_generation_core import build_dependency_waves
+    from image_generation_core import load_jobs_jsonl
     from image_generation_core import prompt_hash
 
 
@@ -64,6 +71,18 @@ class ImageGenerationConfig:
 
 
 ProviderCallable = Callable[[ImageJob, ImageGenerationConfig], bytes]
+SAFE_MANIFEST_ASSET_FIELDS = (
+    "asset_name",
+    "asset_type",
+    "path",
+    "status",
+    "prompt_hash",
+    "model",
+    "size",
+    "attempts",
+    "depends_on",
+    "references",
+)
 
 
 def load_config_from_env() -> ImageGenerationConfig:
@@ -203,6 +222,133 @@ def run_job_with_retry(
             )
             if delay > 0:
                 time.sleep(delay)
+
+
+def manifest_by_name(manifest: dict[str, Any] | None) -> dict[str, dict[str, Any]]:
+    if not isinstance(manifest, dict):
+        return {}
+    assets = manifest.get("assets", [])
+    if not isinstance(assets, list):
+        return {}
+
+    by_name: dict[str, dict[str, Any]] = {}
+    for asset in assets:
+        if not isinstance(asset, dict):
+            continue
+        asset_name = str(asset.get("asset_name", "")).strip()
+        if asset_name:
+            by_name[asset_name] = asset
+    return by_name
+
+
+def should_skip_job(
+    job: ImageJob,
+    existing: dict[str, dict[str, Any]],
+    workspace: Path,
+    resume: bool,
+) -> bool:
+    if not resume:
+        return False
+    asset = existing.get(job.asset_name)
+    if not asset or asset.get("status") != "done":
+        return False
+    existing_path = _existing_asset_path(asset, workspace)
+    return existing_path is not None and existing_path.is_file()
+
+
+def run_generation(
+    jobs: list[ImageJob],
+    config: ImageGenerationConfig,
+    workspace: Path,
+    provider: ProviderCallable = openai_compatible_provider,
+    existing_manifest: dict[str, Any] | None = None,
+    resume: bool = False,
+) -> dict[str, Any]:
+    workspace = Path(workspace)
+    waves = build_dependency_waves(jobs)
+    existing = manifest_by_name(existing_manifest) if resume else {}
+    done_assets: set[str] = set()
+    results_by_name: dict[str, dict[str, Any]] = {}
+
+    for wave in waves:
+        runnable: list[ImageJob] = []
+        for job in wave:
+            missing_dependencies = [
+                dependency for dependency in job.depends_on if dependency not in done_assets
+            ]
+            if missing_dependencies:
+                result = _blocked_result(job, config, missing_dependencies)
+                results_by_name[job.asset_name] = result
+                LOGGER.warning(
+                    "Image asset %s blocked: %s",
+                    job.asset_name,
+                    result["last_error"],
+                )
+                continue
+
+            if should_skip_job(job, existing, workspace, resume):
+                results_by_name[job.asset_name] = _safe_manifest_asset(
+                    existing[job.asset_name]
+                )
+                done_assets.add(job.asset_name)
+                LOGGER.info("Skipping image asset %s on resume", job.asset_name)
+                continue
+
+            runnable.append(job)
+
+        completed_results: dict[str, dict[str, Any]] = {}
+        if runnable:
+            with ThreadPoolExecutor(max_workers=max(1, config.concurrency)) as executor:
+                future_map = {
+                    executor.submit(
+                        run_job_with_retry,
+                        job,
+                        config,
+                        workspace,
+                        provider,
+                    ): job
+                    for job in runnable
+                }
+                for future in as_completed(future_map):
+                    job = future_map[future]
+                    completed_results[job.asset_name] = future.result()
+
+        for job in runnable:
+            result = completed_results[job.asset_name]
+            results_by_name[job.asset_name] = result
+            if result.get("status") == "done":
+                done_assets.add(job.asset_name)
+
+    return {
+        "version": 1,
+        "provider": "openai-compatible",
+        "base_url_label": "configured",
+        "assets": [
+            results_by_name[job.asset_name]
+            for job in jobs
+            if job.asset_name in results_by_name
+        ],
+    }
+
+
+def write_generation_report(path: Path, manifest: dict[str, Any]) -> None:
+    assets = [
+        asset
+        for asset in manifest.get("assets", [])
+        if isinstance(asset, dict)
+    ]
+    failed = [asset for asset in assets if asset.get("status") == "failed"]
+    blocked = [asset for asset in assets if asset.get("status") == "blocked"]
+    generated = [asset for asset in assets if asset.get("status") == "done"]
+
+    lines = ["# Image Generation Report", ""]
+    _append_report_section(lines, "Failed", failed, "last_error")
+    _append_report_section(lines, "Blocked", blocked, "last_error")
+    _append_report_section(lines, "Generated", generated, "path")
+
+    report_path = Path(path)
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def _float_env(name: str, default: float) -> float:
@@ -370,6 +516,56 @@ def _failed_result(
     }
 
 
+def _blocked_result(
+    job: ImageJob,
+    config: ImageGenerationConfig,
+    missing_dependencies: list[str],
+) -> dict[str, Any]:
+    dependency_text = ", ".join(missing_dependencies)
+    return _result_base(job, config, 0) | {
+        "status": "blocked",
+        "last_error": f"blocked by failed or missing dependencies: {dependency_text}",
+    }
+
+
+def _existing_asset_path(asset: dict[str, Any], workspace: Path) -> Path | None:
+    path_text = str(asset.get("path", "")).strip()
+    if not path_text or _has_drive_prefix(path_text):
+        return None
+
+    path = Path(path_text)
+    if path.is_absolute():
+        return None
+
+    workspace_path = Path(workspace).resolve(strict=False)
+    resolved_path = (workspace_path / path).resolve(strict=False)
+    try:
+        resolved_path.relative_to(workspace_path)
+    except ValueError:
+        return None
+    return resolved_path
+
+
+def _safe_manifest_asset(asset: dict[str, Any]) -> dict[str, Any]:
+    return {field: asset[field] for field in SAFE_MANIFEST_ASSET_FIELDS if field in asset}
+
+
+def _append_report_section(
+    lines: list[str],
+    title: str,
+    assets: list[dict[str, Any]],
+    detail_field: str,
+) -> None:
+    lines.append(f"## {title}")
+    if assets:
+        for asset in assets:
+            detail = asset.get(detail_field, "")
+            lines.append(f"- {asset.get('asset_name')}: {detail}")
+    else:
+        lines.append("- None")
+    lines.append("")
+
+
 def _references(job: ImageJob) -> list[dict[str, str]]:
     return [reference.to_dict() for reference in job.reference_images]
 
@@ -398,3 +594,76 @@ def _sanitize_error(message: str, config: ImageGenerationConfig) -> str:
     sanitized = SECRET_VALUE_PATTERN.sub("[redacted]", sanitized)
     sanitized = SECRET_NAME_PATTERN.sub("credential", sanitized)
     return sanitized or "provider error"
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        description="Generate source-true-guoman image assets."
+    )
+    parser.add_argument("--jobs", required=True, help="Path to image-jobs.jsonl")
+    parser.add_argument("--manifest", required=True, help="Path to image-manifest.json")
+    parser.add_argument(
+        "--workspace",
+        default=".",
+        help="Workspace root used to resolve generated image paths.",
+    )
+    parser.add_argument("--report", help="Path to image-generation-report.md")
+    parser.add_argument("--resume", action="store_true", help="Skip completed outputs")
+    args = parser.parse_args()
+
+    jobs_path = Path(args.jobs).expanduser().resolve()
+    manifest_path = Path(args.manifest).expanduser().resolve()
+    workspace = Path(args.workspace).expanduser().resolve()
+    report_path = (
+        Path(args.report).expanduser().resolve()
+        if args.report
+        else manifest_path.with_name("image-generation-report.md")
+    )
+
+    try:
+        jobs = load_jobs_jsonl(jobs_path)
+        existing_manifest = None
+        if args.resume and manifest_path.exists():
+            existing_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            if not isinstance(existing_manifest, dict):
+                raise ImageGenerationError("existing manifest must be a JSON object")
+
+        config = load_config_from_env()
+        manifest = run_generation(
+            jobs,
+            config,
+            workspace,
+            provider=openai_compatible_provider,
+            existing_manifest=existing_manifest,
+            resume=args.resume,
+        )
+
+        manifest_path.parent.mkdir(parents=True, exist_ok=True)
+        manifest_path.write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        write_generation_report(report_path, manifest)
+    except FileNotFoundError as error:
+        missing = Path(error.filename).name if error.filename else "input file"
+        print(f"Image generation failed: input file not found: {missing}")
+        return 1
+    except json.JSONDecodeError as error:
+        print(
+            "Image generation failed: manifest JSON is malformed "
+            f"at line {error.lineno} column {error.colno}"
+        )
+        return 1
+    except (OSError, ImageGenerationError, RetryableProviderError, NonRetryableProviderError) as error:
+        print(f"Image generation failed: {error}")
+        return 1
+
+    print(
+        "Image generation wrote "
+        f"{len(manifest.get('assets', []))} assets to {manifest_path}"
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

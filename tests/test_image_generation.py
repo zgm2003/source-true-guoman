@@ -1,13 +1,18 @@
+import io
 import json
 import os
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from scripts import generate_images as generate_images_module
 from scripts.image_generation_core import (
+    ALLOWED_OUTPUT_DIRS,
     ImageGenerationError,
     ImageJob,
     build_dependency_waves,
@@ -372,6 +377,316 @@ class ProviderRetryTests(unittest.TestCase):
                 load_config_from_env()
 
         self.assertIn("SOURCE_TRUE_IMAGE_RETRY_MAX_SECONDS must be finite", str(context.exception))
+
+
+class ImageGenerationRunnerTests(unittest.TestCase):
+    def make_job(
+        self,
+        name: str,
+        depends_on: list[str] | None = None,
+    ) -> ImageJob:
+        return ImageJob(
+            job_id=f"job-{name}",
+            asset_name=name,
+            asset_type="character",
+            prompt=f"prompt for {name}",
+            output_dir=sorted(ALLOWED_OUTPUT_DIRS)[0],
+            output_file=f"{name}.png",
+            depends_on=depends_on or [],
+            reference_images=[],
+            provider="openai-compatible",
+            model="gpt-image-2",
+            size="16:9",
+            status="pending",
+        )
+
+    def make_config(self, concurrency: int = 1) -> ImageGenerationConfig:
+        return ImageGenerationConfig(
+            base_url="https://provider.example/openai",
+            api_key="sk-test-secret-1234567890",
+            model="gpt-image-2",
+            size="16:9",
+            timeout_seconds=5.0,
+            max_retries=0,
+            retry_base_seconds=0.0,
+            retry_max_seconds=0.0,
+            concurrency=concurrency,
+        )
+
+    def test_run_generation_respects_dependency_order_and_resume(self) -> None:
+        jobs = [
+            self.make_job("parent"),
+            self.make_job("child", depends_on=["parent"]),
+        ]
+        calls: list[str] = []
+
+        def provider(job: ImageJob, config: ImageGenerationConfig) -> bytes:
+            calls.append(job.asset_name)
+            return f"image:{job.asset_name}".encode("utf-8")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            config = self.make_config(concurrency=4)
+
+            manifest = generate_images_module.run_generation(
+                jobs,
+                config,
+                workspace,
+                provider=provider,
+            )
+            second_manifest = generate_images_module.run_generation(
+                jobs,
+                config,
+                workspace,
+                provider=provider,
+                existing_manifest=manifest,
+                resume=True,
+            )
+
+        self.assertEqual(calls, ["parent", "child"])
+        self.assertEqual(
+            [asset["asset_name"] for asset in manifest["assets"]],
+            ["parent", "child"],
+        )
+        self.assertEqual(
+            [asset["status"] for asset in manifest["assets"]],
+            ["done", "done"],
+        )
+        self.assertEqual(
+            [asset["asset_name"] for asset in second_manifest["assets"]],
+            ["parent", "child"],
+        )
+        self.assertEqual(
+            [asset["status"] for asset in second_manifest["assets"]],
+            ["done", "done"],
+        )
+
+    def test_sibling_jobs_in_same_dependency_wave_can_run_concurrently(self) -> None:
+        jobs = [self.make_job("sibling_a"), self.make_job("sibling_b")]
+        started = {
+            "sibling_a": threading.Event(),
+            "sibling_b": threading.Event(),
+        }
+        lock = threading.Lock()
+        active = 0
+        max_active = 0
+
+        def provider(job: ImageJob, config: ImageGenerationConfig) -> bytes:
+            nonlocal active, max_active
+            other_name = "sibling_b" if job.asset_name == "sibling_a" else "sibling_a"
+            with lock:
+                active += 1
+                max_active = max(max_active, active)
+            try:
+                started[job.asset_name].set()
+                started[other_name].wait(timeout=1.0)
+                time.sleep(0.02)
+                return f"image:{job.asset_name}".encode("utf-8")
+            finally:
+                with lock:
+                    active -= 1
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            manifest = generate_images_module.run_generation(
+                jobs,
+                self.make_config(concurrency=2),
+                Path(temp_dir),
+                provider=provider,
+            )
+
+        self.assertEqual([asset["status"] for asset in manifest["assets"]], ["done", "done"])
+        self.assertGreaterEqual(max_active, 2)
+
+    def test_dependency_failure_blocks_dependent_jobs_without_provider_call(self) -> None:
+        jobs = [
+            self.make_job("parent"),
+            self.make_job("child", depends_on=["parent"]),
+        ]
+        calls: list[str] = []
+
+        def provider(job: ImageJob, config: ImageGenerationConfig) -> bytes:
+            calls.append(job.asset_name)
+            if job.asset_name == "parent":
+                raise RetryableProviderError("HTTP 503 upstream")
+            return b"child"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            manifest = generate_images_module.run_generation(
+                jobs,
+                self.make_config(concurrency=2),
+                Path(temp_dir),
+                provider=provider,
+            )
+
+        by_name = {asset["asset_name"]: asset for asset in manifest["assets"]}
+        self.assertEqual(calls, ["parent"])
+        self.assertEqual(by_name["parent"]["status"], "failed")
+        self.assertEqual(by_name["child"]["status"], "blocked")
+        self.assertEqual(by_name["child"]["attempts"], 0)
+        self.assertIn("parent", by_name["child"]["last_error"])
+
+    def test_manifest_asset_ordering_is_original_job_order(self) -> None:
+        jobs = [self.make_job("slow"), self.make_job("fast")]
+        fast_done = threading.Event()
+        finish_order: list[str] = []
+        lock = threading.Lock()
+
+        def provider(job: ImageJob, config: ImageGenerationConfig) -> bytes:
+            if job.asset_name == "fast":
+                fast_done.set()
+            else:
+                fast_done.wait(timeout=1.0)
+                time.sleep(0.05)
+            with lock:
+                finish_order.append(job.asset_name)
+            return f"image:{job.asset_name}".encode("utf-8")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            manifest = generate_images_module.run_generation(
+                jobs,
+                self.make_config(concurrency=2),
+                Path(temp_dir),
+                provider=provider,
+            )
+
+        self.assertEqual(finish_order[0], "fast")
+        self.assertEqual(
+            [asset["asset_name"] for asset in manifest["assets"]],
+            ["slow", "fast"],
+        )
+
+    def test_resume_does_not_skip_existing_manifest_path_outside_workspace(self) -> None:
+        job = self.make_job("safe_asset")
+        calls: list[str] = []
+
+        def provider(current_job: ImageJob, config: ImageGenerationConfig) -> bytes:
+            calls.append(current_job.asset_name)
+            return b"replacement-image"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            workspace = root / "workspace"
+            workspace.mkdir()
+            (root / "outside.png").write_bytes(b"old-image")
+            existing_manifest = {
+                "version": 1,
+                "provider": "openai-compatible",
+                "assets": [
+                    {
+                        "asset_name": "safe_asset",
+                        "asset_type": "character",
+                        "path": "../outside.png",
+                        "status": "done",
+                        "prompt_hash": prompt_hash(job.prompt),
+                        "model": "gpt-image-2",
+                        "size": "16:9",
+                        "attempts": 1,
+                        "depends_on": [],
+                        "references": [],
+                    }
+                ],
+            }
+
+            manifest = generate_images_module.run_generation(
+                [job],
+                self.make_config(),
+                workspace,
+                provider=provider,
+                existing_manifest=existing_manifest,
+                resume=True,
+            )
+
+        self.assertEqual(calls, ["safe_asset"])
+        self.assertEqual(manifest["assets"][0]["status"], "done")
+        self.assertNotEqual(manifest["assets"][0]["path"], "../outside.png")
+
+    def test_write_generation_report_orders_failed_blocked_generated_sections(self) -> None:
+        manifest = {
+            "version": 1,
+            "provider": "openai-compatible",
+            "assets": [
+                {"asset_name": "generated_asset", "status": "done", "path": "out/generated.png"},
+                {"asset_name": "blocked_asset", "status": "blocked", "last_error": "parent failed"},
+                {"asset_name": "failed_asset", "status": "failed", "last_error": "provider failed"},
+            ],
+        }
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            report_path = Path(temp_dir) / "image-generation-report.md"
+
+            generate_images_module.write_generation_report(report_path, manifest)
+
+            text = report_path.read_text(encoding="utf-8")
+
+        self.assertLess(text.index("## Failed"), text.index("## Blocked"))
+        self.assertLess(text.index("## Blocked"), text.index("## Generated"))
+        self.assertIn("- failed_asset: provider failed", text)
+        self.assertIn("- blocked_asset: parent failed", text)
+        self.assertIn("- generated_asset: out/generated.png", text)
+
+    def test_main_writes_manifest_and_report_with_env_config_without_real_provider(self) -> None:
+        job = self.make_job("cli_asset")
+        calls: list[str] = []
+
+        def provider(current_job: ImageJob, config: ImageGenerationConfig) -> bytes:
+            calls.append(current_job.asset_name)
+            self.assertEqual(config.model, "gpt-image-2")
+            return b"cli-image"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            jobs_path = root / "image-jobs.jsonl"
+            manifest_path = root / "image-manifest.json"
+            report_path = root / "image-generation-report.md"
+            jobs_path.write_text(
+                json.dumps(job.to_dict(), ensure_ascii=False) + "\n",
+                encoding="utf-8",
+            )
+            env = {
+                "SOURCE_TRUE_IMAGE_BASE_URL": "https://provider.example/openai",
+                "SOURCE_TRUE_IMAGE_API_KEY": "sk-test-secret-1234567890",
+                "SOURCE_TRUE_IMAGE_MODEL": "gpt-image-2",
+                "SOURCE_TRUE_IMAGE_SIZE": "16:9",
+                "SOURCE_TRUE_IMAGE_TIMEOUT_SECONDS": "5",
+                "SOURCE_TRUE_IMAGE_MAX_RETRIES": "0",
+                "SOURCE_TRUE_IMAGE_RETRY_BASE_SECONDS": "0",
+                "SOURCE_TRUE_IMAGE_RETRY_MAX_SECONDS": "0",
+                "SOURCE_TRUE_IMAGE_CONCURRENCY": "1",
+            }
+            argv = [
+                "generate_images.py",
+                "--jobs",
+                str(jobs_path),
+                "--manifest",
+                str(manifest_path),
+                "--workspace",
+                str(root),
+                "--report",
+                str(report_path),
+            ]
+
+            with patch.dict(os.environ, env, clear=True):
+                with patch.object(sys, "argv", argv):
+                    with patch.object(
+                        generate_images_module,
+                        "openai_compatible_provider",
+                        provider,
+                    ):
+                        with patch("sys.stdout", new_callable=io.StringIO) as stdout:
+                            exit_code = generate_images_module.main()
+
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            report_text = report_path.read_text(encoding="utf-8")
+            manifest_text = json.dumps(manifest, ensure_ascii=False, sort_keys=True)
+
+        self.assertEqual(exit_code, 0)
+        self.assertIn("Image generation wrote 1 assets", stdout.getvalue())
+        self.assertEqual(calls, ["cli_asset"])
+        self.assertEqual(manifest["assets"][0]["status"], "done")
+        self.assertIn("## Generated", report_text)
+        self.assertNotIn("api_key", manifest_text)
+        self.assertNotIn("sk-test-secret", manifest_text)
+        self.assertNotIn("https://provider.example/openai", manifest_text)
 
 
 class ImageManifestValidationTests(unittest.TestCase):
