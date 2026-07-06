@@ -6,6 +6,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass
+from dataclasses import field
 from pathlib import Path
 from typing import Any
 
@@ -54,6 +55,8 @@ class ImageJob:
     model: str
     size: str
     status: str = "pending"
+    _has_depends_on: bool = field(default=True, repr=False)
+    _has_reference_images: bool = field(default=True, repr=False)
 
     @property
     def output_path(self) -> Path:
@@ -79,6 +82,8 @@ class ImageJob:
             model=str(data.get("model", "")).strip(),
             size=str(data.get("size", "")).strip(),
             status=str(data.get("status", "")).strip(),
+            _has_depends_on="depends_on" in data,
+            _has_reference_images="reference_images" in data,
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -158,6 +163,10 @@ def validate_jobs(jobs: list[ImageJob]) -> list[str]:
             errors.append(f"{job.asset_name}: size is required")
         if not job.status:
             errors.append(f"{job.asset_name}: status is required")
+        if not job._has_depends_on:
+            errors.append(f"{job.asset_name}: depends_on is required")
+        if not job._has_reference_images:
+            errors.append(f"{job.asset_name}: reference_images is required")
         if job.output_dir not in ALLOWED_OUTPUT_DIRS:
             errors.append(
                 f"{job.asset_name}: output_dir must be one of {sorted(ALLOWED_OUTPUT_DIRS)}"

@@ -48,6 +48,23 @@ class ImageGenerationCoreTests(unittest.TestCase):
             self.assertEqual(jobs[0].asset_name, "林夜_黑袍造型")
             self.assertEqual(jobs[0].output_path, Path("人设资产") / "林夜_黑袍造型.png")
 
+    def test_validate_jobs_rejects_missing_required_array_fields_from_jsonl(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "image-jobs.jsonl"
+            path.write_text(
+                '{"job_id":"j1","asset_name":"missing_arrays","asset_type":"character","prompt":"p","output_dir":"人设资产","output_file":"missing_arrays.png","provider":"openai-compatible","model":"gpt-image-2","size":"16:9","status":"pending"}\n',
+                encoding="utf-8",
+            )
+
+            jobs = load_jobs_jsonl(path)
+
+            with self.assertRaises(ImageGenerationError) as context:
+                validate_jobs(jobs)
+
+            message = str(context.exception)
+            self.assertIn("missing_arrays: depends_on is required", message)
+            self.assertIn("missing_arrays: reference_images is required", message)
+
     def test_validate_jobs_rejects_duplicate_ids_and_production_output(self) -> None:
         jobs = [
             self.make_job("林夜_黑袍造型", output_dir="生产资产"),
