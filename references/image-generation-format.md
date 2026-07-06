@@ -7,7 +7,6 @@ Use this file when creating image generation jobs, manifests, and reports.
 - Jobs: `生产资产/_内部/image-jobs.jsonl`
 - Manifest: `生产资产/_内部/image-manifest.json`
 - Report: `生产资产/_内部/image-generation-report.md`
-- Log: `生产资产/_内部/image-generation-log.jsonl`
 
 Generated image files go to:
 
