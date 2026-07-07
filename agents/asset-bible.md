@@ -18,6 +18,7 @@ Use this specialist when reusable assets need to be planned before image or vide
 
 - Source text or `source-index.md`.
 - Existing generated images, filenames, or user-provided references.
+- Prior top-level `生产资产/连续投喂稿-*` asset headings, prior copy-pack bindings, and `生产资产/_内部/image-manifest.json` when a workspace already has earlier batches.
 - Requested production scope.
 
 ## Output
@@ -43,18 +44,21 @@ Asset status must be visible near the top of the output:
 ## Procedure
 
 1. Check the source-index status before making asset calls: final asset decisions require `全范围预扫`. For formal multi-chapter work, do not finalize reusable identities, scene families, or production dependencies from an unread tail. When scope exceeds 3 chapters, review each 3-chapter batch ledger before pruning assets so named local roles, speaking roles, and repeated props do not disappear from the bible.
-2. Reuse existing assets first. Only add new assets that stabilize identity, setting, conflict, action, interface, or repeated continuity. Temporary posture, blocking, camera position, seat, and one-off action stay in video lines.
-3. Classify every visible person into one tier: `主角/高频配角`, `命名低频角色`, `群像模板`, or `一次性背景人`.
-4. Give `主角/高频配角` individual tri-view assets. Use group templates for repeated nameless disciples, guards, villagers, vendors, or soldiers. Keep `一次性背景人` in shot description unless identity or later continuity makes them reusable.
-5. Handle early anonymous role upgrades before prompt writing. If a later line gives an early NPC, disciple, guard, servant, black-clothed person, passerby, or shop worker a name, dialogue, repeated action, relationship, faction, or plot effect, merge those mentions into one stable source identity. For a confirmed anonymous-to-named upgrade, cite the reconciliation-log entry and do not emit separate old/new faces.
-6. Use source identity/version names, not temporary camera position, seat, or action. Prefer names such as `林夜_黑袍造型`, `青云宗主殿_母图`, `传功玉简_单体`, or `系统界面_惩罚弹窗`.
-7. For every derived outfit/state asset, require previous face/identity references. Keep the same face, age band, facial structure, hairstyle logic, body type, and identity marks while changing only the source-justified outfit, injury, disguise, battle state, or transformed state.
-8. Separate similar important characters before writing prompts when they share same sect, same uniform, same gender/age band, or similar protagonist styling. Record contrast anchors for face shape, brows/eyes, nose bridge, mouth, jawline, hairstyle silhouette, height/build, posture, temperament, and identity marks.
-9. Bind parent-child references explicitly: outfit variants to face references, sub-scenes to scene mother images, props/interfaces to owner or parent scene, and interface variants to the previous screen language when continuity depends on them.
-10. Create prop/interface/beast/vehicle assets only when they carry identity, action, interface, or repeated continuity. 道具默认生成单体参考图; use clean single-subject images for high-value props and interfaces, and 只生成一个完整主体. 手机等需要前后侧信息的道具可以使用道具三视图, but 生产需要三视图的道具必须显式标注正面、背面、侧面. 不要把普通一次性道具升级成三视图 or generate a separate asset for every incidental object.
-11. Create voice assets for speaking roles in the requested scope. Do not create voice assets for silent background people.
-12. List reference upload purposes with clear labels: `人脸身份参考`, `旧造型参考`, `避撞脸参考`, `同门服制参考`, `场景母图参考`, `局部场景参考`, `材质风格参考`, `界面风格参考`.
-13. Cite source/index evidence for each reusable asset, derived asset, similar-character separation, reference dependency, and user-confirmation wait state.
+2. Build an Existing Asset Map before adding assets: scan prior top-level mother feeds for `### 图片N = ...`, read the existing `_内部/asset-bible.md`, `_内部/source-index.md`, and `_内部/image-manifest.json` when present, and map previous asset names, canonical names, aliases, image labels, manifest paths, and affected artifacts.
+3. For every current-batch visual or voice asset, record exactly one reuse decision: `reuse`, `rename`, `derived`, or `new`. `reuse` and confirmed `rename` entries must point to the existing feed/image label or manifest path and must set `Do not re-emit full prompt: yes`. `derived` must name the parent asset and required reference uploads. `new` is the only normal action that permits a full prompt without prior references.
+4. If a confirmed anonymous-to-named upgrade changes earlier asset bindings, stop downstream feed/copy-pack work until the source-index reconciliation, asset-bible decision, and affected prior artifacts are updated or explicitly marked `needs user confirmation`. Update canonical mother feed -> audit -> copy packs order.
+5. Reuse existing assets first. Only add new assets that stabilize identity, setting, conflict, action, interface, or repeated continuity. Temporary posture, blocking, camera position, seat, and one-off action stay in video lines.
+6. Classify every visible person into one tier: `主角/高频配角`, `命名低频角色`, `群像模板`, or `一次性背景人`.
+7. Give `主角/高频配角` individual tri-view assets. Use group templates for repeated nameless disciples, guards, villagers, vendors, or soldiers. Keep `一次性背景人` in shot description unless identity or later continuity makes them reusable.
+8. Handle early anonymous role upgrades before prompt writing. If a later line gives an early NPC, disciple, guard, servant, black-clothed person, passerby, or shop worker a name, dialogue, repeated action, relationship, faction, or plot effect, merge those mentions into one stable source identity. For a confirmed anonymous-to-named upgrade, cite the reconciliation-log entry and do not emit separate old/new faces.
+9. Use source identity/version names, not temporary camera position, seat, or action. Prefer names such as `林夜_黑袍造型`, `青云宗主殿_母图`, `传功玉简_单体`, or `系统界面_惩罚弹窗`.
+10. For every derived outfit/state asset, require previous face/identity references. Keep the same face, age band, facial structure, hairstyle logic, body type, and identity marks while changing only the source-justified outfit, injury, disguise, battle state, or transformed state.
+11. Separate similar important characters before writing prompts when they share same sect, same uniform, same gender/age band, or similar protagonist styling. Record contrast anchors for face shape, brows/eyes, nose bridge, mouth, jawline, hairstyle silhouette, height/build, posture, temperament, and identity marks.
+12. Bind parent-child references explicitly: outfit variants to face references, sub-scenes to scene mother images, props/interfaces to owner or parent scene, and interface variants to the previous screen language when continuity depends on them.
+13. Create prop/interface/beast/vehicle assets only when they carry identity, action, interface, or repeated continuity. 道具默认生成单体参考图; use clean single-subject images for high-value props and interfaces, and 只生成一个完整主体. 手机等需要前后侧信息的道具可以使用道具三视图, but 生产需要三视图的道具必须显式标注正面、背面、侧面. 不要把普通一次性道具升级成三视图 or generate a separate asset for every incidental object.
+14. Create voice assets for speaking roles in the requested scope. Do not create voice assets for silent background people.
+15. List reference upload purposes with clear labels: `人脸身份参考`, `旧造型参考`, `避撞脸参考`, `同门服制参考`, `场景母图参考`, `局部场景参考`, `材质风格参考`, `界面风格参考`.
+16. Cite source/index evidence for each reusable asset, derived asset, similar-character separation, reference dependency, and user-confirmation wait state.
 
 Continuity gates:
 

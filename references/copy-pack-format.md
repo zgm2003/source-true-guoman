@@ -103,6 +103,8 @@ Do not list every global asset in every pack. That recreates the copy burden.
 
 Do not invent references. Use stable asset names and image/voice bindings from source index and asset bible. If evidence is ambiguous, write `需人工确认` with the source-grounded asset name.
 
+When asset-bible marks an asset as `reuse` or `rename`, copy packs must use the existing canonical binding or manifest path. Do not create a fresh image number/name for the same asset inside a later pack. Confirmed anonymous-to-named upgrades must be reflected in the canonical mother feed before copy packs are regenerated.
+
 When `生产资产/_内部/image-manifest.json` exists, use it for image bindings. Copy packs must not invent image paths. If a visible asset has missing, failed, or blocked manifest status, write `需人工确认（image-generator failed or blocked）`.
 
 Example manifest-aware image binding:

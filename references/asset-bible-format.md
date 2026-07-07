@@ -24,9 +24,42 @@ Image QA gate: image generation must start with environment preflight, then a é£
 - Full-book production batching defaults to 3 chapters per batch.
 - forward index scope: requested output range + next 3 chapters, identity/continuity only; do not leak future plot into the delivered feed or copy packs.
 
+## Existing Asset Map
+- Existing artifact:
+  - Existing picture label:
+  - Existing asset name:
+  - Canonical asset name:
+  - Previous asset names:
+  - Asset class:
+  - Manifest path:
+  - Source-index evidence:
+  - Reuse range:
+  - Reveal-safe display name:
+  - Notes:
+
+## Asset Reuse Decisions
+- Current asset need:
+  - Canonical asset name:
+  - Existing artifact:
+  - Existing picture label:
+  - Canonical action: reuse / rename / derived / new
+  - Do not re-emit full prompt: yes / no
+  - Reveal-safe display name:
+  - Parent asset:
+  - Required reference uploads:
+  - Affected prior artifacts:
+  - Migration action: none / rename / deprecated / regenerate / needs user confirmation
+  - Source-index evidence:
+  - Feed/copy-pack binding:
+
 ## Character Assets
 - Asset name:
   - Canonical asset name:
+  - Existing artifact:
+  - Existing picture label:
+  - Canonical action: reuse / rename / derived / new
+  - Do not re-emit full prompt: yes / no
+  - Reveal-safe display name:
   - Previous asset names:
   - Asset class: character
   - Output directory: äººè®¾èµ„äº§
@@ -63,6 +96,11 @@ Image QA gate: image generation must start with environment preflight, then a é£
 ## Scene Assets
 - Asset name:
   - Canonical asset name:
+  - Existing artifact:
+  - Existing picture label:
+  - Canonical action: reuse / rename / derived / new
+  - Do not re-emit full prompt: yes / no
+  - Reveal-safe display name:
   - Previous asset names:
   - Type: mother image / sub-location / interior / exterior
   - Source evidence:
@@ -84,6 +122,11 @@ Image QA gate: image generation must start with environment preflight, then a é£
 ## Prop, Interface, Beast, Vehicle Assets
 - Asset name:
   - Canonical asset name:
+  - Existing artifact:
+  - Existing picture label:
+  - Canonical action: reuse / rename / derived / new
+  - Do not re-emit full prompt: yes / no
+  - Reveal-safe display name:
   - Previous asset names:
   - Type: prop / interface / magic item / beast / vehicle
   - Source evidence:

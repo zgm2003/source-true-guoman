@@ -30,6 +30,10 @@ Use this checklist when reviewing a source-true-guoman feed.
 
 - Asset names are stable source identities and versions.
 - Later-named recurring NPCs are not split from earlier anonymous appearances.
+- For later batches, existing canonical assets are listed as `沿用第XX-XX章 图片N = 资产名` or manifest bindings, not re-emitted as new full `GPT-image` prompts.
+- Confirmed anonymous-to-named upgrades use one canonical asset binding across old and new batches; prior visible story text may preserve reveal order, but asset/copy bindings must not keep the former temporary asset name.
+- Reused props, interfaces, scenes, and phone/UI families bind to the prior asset family instead of receiving a new number/name plus a full prompt.
+- If prior mother feeds are available, run `python scripts/validate_reconciliation.py ... --prior-feed <prior-feed>` so duplicate full prompts and un-migrated former names are caught deterministically.
 - Outfit variants preserve face references and identity marks.
 - Similar important characters have separation anchors.
 - Sub-scenes bind to scene mother images when continuity depends on it.

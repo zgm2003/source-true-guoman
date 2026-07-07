@@ -268,6 +268,108 @@ class ReconciliationValidationTests(unittest.TestCase):
 
         self.assertEqual(errors, [])
 
+    def test_current_batch_cannot_reemit_full_prompt_for_prior_asset(self) -> None:
+        prior_feed = """
+## 资产提示词
+
+### 图片16 = 抖音使用说明玉简_单体
+GPT-image-2，16:9，3D国漫。抖音使用说明玉简单体参考图。
+
+## 视频投喂块
+统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。
+"""
+        current_feed = """
+## 资产提示词
+
+### 图片10 = 抖音使用说明玉简_单体
+GPT-image-2，16:9，3D国漫。抖音使用说明玉简单体参考图，重新生成一张。
+
+## 视频投喂块
+统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。
+"""
+        inputs = ReconciliationInputs(
+            source_index_text="",
+            asset_bible_text="",
+            mother_feed_text=current_feed,
+            copy_pack_text="",
+            image_manifest={"assets": []},
+            prior_feed_texts=(prior_feed,),
+        )
+
+        errors = validate_reconciliation(inputs)
+
+        self.assertTrue(
+            any("re-emits full prompt for prior asset 抖音使用说明玉简_单体" in error for error in errors)
+        )
+
+    def test_current_batch_can_reference_prior_asset_with_reuse_row(self) -> None:
+        prior_feed = """
+## 资产提示词
+
+### 图片16 = 抖音使用说明玉简_单体
+GPT-image-2，16:9，3D国漫。抖音使用说明玉简单体参考图。
+"""
+        current_feed = """
+## 资产提示词
+
+### 图片10 = 沿用第01-03章 图片16 = 抖音使用说明玉简_单体
+
+## 视频投喂块
+统一要求：【不要字幕、不要配乐，只保留环境音、系统提示音、动作音效和必要对白】3D国漫，国风仙侠，轻喜剧反差，角色表演夸张但身份连续，16:9。
+"""
+        inputs = ReconciliationInputs(
+            source_index_text="",
+            asset_bible_text="",
+            mother_feed_text=current_feed,
+            copy_pack_text="",
+            image_manifest={"assets": []},
+            prior_feed_texts=(prior_feed,),
+        )
+
+        errors = validate_reconciliation(inputs)
+
+        self.assertEqual(errors, [])
+
+    def test_confirmed_upgrade_fails_when_old_name_remains_in_prior_feed(self) -> None:
+        source_index = """
+# Source Index
+
+## Reconciliation Ledger
+- Canonical name: 鬼财神_财神殿执掌者铁算盘造型
+  - Former temporary names: 铁算盘臃肿中年男子_造型
+  - Upgrade status: confirmed
+  - Migration action: rename
+  - Evidence anchors: ch04-line08
+  - Affected prior artifacts: 生产资产/连续投喂稿-第01-03章.md
+  - reconciliation-log: 鬼财神_财神殿执掌者铁算盘造型 <- 铁算盘臃肿中年男子_造型, ch04-line08
+"""
+        inputs = ReconciliationInputs(
+            source_index_text=source_index,
+            asset_bible_text=(
+                "### 图片11 = 鬼财神_财神殿执掌者铁算盘造型\n"
+                "- Migration action: rename\n"
+                "- Source-index evidence: ch04-line08\n"
+            ),
+            mother_feed_text="### 图片11 = 鬼财神_财神殿执掌者铁算盘造型\n",
+            copy_pack_text="角色1 = 鬼财神_财神殿执掌者铁算盘造型",
+            image_manifest={
+                "assets": [
+                    {
+                        "asset_name": "铁算盘臃肿中年男子_造型",
+                        "status": "renamed",
+                        "replaced_by": "鬼财神_财神殿执掌者铁算盘造型",
+                    }
+                ]
+            },
+            prior_feed_texts=("### 图片6 = 铁算盘臃肿中年男子_造型\nGPT-image-2，16:9。",),
+        )
+
+        errors = validate_reconciliation(inputs)
+
+        self.assertTrue(
+            any("prior feed still contains former name 铁算盘臃肿中年男子_造型" in error for error in errors)
+        )
+
     def test_cli_reports_validation_errors_without_traceback(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             workspace = Path(temp_dir)

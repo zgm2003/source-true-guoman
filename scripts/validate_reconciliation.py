@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -29,6 +30,14 @@ class ReconciliationInputs:
     copy_pack_text: str
     image_manifest: dict[str, Any]
     reconciliation_log_text: str = ""
+    prior_feed_texts: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class AssetPrompt:
+    label: str
+    asset_name: str
+    block_text: str
 
 
 def extract_reconciliation_upgrades(source_index_text: str) -> list[ReconciliationUpgrade]:
@@ -66,6 +75,7 @@ def validate_reconciliation(inputs: ReconciliationInputs) -> list[str]:
     errors: list[str] = []
     upgrades = extract_reconciliation_upgrades(inputs.source_index_text)
     manifest_assets = _manifest_assets_by_name(inputs.image_manifest)
+    errors.extend(_validate_prior_asset_reuse(inputs.prior_feed_texts, inputs.mother_feed_text))
 
     for upgrade in upgrades:
         if upgrade.status != "confirmed":
@@ -97,6 +107,9 @@ def validate_reconciliation(inputs: ReconciliationInputs) -> list[str]:
                 errors.append(f"{label}: mother feed still contains former name {former_name}")
             if former_name and former_name in inputs.copy_pack_text:
                 errors.append(f"{label}: copy packs still contain former name {former_name}")
+            for prior_feed_text in inputs.prior_feed_texts:
+                if former_name and former_name in prior_feed_text:
+                    errors.append(f"{label}: prior feed still contains former name {former_name}")
             former_asset = manifest_assets.get(former_name)
             if former_asset is not None:
                 status = str(former_asset.get("status", "")).strip()
@@ -176,6 +189,67 @@ def _asset_bible_block(asset_bible_text: str, canonical_name: str) -> str:
     return asset_bible_text[start:end]
 
 
+def _validate_prior_asset_reuse(prior_feed_texts: tuple[str, ...], mother_feed_text: str) -> list[str]:
+    prior_assets: dict[str, AssetPrompt] = {}
+    for prior_feed_text in prior_feed_texts:
+        for prompt in _extract_asset_prompts(prior_feed_text):
+            prior_assets.setdefault(prompt.asset_name, prompt)
+    if not prior_assets:
+        return []
+
+    errors: list[str] = []
+    for prompt in _extract_asset_prompts(mother_feed_text):
+        if prompt.asset_name in prior_assets and _is_full_asset_prompt(prompt):
+            errors.append(
+                f"{prompt.asset_name}: current batch re-emits full prompt for prior asset "
+                f"{prompt.asset_name}; use 沿用第XX-XX章 图片N = {prompt.asset_name} or bind the "
+                "existing manifest path instead"
+            )
+    return errors
+
+
+def _extract_asset_prompts(feed_text: str) -> list[AssetPrompt]:
+    section = _asset_prompt_section(feed_text)
+    if not section:
+        return []
+    matches = list(re.finditer(r"^### 图片\d+\s*=\s*(.+?)\s*$", section, flags=re.MULTILINE))
+    prompts: list[AssetPrompt] = []
+    for index, match in enumerate(matches):
+        block_start = match.start()
+        block_end = matches[index + 1].start() if index + 1 < len(matches) else len(section)
+        label = match.group(1).strip()
+        prompts.append(
+            AssetPrompt(
+                label=label,
+                asset_name=_asset_name_from_label(label),
+                block_text=section[block_start:block_end].strip(),
+            )
+        )
+    return prompts
+
+
+def _asset_prompt_section(feed_text: str) -> str:
+    start_marker = "## 资产提示词"
+    start = feed_text.find(start_marker)
+    if start < 0:
+        return ""
+    end = feed_text.find("\n## 视频投喂块", start + len(start_marker))
+    return feed_text[start:end if end >= 0 else len(feed_text)]
+
+
+def _asset_name_from_label(label: str) -> str:
+    if "沿用" in label and "=" in label:
+        return label.rsplit("=", 1)[1].strip()
+    return label.strip()
+
+
+def _is_full_asset_prompt(prompt: AssetPrompt) -> bool:
+    body = "\n".join(prompt.block_text.splitlines()[1:]).strip()
+    if not body:
+        return False
+    return "GPT-image" in body or "4K画质" in body or "三视图生成模板" in body
+
+
 def _read_text(path_text: str) -> str:
     return Path(path_text).expanduser().resolve().read_text(encoding="utf-8")
 
@@ -188,6 +262,12 @@ def main() -> int:
     parser.add_argument("--copy-packs", required=True)
     parser.add_argument("--image-manifest", required=True)
     parser.add_argument("--reconciliation-log")
+    parser.add_argument(
+        "--prior-feed",
+        action="append",
+        default=[],
+        help="Prior canonical feed to validate cross-batch asset reuse; may be passed more than once.",
+    )
     args = parser.parse_args()
 
     try:
@@ -203,6 +283,7 @@ def main() -> int:
             reconciliation_log_text=_read_text(args.reconciliation_log)
             if args.reconciliation_log
             else "",
+            prior_feed_texts=tuple(_read_text(path) for path in args.prior_feed),
         )
         errors = validate_reconciliation(inputs)
     except (OSError, json.JSONDecodeError, ValueError) as error:

@@ -23,6 +23,14 @@ Use this exact chat prompt only when production scope is already explicit and ca
 
 For formal production standards, production mother feeds, and formal copy-pack batches, ask the user to choose an aspect ratio when it is not already specified: `画幅比例用哪个？默认 16:9。可选：9:16（竖屏）、16:9（横屏）、21:9（电影）。如果你说默认，我就按 16:9。` Only offer these three ratios. Do not offer `1:1` or `4:5`. Use the selected ratio anywhere the global requirement or prompt text carries a ratio; use 16:9 only when the user explicitly chooses it or says `默认` after being asked.
 
+For later batches, preserve prior asset numbers/names by reference instead of regenerating full prompts. If an asset already exists in a prior canonical feed, write a reuse row and do not add a new `GPT-image` prompt under it:
+
+```text
+### 图片10 = 沿用第01-03章 图片16 = 抖音使用说明玉简_单体
+```
+
+If a later source reveal confirms an anonymous asset is a named role, update source-index and asset-bible first, then use one canonical binding. Earlier story lines may keep reveal-safe wording, but the asset prompt block should not split the same person into old and new faces.
+
 ```text
 ## 资产提示词
 

@@ -67,12 +67,13 @@ Do not insert copy packs into `## 视频投喂块` and do not change the faithfu
 4. For every pack, preserve original continuous line numbers; do not renumber each pack from 1.
 5. Repeat the exact `统一要求` line inside every pack.
 6. Collect only visible dependencies needed by the copied lines: scene, visible characters, props/interfaces, and speaking voices.
-7. Use stable asset names and existing image or voice bindings from source index and asset bible.
-8. If a needed binding is ambiguous, write `需人工确认` with the stable source-grounded name. Do not invent a new image, voice, scene, or character reference.
-9. Include `- Camera library: 小云雀` or `- Camera library: libtv` in `## Pack Settings` when the selected library is known. Use `- Camera library: 需人工确认` only for legacy material that predates this gate; for new formal batches, stop and ask instead of writing copy packs.
-10. Include `- Aspect ratio: 9:16`, `- Aspect ratio: 16:9`, or `- Aspect ratio: 21:9` in `## Pack Settings` when the selected ratio is known. Use `- Aspect ratio: 需人工确认` only for legacy material that predates this gate. For a new formal batch without a selected ratio, ask `画幅比例用哪个？默认 16:9。可选：9:16（竖屏）、16:9（横屏）、21:9（电影）。如果你说默认，我就按 16:9。`
-11. Keep each copied video line text unchanged, including `<...>` camera tags. If copied lines use bare camera words, stop and update the canonical feed first; do not patch copy packs directly.
-12. After saving the artifact, run `python scripts/validate_copy_packs.py <copy-pack-file> --source-feed <feed-file> --pack-size <N>` when a source feed file is available.
+7. Use stable asset names and existing image or voice bindings from source index and asset bible. If asset-bible says `reuse` or `rename`, copy packs must use the existing canonical binding or manifest path; do not mint a new asset name, image number, or prompt-like reference inside the pack.
+8. If a confirmed anonymous-to-named upgrade changes a binding, update the canonical mother feed and audit first, then regenerate copy packs. Do not patch copy packs as the only place where the rename exists.
+9. If a needed binding is ambiguous, write `需人工确认` with the stable source-grounded name. Do not invent a new image, voice, scene, or character reference.
+10. Include `- Camera library: 小云雀` or `- Camera library: libtv` in `## Pack Settings` when the selected library is known. Use `- Camera library: 需人工确认` only for legacy material that predates this gate; for new formal batches, stop and ask instead of writing copy packs.
+11. Include `- Aspect ratio: 9:16`, `- Aspect ratio: 16:9`, or `- Aspect ratio: 21:9` in `## Pack Settings` when the selected ratio is known. Use `- Aspect ratio: 需人工确认` only for legacy material that predates this gate. For a new formal batch without a selected ratio, ask `画幅比例用哪个？默认 16:9。可选：9:16（竖屏）、16:9（横屏）、21:9（电影）。如果你说默认，我就按 16:9。`
+12. Keep each copied video line text unchanged, including `<...>` camera tags. If copied lines use bare camera words, stop and update the canonical feed first; do not patch copy packs directly.
+13. After saving the artifact, run `python scripts/validate_copy_packs.py <copy-pack-file> --source-feed <feed-file> --pack-size <N>` when a source feed file is available.
 
 ## Output Discipline
 
