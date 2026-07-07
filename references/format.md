@@ -17,7 +17,9 @@ Write the raw selected-library tag inside angle brackets in both the production 
 
 Formal production gate: if camera library or aspect ratio is not explicitly selected by the user or inherited from an existing audited feed, stop before drafting or writing the canonical feed or copy packs and ask in chat. Do not choose defaults, do not assume 小云雀, and do not assume 16:9.
 
-Use this exact chat prompt when formal production parameters are missing: `正式生产参数缺失：请先选择运镜库（小云雀 / libtv）和画幅比例（9:16竖屏 / 16:9横屏 / 21:9电影）。收到选择前，我不会生成连续投喂稿或复制包。`
+Use this exact chat prompt when camera library, aspect ratio, and production chapter count are all missing: `正式生产参数缺失：请先选择运镜库（小云雀 / libtv）、画幅比例（9:16竖屏 / 16:9横屏 / 21:9电影）和生产章数。检测到文本超过3章，建议先跑3章；你也可以指定 1-5 章、具体章节范围，或明确说全本分批。收到选择前，我不会生成连续投喂稿或复制包。`
+
+Use this exact chat prompt only when production scope is already explicit and camera library or aspect ratio is missing: `正式生产参数缺失：请先选择运镜库（小云雀 / libtv）和画幅比例（9:16竖屏 / 16:9横屏 / 21:9电影）。收到选择前，我不会生成连续投喂稿或复制包。`
 
 For formal production standards, production mother feeds, and formal copy-pack batches, ask the user to choose an aspect ratio when it is not already specified: `画幅比例用哪个？默认 16:9。可选：9:16（竖屏）、16:9（横屏）、21:9（电影）。如果你说默认，我就按 16:9。` Only offer these three ratios. Do not offer `1:1` or `4:5`. Use the selected ratio anywhere the global requirement or prompt text carries a ratio; use 16:9 only when the user explicitly chooses it or says `默认` after being asked.
 

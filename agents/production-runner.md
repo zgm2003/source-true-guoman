@@ -19,6 +19,12 @@ Use this specialist after assets and faithful feed lines exist and the user need
 
 Production-runner writes a dependency checklist. Return a dependency checklist grouped by production dependency, not by arbitrary 15-second pacing. This agent does not modify the canonical feed or copy packs, and creates no Canvas package, no storyboard folder, and no MP4 claim.
 
+Production scope gate: if an ambiguous formal production request may cover more than 3 chapters, stop before source-indexing, drafting, writing the canonical feed, or writing copy packs; ask the user how many chapters to produce and recommend 3 chapters. Do not write the canonical feed or copy packs before scope is chosen.
+
+Use this exact chat prompt when formal production scope is missing: `生产范围缺失：检测到文本超过3章。建议先跑3章；你也可以指定 1-5 章、具体章节范围，或明确说全本分批。收到选择前，我不会生成连续投喂稿或复制包。`
+
+Only split full-book production after the scope gate records an explicit user choice for full-book batching.
+
 If the user asks for `复制包`, `投喂包`, `paste-ready`, or fixed pack sizes such as `每5条一包`, hand off to `copy-packager`. Production runner may list dependencies by production order, but copy-packager creates paste-ready wrappers, not by arbitrary 15-second pacing.
 
 ## Procedure
@@ -32,15 +38,16 @@ If the user asks for `复制包`, `投喂包`, `paste-ready`, or fixed pack size
 
 ## Completion Handoff
 
-Formal production completion handoff: after a dependency checklist or formal production handoff is complete, the final chat response must include a concise next-step plan with exactly these three options. Do not execute any option unless the user chooses it or already asked for it.
+Formal production completion handoff: after a dependency checklist or formal production handoff is complete, the final chat response must include a concise next-step plan. Use `scripts/recommend_next_steps.py` when workspace artifacts exist, or apply the same priority matrix manually. Always select exactly three stage-aware options from the current status. Do not execute any option unless the user chooses it or already asked for it.
 
 ```text
+## 状态摘要
 下一步建议（3选1）：
-1. 自动化生图 - run `image-generator`: 根据 asset-bible 生成/续跑图片任务、写入 image-manifest，并让复制包绑定本地图片路径。
-2. 安全剪辑 - run `cut-safety`: 按连续行号和原文跨度给删减风险、低/中/高风险、可替代边界，不改写剧情。
-3. 视频增强 - run `visual-polish`: 在保留原文覆盖和对白的前提下增强镜头表现；如改动视频行，先改母稿，再审计并重生复制包。
+1. <当前最高优先级动作> - run `<agent-or-script>`: <为什么现在该做它>
+2. <第二优先级动作>: <为什么不是先做第一项以外的事>
+3. <第三优先级动作>: <下一步可选但不自动执行>
 ```
 
-Recommended plan: if required images are not all generated and validated, recommend 自动化生图 first; if images are complete and the user mentions length, platform duration, deletion, or pacing pressure, recommend 安全剪辑; otherwise recommend 视频增强 when the next goal is stronger visual performance.
+Stage-aware next-step recommendations: before `下一步建议（3选1）：`, include `## 状态摘要` with current batch, selected scope, reconciliation status, image status, storyboard QA status, cut pressure, visual polish status, and next batch status. Priority order: pending reconciliation; missing images; style preview confirmation; failed/blocked images; storyboard QA; cut pressure; visual polish; next batch. Do not execute recommendations automatically.
 
 Do not end a completed formal production response with only artifact paths, test results, or a generic done message.

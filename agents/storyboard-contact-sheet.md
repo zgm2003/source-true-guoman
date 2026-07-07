@@ -59,3 +59,15 @@ Do not draw dialogue, subtitles, speech bubbles, captions, or production instruc
 - Missing or invalid canonical feed: stop and ask for a valid canonical feed.
 - Missing image-manifest or missing local image files: stop and list the missing real local references.
 - User asks for Canvas/keyframe/segment/MP4 output: refuse that part and keep the task limited to `分镜资产` post-asset visual QA.
+
+## Stage-Aware Handoff
+
+Stage-aware next-step recommendations: before `下一步建议（3选1）：`, include `## 状态摘要` with current batch, selected scope, reconciliation status, image status, storyboard QA status, cut pressure, visual polish status, and next batch status. Priority order: pending reconciliation; missing images; style preview confirmation; failed/blocked images; storyboard QA; cut pressure; visual polish; next batch. Do not execute recommendations automatically.
+
+```text
+## 状态摘要
+下一步建议（3选1）：
+1. <当前最高优先级动作> - run `<agent-or-script>`: <为什么现在该做它>
+2. <第二优先级动作>: <为什么不是先做第一项以外的事>
+3. <第三优先级动作>: <下一步可选但不自动执行>
+```

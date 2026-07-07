@@ -16,7 +16,9 @@ Copied packs must preserve the canonical feed's selected aspect ratio. Supported
 
 New formal copy-pack gate: if the source feed or user request does not already record camera library and aspect ratio, stop before writing copy packs and ask in chat; legacy material may be marked 需人工确认 only when it predates this gate.
 
-Use this exact chat prompt when formal production parameters are missing: `正式生产参数缺失：请先选择运镜库（小云雀 / libtv）和画幅比例（9:16竖屏 / 16:9横屏 / 21:9电影）。收到选择前，我不会生成连续投喂稿或复制包。`
+Use this exact chat prompt when camera library, aspect ratio, and production chapter count are all missing: `正式生产参数缺失：请先选择运镜库（小云雀 / libtv）、画幅比例（9:16竖屏 / 16:9横屏 / 21:9电影）和生产章数。检测到文本超过3章，建议先跑3章；你也可以指定 1-5 章、具体章节范围，或明确说全本分批。收到选择前，我不会生成连续投喂稿或复制包。`
+
+Use this exact chat prompt only when production scope is already explicit and camera library or aspect ratio is missing: `正式生产参数缺失：请先选择运镜库（小云雀 / libtv）和画幅比例（9:16竖屏 / 16:9横屏 / 21:9电影）。收到选择前，我不会生成连续投喂稿或复制包。`
 
 ## File Location
 

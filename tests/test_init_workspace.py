@@ -47,6 +47,12 @@ READABLE_TEXT_THAT_MUST_NOT_APPEAR_AS_MOJIBAKE = [
     "分镜图",
     "站位检查",
     "站位QA",
+    "生产范围缺失",
+    "检测到文本超过3章",
+    "建议先跑3章",
+    "收到选择前",
+    "状态摘要",
+    "迁移动作",
 ]
 
 
@@ -214,6 +220,16 @@ class SkillTextRulesTests(unittest.TestCase):
             "正式生产参数缺失：请先选择运镜库（小云雀 / libtv）和画幅比例"
             "（9:16竖屏 / 16:9横屏 / 21:9电影）。收到选择前，我不会生成连续投喂稿或复制包。"
         )
+        scoped_missing_params_rule = (
+            "Use this exact chat prompt only when production scope is already explicit and "
+            "camera library or aspect ratio is missing:"
+        )
+        combined_missing_params_prompt = (
+            "正式生产参数缺失：请先选择运镜库（小云雀 / libtv）、画幅比例"
+            "（9:16竖屏 / 16:9横屏 / 21:9电影）和生产章数。检测到文本超过3章，"
+            "建议先跑3章；你也可以指定 1-5 章、具体章节范围，或明确说全本分批。"
+            "收到选择前，我不会生成连续投喂稿或复制包。"
+        )
         copy_pack_gate = (
             "New formal copy-pack gate: if the source feed or user request does not already "
             "record camera library and aspect ratio, stop before writing copy packs and ask "
@@ -224,7 +240,9 @@ class SkillTextRulesTests(unittest.TestCase):
             with self.subTest(path=path.name):
                 text = path.read_text(encoding="utf-8")
                 self.assertIn(hard_gate, text)
+                self.assertIn(scoped_missing_params_rule, text)
                 self.assertIn(missing_params_prompt, text)
+                self.assertIn(combined_missing_params_prompt, text)
                 self.assertNotIn("16:9` is the default aspect ratio unless", text)
                 self.assertNotIn("gives no preference after being asked", text)
 
@@ -232,7 +250,9 @@ class SkillTextRulesTests(unittest.TestCase):
             with self.subTest(path=path.name):
                 text = path.read_text(encoding="utf-8")
                 self.assertIn(copy_pack_gate, text)
+                self.assertIn(scoped_missing_params_rule, text)
                 self.assertIn(missing_params_prompt, text)
+                self.assertIn(combined_missing_params_prompt, text)
                 self.assertNotIn("gives no preference after being asked", text)
 
     def test_formal_production_completion_recommends_three_next_step_options(
@@ -246,17 +266,7 @@ class SkillTextRulesTests(unittest.TestCase):
         ]
         handoff = "Formal production completion handoff"
         next_step_header = "下一步建议（3选1）："
-        options = [
-            "1. 自动化生图 - run `image-generator`",
-            "2. 安全剪辑 - run `cut-safety`",
-            "3. 视频增强 - run `visual-polish`",
-        ]
-        recommendation_rule = (
-            "Recommended plan: if required images are not all generated and validated, "
-            "recommend 自动化生图 first; if images are complete and the user mentions length, "
-            "platform duration, deletion, or pacing pressure, recommend 安全剪辑; otherwise "
-            "recommend 视频增强 when the next goal is stronger visual performance."
-        )
+        recommendation_rule = "select exactly three stage-aware options from the current status"
         no_dead_end = (
             "Do not end a completed formal production response with only artifact paths, "
             "test results, or a generic done message."
@@ -267,10 +277,9 @@ class SkillTextRulesTests(unittest.TestCase):
                 text = path.read_text(encoding="utf-8")
                 self.assertIn(handoff, text)
                 self.assertIn(next_step_header, text)
-                for option in options:
-                    self.assertIn(option, text)
                 self.assertIn(recommendation_rule, text)
                 self.assertIn(no_dead_end, text)
+                self.assertNotIn("1. 自动化生图 - run `image-generator`", text)
 
     def test_formal_production_forward_index_reads_next_three_chapters_privately(
         self,
@@ -289,6 +298,196 @@ class SkillTextRulesTests(unittest.TestCase):
             "do not leak future plot into the delivered feed or copy packs",
             "Requested output range:",
             "Forward index range:",
+        ]
+
+        for path in files:
+            with self.subTest(path=path.name):
+                text = path.read_text(encoding="utf-8")
+                for phrase in required_phrases:
+                    self.assertIn(phrase, text)
+
+        faithful_text = root.joinpath("agents", "faithful-feed.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertNotIn("5-chapter batch", faithful_text)
+
+    def test_ambiguous_formal_production_over_three_chapters_uses_scope_gate(
+        self,
+    ) -> None:
+        root = Path(__file__).resolve().parents[1]
+        files = [
+            root.joinpath("SKILL.md"),
+            root.joinpath("agents", "source-indexer.md"),
+            root.joinpath("agents", "copy-packager.md"),
+            root.joinpath("agents", "production-runner.md"),
+        ]
+        required_phrases = [
+            "Production scope gate:",
+            "ambiguous formal production request",
+            "may cover more than 3 chapters",
+            "ask the user how many chapters to produce",
+            "recommend 3 chapters",
+            "Do not write the canonical feed or copy packs before scope is chosen.",
+            "生产范围缺失：检测到文本超过3章。建议先跑3章；你也可以指定 1-5 章、具体章节范围，或明确说全本分批。收到选择前，我不会生成连续投喂稿或复制包。",
+            "Only split full-book production after the scope gate records an explicit user choice for full-book batching.",
+        ]
+
+        for path in files:
+            with self.subTest(path=path.name):
+                text = path.read_text(encoding="utf-8")
+                for phrase in required_phrases:
+                    self.assertIn(phrase, text)
+
+    def test_scope_defaults_after_gate_and_full_book_batching_are_three_chapters(
+        self,
+    ) -> None:
+        root = Path(__file__).resolve().parents[1]
+        files = [
+            root.joinpath("SKILL.md"),
+            root.joinpath("agents", "source-indexer.md"),
+            root.joinpath("references", "source-index-format.md"),
+            root.joinpath("agents", "asset-bible.md"),
+            root.joinpath("references", "asset-bible-format.md"),
+        ]
+        required_phrases = [
+            "Scope defaults after the gate:",
+            "`默认` means chapters 1-3.",
+            "Explicit 1 chapter delivers only chapter 1 in the canonical feed and copy packs.",
+            "Explicit 1 chapter still reads chapters 1-4 when available for forward index.",
+            "Full-book production batching defaults to 3 chapters per batch.",
+        ]
+
+        for path in files:
+            with self.subTest(path=path.name):
+                text = path.read_text(encoding="utf-8")
+                for phrase in required_phrases:
+                    self.assertIn(phrase, text)
+
+    def test_cumulative_source_index_reconciliation_contract_is_declared(
+        self,
+    ) -> None:
+        root = Path(__file__).resolve().parents[1]
+        files = [
+            root.joinpath("SKILL.md"),
+            root.joinpath("agents", "source-indexer.md"),
+            root.joinpath("references", "source-index-format.md"),
+            root.joinpath("agents", "asset-bible.md"),
+            root.joinpath("references", "asset-bible-format.md"),
+            root.joinpath("agents", "copy-packager.md"),
+        ]
+        required_phrases = [
+            "source-index is cumulative, not one-run",
+            "confirmed anonymous-to-named upgrade",
+            "Former temporary names:",
+            "Evidence anchors:",
+            "Affected artifacts:",
+            "Migration action:",
+            "reconciliation-log",
+            "canonical mother feed -> audit -> copy packs",
+        ]
+
+        for path in files:
+            with self.subTest(path=path.name):
+                text = path.read_text(encoding="utf-8")
+                for phrase in required_phrases:
+                    self.assertIn(phrase, text)
+
+    def test_cumulative_source_index_format_tracks_required_ranges_and_reveal_guard(
+        self,
+    ) -> None:
+        root = Path(__file__).resolve().parents[1]
+        source_indexer_text = root.joinpath("agents", "source-indexer.md").read_text(
+            encoding="utf-8"
+        )
+        source_index_format_text = root.joinpath(
+            "references", "source-index-format.md"
+        ).read_text(encoding="utf-8")
+
+        for phrase in [
+            "requested_output_range",
+            "forward_index_range",
+            "existing_index_range",
+            "required_cumulative_index_range = existing_index_range ∪ forward_index_range",
+        ]:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, source_indexer_text)
+
+        for phrase in [
+            "Requested output ranges completed:",
+            "Forward index ranges read:",
+            "Existing index range:",
+            "Required cumulative index range:",
+            "Cumulative range procedure:",
+            "required_cumulative_index_range = existing_index_range ∪ forward_index_range",
+            "Cumulative index range:",
+            "Missing source ranges:",
+            "Reconciliation status: none / pending / completed / needs user confirmation",
+            "Future reveal private: yes / no",
+            "## Reconciliation Ledger",
+            "Upgrade status: none / suspected / confirmed / rejected",
+            "Affected prior artifacts:",
+            "Asset migration status: none / rename / deprecated / regenerate / needs user confirmation",
+        ]:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, source_index_format_text)
+
+    def test_asset_bible_format_tracks_migration_fields(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        format_text = root.joinpath("references", "asset-bible-format.md").read_text(
+            encoding="utf-8"
+        )
+        for phrase in [
+            "Canonical asset name:",
+            "Previous asset names:",
+            "Migration action: none / rename / deprecated / regenerate / needs user confirmation",
+            "Replaced by:",
+            "Source-index evidence:",
+            "Prior feed lines affected:",
+        ]:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, format_text)
+
+    def test_image_generation_format_documents_migration_manifest_statuses(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        format_text = root.joinpath("references", "image-generation-format.md").read_text(
+            encoding="utf-8"
+        )
+        for phrase in [
+            "renamed",
+            "deprecated",
+            "previous_asset_name",
+            "aliases",
+            "replaced_by",
+            "migration_reason",
+            "evidence_anchor",
+        ]:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, format_text)
+
+    def test_stage_aware_next_step_recommendations_cover_status_priorities(
+        self,
+    ) -> None:
+        root = Path(__file__).resolve().parents[1]
+        files = [
+            root.joinpath("SKILL.md"),
+            root.joinpath("agents", "copy-packager.md"),
+            root.joinpath("agents", "production-runner.md"),
+            root.joinpath("agents", "image-generator.md"),
+            root.joinpath("agents", "storyboard-contact-sheet.md"),
+        ]
+        required_phrases = [
+            "Stage-aware next-step recommendations",
+            "## 状态摘要",
+            "下一步建议（3选1）：",
+            "pending reconciliation",
+            "missing images",
+            "style preview confirmation",
+            "failed/blocked images",
+            "storyboard QA",
+            "cut pressure",
+            "visual polish",
+            "next batch",
+            "Do not execute recommendations automatically.",
         ]
 
         for path in files:
@@ -862,7 +1061,7 @@ class SkillTextRulesTests(unittest.TestCase):
             skill_text,
         )
         self.assertIn(
-            "do not generate the full five-chapter feed as part of baseline implementation",
+            "do not generate the full sample feed as part of baseline implementation",
             skill_text,
         )
 

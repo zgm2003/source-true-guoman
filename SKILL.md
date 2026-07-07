@@ -36,31 +36,36 @@ Default preservation stance: 原作多少字就保留多少字. Convert source t
 10. If identity is plausible but not confirmed, mark it privately as a suspected same asset. Do not invent confirmation, do not merge faces in output, and do not create strong contradictions; wait for source evidence or user confirmation.
 11. Draft shots internally: one video line = one visible action target, one main emotion or beat, one camera movement.
 12. Formal production gate: if camera library or aspect ratio is not explicitly selected by the user or inherited from an existing audited feed, stop before drafting or writing the canonical feed or copy packs and ask in chat. Do not choose defaults, do not assume 小云雀, and do not assume 16:9.
-13. Use this exact chat prompt when formal production parameters are missing: `正式生产参数缺失：请先选择运镜库（小云雀 / libtv）和画幅比例（9:16竖屏 / 16:9横屏 / 21:9电影）。收到选择前，我不会生成连续投喂稿或复制包。`
-14. For any formal production standard, production mother feed, or formal copy-pack batch, confirm the camera library before writing final video lines if the user has not already specified it: ask whether to use `小云雀` or `libtv`. If an existing audited feed already declares or clearly uses one selected library, keep that library unless the user asks to switch.
-15. For any formal production standard, production mother feed, or formal copy-pack batch, confirm the aspect ratio before writing final video lines if the user has not already specified it: ask `画幅比例用哪个？默认 16:9。可选：9:16（竖屏）、16:9（横屏）、21:9（电影）。如果你说默认，我就按 16:9。` Only offer these three ratios. Do not offer `1:1` or `4:5`. If an existing audited feed already declares or clearly uses one selected ratio, keep that ratio unless the user asks to switch.
-16. Emit only the final package:
+13. Use this exact chat prompt only when production scope is already explicit and camera library or aspect ratio is missing: `正式生产参数缺失：请先选择运镜库（小云雀 / libtv）和画幅比例（9:16竖屏 / 16:9横屏 / 21:9电影）。收到选择前，我不会生成连续投喂稿或复制包。`
+14. Use this exact chat prompt when camera library, aspect ratio, and production chapter count are all missing: `正式生产参数缺失：请先选择运镜库（小云雀 / libtv）、画幅比例（9:16竖屏 / 16:9横屏 / 21:9电影）和生产章数。检测到文本超过3章，建议先跑3章；你也可以指定 1-5 章、具体章节范围，或明确说全本分批。收到选择前，我不会生成连续投喂稿或复制包。`
+15. Production scope gate: if an ambiguous formal production request may cover more than 3 chapters, stop before source-indexing, drafting, writing the canonical feed, or writing copy packs; ask the user how many chapters to produce and recommend 3 chapters. Do not write the canonical feed or copy packs before scope is chosen.
+16. Use this exact chat prompt when formal production scope is missing: `生产范围缺失：检测到文本超过3章。建议先跑3章；你也可以指定 1-5 章、具体章节范围，或明确说全本分批。收到选择前，我不会生成连续投喂稿或复制包。`
+17. Scope defaults after the gate: `默认` means chapters 1-3. Explicit 1 chapter delivers only chapter 1 in the canonical feed and copy packs. Explicit 1 chapter still reads chapters 1-4 when available for forward index. Full-book production batching defaults to 3 chapters per batch.
+18. For any formal production standard, production mother feed, or formal copy-pack batch, confirm the camera library before writing final video lines if the user has not already specified it: ask whether to use `小云雀` or `libtv`. If an existing audited feed already declares or clearly uses one selected library, keep that library unless the user asks to switch.
+19. For any formal production standard, production mother feed, or formal copy-pack batch, confirm the aspect ratio before writing final video lines if the user has not already specified it: ask `画幅比例用哪个？默认 16:9。可选：9:16（竖屏）、16:9（横屏）、21:9（电影）。如果你说默认，我就按 16:9。` Only offer these three ratios. Do not offer `1:1` or `4:5`. If an existing audited feed already declares or clearly uses one selected ratio, keep that ratio unless the user asks to switch.
+20. Emit only the final package:
    - `## 资产提示词`
    - `## 视频投喂块`
-17. In `## 视频投喂块`, start with the global `统一要求` line using the selected aspect ratio, then number lines continuously from `1` to the end. Do not create 15-second groups, `第N组`, group titles, group footers, or per-group pacing blocks.
-18. Before delivery, check source fidelity, dialogue preservation, asset reuse, selected camera-library tags, selected aspect ratio, angle-bracketed camera/storyboard marking, continuous numbering, and multi-chapter coverage.
-19. For formal production batches, run `copy-packager` after source index, asset bible, faithful feed, and feed audit exist; keep copy packs in a separate `生产资产` artifact.
+21. In `## 视频投喂块`, start with the global `统一要求` line using the selected aspect ratio, then number lines continuously from `1` to the end. Do not create 15-second groups, `第N组`, group titles, group footers, or per-group pacing blocks.
+22. Before delivery, check source fidelity, dialogue preservation, asset reuse, selected camera-library tags, selected aspect ratio, angle-bracketed camera/storyboard marking, continuous numbering, and multi-chapter coverage.
+23. For formal production batches, run `copy-packager` after source index, asset bible, faithful feed, and feed audit exist; keep copy packs in a separate `生产资产` artifact.
 
-Default production slice: 5 chapters.
-If the user asks for more than 5 chapters in one breath, split into sequential 5-chapter production batches unless they explicitly insist on one giant batch.
+Default production slice: 3 chapters after the scope gate.
+Only split full-book production after the scope gate records an explicit user choice for full-book batching. Then split into sequential 3-chapter production batches unless they explicitly insist on one giant batch.
 Default formal batch route: `source-indexer -> asset-bible -> image-generator(optional) -> faithful-feed -> feed-auditor -> copy-packager`.
-For each 5-chapter batch, deliver the canonical mother feed plus a paste-ready copy pack at the production-asset top level.
+For each 3-chapter batch, deliver the canonical mother feed plus a paste-ready copy pack at the production-asset top level.
 
-Formal production completion handoff: after a formal production batch has written and verified the canonical feed, audit, and copy packs, the final chat response must include a concise next-step plan with exactly these three options. Do not execute any option unless the user chooses it or already asked for it.
+Formal production completion handoff: after a formal production batch has written and verified the canonical feed, audit, and copy packs, the final chat response must include a concise next-step plan. Use `scripts/recommend_next_steps.py` when workspace artifacts exist, or apply the same priority matrix manually. Always select exactly three stage-aware options from the current status. Do not execute any option unless the user chooses it or already asked for it.
 
 ```text
+## 状态摘要
 下一步建议（3选1）：
-1. 自动化生图 - run `image-generator`: 根据 asset-bible 生成/续跑图片任务、写入 image-manifest，并让复制包绑定本地图片路径。
-2. 安全剪辑 - run `cut-safety`: 按连续行号和原文跨度给删减风险、低/中/高风险、可替代边界，不改写剧情。
-3. 视频增强 - run `visual-polish`: 在保留原文覆盖和对白的前提下增强镜头表现；如改动视频行，先改母稿，再审计并重生复制包。
+1. <当前最高优先级动作> - run `<agent-or-script>`: <为什么现在该做它>
+2. <第二优先级动作>: <为什么不是先做第一项以外的事>
+3. <第三优先级动作>: <下一步可选但不自动执行>
 ```
 
-Recommended plan: if required images are not all generated and validated, recommend 自动化生图 first; if images are complete and the user mentions length, platform duration, deletion, or pacing pressure, recommend 安全剪辑; otherwise recommend 视频增强 when the next goal is stronger visual performance.
+Stage-aware next-step recommendations: before `下一步建议（3选1）：`, include `## 状态摘要` with current batch, selected scope, reconciliation status, image status, storyboard QA status, cut pressure, visual polish status, and next batch status. Priority order: pending reconciliation; missing images; style preview confirmation; failed/blocked images; storyboard QA; cut pressure; visual polish; next batch. Do not execute recommendations automatically.
 
 Do not end a completed formal production response with only artifact paths, test results, or a generic done message.
 
@@ -71,6 +76,8 @@ Workspace storage policy: 生产资产顶层只放用户交付件：连续投喂
 Scope mode policy: 正式多章任务必须先预扫完整请求范围. 局部烟测必须显式标记已阅读范围. 局部烟测资产不得当作全局定稿. If only a slice was read, say so in the working artifact and avoid final-sounding asset decisions beyond that slice.
 
 forward index scope: for formal multi-chapter production, read the requested output range + next 3 chapters when available before final asset identity decisions. Requested output range: only the chapters the user asked to produce are delivered in the feed and copy packs. Forward index range: the extra three chapters are identity/continuity only; do not leak future plot into the delivered feed or copy packs.
+
+Reconciliation contract: source-index is cumulative, not one-run. For every confirmed anonymous-to-named upgrade, record Former temporary names:, Evidence anchors:, Affected artifacts:, Migration action:, and reconciliation-log before downstream artifacts. If the migration changes video line text, line numbers, or asset bindings, update in canonical mother feed -> audit -> copy packs order.
 
 Canonical artifact policy: 连续投喂稿 is the canonical mother feed. 复制投喂包 is a derived paste wrapper. Any operation that changes video line text, line numbers, or asset bindings must update the canonical continuous feed first, then re-run feed audit and regenerate copy packs. Do not edit copy packs as the source of truth.
 
@@ -97,7 +104,7 @@ Route by user intent:
 
 Default first-phase route for smoke tests or analysis-only requests: `source-indexer -> asset-bible -> faithful-feed -> feed-auditor`. Default formal production batches continue to `copy-packager` so users see both the mother feed and paste-ready copy pack.
 
-Use `E:\xianjie` only as a regression sample unless the user explicitly asks to produce its chapters. For baseline implementation, do not generate the full five-chapter feed as part of baseline implementation; use it after implementation to check that formal multi-chapter work pre-scans the requested scope before final assets or feed output.
+Use `E:\xianjie` only as a regression sample unless the user explicitly asks to produce its chapters. For baseline implementation, do not generate the full sample feed as part of baseline implementation; use it after implementation to check that formal multi-chapter work pre-scans the requested scope before final assets or feed output.
 
 Only use `cut-safety` after the user has chosen deletion targets or asks for cut-risk help. It may return exact line/source spans, exact cut/source-span advice, risk levels, and safer boundaries; generic compression requests are refused as rewrites, and it must not write a rewritten compressed story. Only use `visual-polish` after preserving source coverage. Only use `production-runner` after assets and faithful feed lines exist. Only use `storyboard-contact-sheet` after generated image assets and a valid canonical feed exist; it is `分镜资产` post-asset visual QA only and must not modify the canonical feed or copy packs. Only use `copy-packager` after source index, asset bible, faithful feed, and feed audit exist; copy-packager creates paste-ready wrappers, not pacing groups.
 

@@ -13,7 +13,7 @@ from typing import Any
 
 
 ALLOWED_OUTPUT_DIRS = {"人设资产", "场景资产", "道具资产"}
-ALLOWED_MANIFEST_STATUSES = {"done", "failed", "blocked"}
+ALLOWED_MANIFEST_STATUSES = {"done", "failed", "blocked", "renamed", "deprecated"}
 PRODUCTION_OUTPUT_DIR = "生产资产"
 SECRET_KEY_NAMES = {"api_key", "authorization", "bearer", "token"}
 RAW_SECRET_VALUE_PATTERN = re.compile(r"\bsk-[A-Za-z0-9_-]{8,}\b")
@@ -304,12 +304,17 @@ def validate_manifest(
                 f"{asset_label}: status must be one of {sorted(ALLOWED_MANIFEST_STATUSES)}"
             )
 
-        path_errors, image_path = _validate_manifest_image_path(
-            asset_label, path_text, workspace
-        )
+        is_migration_tombstone = _is_migration_tombstone(asset, status)
+
+        image_path: Path | None = None
+        if status != "deprecated" and not is_migration_tombstone:
+            path_errors, image_path = _validate_manifest_image_path(
+                asset_label, path_text, workspace
+            )
+            errors.extend(path_errors)
 
         job = jobs_by_name.get(asset_name)
-        if jobs_by_name and asset_name and job is None:
+        if jobs_by_name and asset_name and job is None and not is_migration_tombstone:
             errors.append(f"{asset_name}: manifest asset not present in jobs")
         elif job is not None:
             expected_path = job.output_path.as_posix()
@@ -327,13 +332,13 @@ def validate_manifest(
             if "size" in asset and asset.get("size") != job.size:
                 errors.append(f"{asset_name}: size must match current job size")
 
-        errors.extend(path_errors)
         reference_errors, normalized_references = _validate_manifest_references(
             asset_label,
             asset.get("references"),
             workspace,
         )
         errors.extend(reference_errors)
+        errors.extend(_validate_migration_metadata(asset_label, asset, status))
         if job is not None:
             expected_references = [
                 reference.to_dict() for reference in job.reference_images
@@ -347,6 +352,43 @@ def validate_manifest(
                 errors.append(f"{asset_label}: done asset missing local file {path_text}")
         if status in {"failed", "blocked"} and not str(asset.get("last_error", "")).strip():
             errors.append(f"{asset_label}: {status} asset must record last_error")
+
+    return errors
+
+
+def _is_migration_tombstone(asset: dict[str, Any], status: str) -> bool:
+    return status in {"renamed", "deprecated"} and bool(
+        str(asset.get("replaced_by", "")).strip()
+    )
+
+
+def _validate_migration_metadata(
+    asset_label: str,
+    asset: dict[str, Any],
+    status: str,
+) -> list[str]:
+    errors: list[str] = []
+    if status not in {"renamed", "deprecated"}:
+        return errors
+
+    migration_reason = str(asset.get("migration_reason", "")).strip()
+    evidence_anchor = str(asset.get("evidence_anchor", "")).strip()
+    if not migration_reason:
+        errors.append(f"{asset_label}: migration_reason is required")
+    if not evidence_anchor:
+        errors.append(f"{asset_label}: evidence_anchor is required")
+
+    if status == "renamed" and not str(asset.get("replaced_by", "")).strip():
+        previous_asset_name = str(asset.get("previous_asset_name", "")).strip()
+        aliases = asset.get("aliases")
+        if not previous_asset_name:
+            errors.append(f"{asset_label}: renamed asset requires previous_asset_name")
+        if not isinstance(aliases, list) or not aliases:
+            errors.append(f"{asset_label}: renamed asset requires aliases")
+    if status == "deprecated":
+        replaced_by = str(asset.get("replaced_by", "")).strip()
+        if not replaced_by:
+            errors.append(f"{asset_label}: deprecated asset requires replaced_by")
 
     return errors
 

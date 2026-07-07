@@ -56,6 +56,13 @@ Required fields:
 
 ## Manifest Shape
 
+Manifest `status` values are `done`, `failed`, `blocked`, `renamed`, and `deprecated`. Reconciliation migrations must preserve traceability:
+
+- Canonical `renamed` assets include `previous_asset_name`, `aliases`, `migration_reason`, and `evidence_anchor`.
+- Former-name `renamed` tombstones include `replaced_by`, `migration_reason`, and `evidence_anchor`.
+- `deprecated` former assets include `replaced_by`, `migration_reason`, and `evidence_anchor`.
+- Copy packs bind only canonical non-deprecated assets unless the line explicitly needs a migration review note.
+
 ```json
 {
   "version": 1,
@@ -72,7 +79,12 @@ Required fields:
       "size": "16:9",
       "attempts": 1,
       "depends_on": [],
-      "references": []
+      "references": [],
+      "previous_asset_name": "",
+      "aliases": [],
+      "replaced_by": "",
+      "migration_reason": "",
+      "evidence_anchor": ""
     }
   ]
 }

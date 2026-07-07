@@ -1236,6 +1236,80 @@ class ImageManifestValidationTests(unittest.TestCase):
         asset.update(overrides)
         return asset
 
+    def test_validate_manifest_accepts_renamed_asset_with_alias_metadata(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            job = self.make_job("沈砚_青云宗内门弟子造型")
+            output_path = root / job.output_path
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_bytes(b"image")
+            manifest = {
+                "version": 1,
+                "provider": "openai-compatible",
+                "assets": [
+                    self.manifest_asset(
+                        job,
+                        status="renamed",
+                        previous_asset_name="黑衣弟子_一次性造型",
+                        aliases=["黑衣弟子_一次性造型"],
+                        migration_reason="ch06 reveals the early black-clothed disciple is 沈砚",
+                        evidence_anchor="ch06-line12",
+                    )
+                ],
+            }
+
+            errors = validate_manifest(manifest, [job], root)
+
+        self.assertEqual(errors, [])
+
+    def test_validate_manifest_accepts_deprecated_former_asset_with_replacement(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            manifest = {
+                "version": 1,
+                "provider": "openai-compatible",
+                "assets": [
+                    {
+                        "asset_name": "黑衣弟子_一次性造型",
+                        "asset_type": "character",
+                        "status": "deprecated",
+                        "replaced_by": "沈砚_青云宗内门弟子造型",
+                        "migration_reason": "identity upgraded by later source evidence",
+                        "evidence_anchor": "ch06-line12",
+                    }
+                ],
+            }
+
+            errors = validate_manifest(manifest, [], root)
+
+        self.assertEqual(errors, [])
+
+    def test_validate_manifest_rejects_incomplete_migration_metadata(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            job = self.make_job("沈砚_青云宗内门弟子造型")
+            manifest = {
+                "version": 1,
+                "provider": "openai-compatible",
+                "assets": [
+                    self.manifest_asset(job, status="renamed"),
+                    {
+                        "asset_name": "黑衣弟子_一次性造型",
+                        "asset_type": "character",
+                        "status": "deprecated",
+                    },
+                ],
+            }
+
+            errors = validate_manifest(manifest, [job], root)
+
+        joined = "; ".join(errors)
+        self.assertIn("renamed asset requires previous_asset_name", joined)
+        self.assertIn("renamed asset requires aliases", joined)
+        self.assertIn("deprecated asset requires replaced_by", joined)
+        self.assertIn("migration_reason is required", joined)
+        self.assertIn("evidence_anchor is required", joined)
+
     def test_validate_manifest_rejects_done_asset_missing_file(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
