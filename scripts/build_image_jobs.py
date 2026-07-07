@@ -29,7 +29,9 @@ ASSET_BLOCK_RE = re.compile(r"^##\s+资产提示词\s*$")
 HEADING_RE = re.compile(r"^###\s+图片\d+\s*=\s*(.+?)\s*$")
 MARKDOWN_HEADING_RE = re.compile(r"^#{1,6}\s+")
 REFERENCE_LINE_MARKER = "上传参考图"
-REFERENCE_RE = re.compile(r"(.+?)\s*=\s*图片\d+\s*(?:（([^）]+)）|\(([^)]+)\))")
+ASSET_NAME_RE = re.compile(r"^\s*-\s+Asset name:\s*(.+?)\s*$")
+OUTPUT_DIRECTORY_RE = re.compile(r"^\s*-\s+Output directory:\s*(.+?)\s*$")
+PROMPT_RE = re.compile(r"^\s*-\s+Prompt:\s*(.*)$")
 
 CHARACTER_OUTPUT_DIR = "人设资产"
 SCENE_OUTPUT_DIR = "场景资产"
@@ -43,6 +45,11 @@ SECTION_ASSET_TYPES = {
     "character": ("character", CHARACTER_OUTPUT_DIR),
     "scene": ("scene", SCENE_OUTPUT_DIR),
     "prop": ("prop", PROP_OUTPUT_DIR),
+}
+OUTPUT_DIR_ASSET_TYPES = {
+    CHARACTER_OUTPUT_DIR: "character",
+    SCENE_OUTPUT_DIR: "scene",
+    PROP_OUTPUT_DIR: "prop",
 }
 
 
@@ -80,15 +87,12 @@ def extract_references(prompt: str) -> tuple[list[str], list[ReferenceImage]]:
     for line in prompt.splitlines():
         if REFERENCE_LINE_MARKER not in line:
             continue
-        reference_text = _strip_reference_line_prefix(line)
+        reference_text = _reference_only_text(_strip_reference_line_prefix(line))
         for part in re.split(r"[；;]", reference_text):
-            match = REFERENCE_RE.search(part.strip())
-            if not match:
+            parsed = _parse_reference_part(part)
+            if parsed is None:
                 continue
-            asset_name = match.group(1).strip(" ：:")
-            purpose = (match.group(2) or match.group(3) or "").strip()
-            if not asset_name:
-                continue
+            asset_name, purpose = parsed
             if asset_name not in depends_on:
                 depends_on.append(asset_name)
             reference_images.append(
@@ -113,19 +117,25 @@ def build_jobs_from_asset_text(
     current_lines: list[str] = []
     current_section_kind: str | None = None
     current_job_section_kind: str | None = None
+    current_output_dir: str | None = None
+    collecting_bullet_prompt = False
     in_asset_block = False
 
     def flush_current() -> None:
         nonlocal current_name, current_lines, current_job_section_kind
+        nonlocal current_output_dir, collecting_bullet_prompt
         if current_name is None:
             return
 
         prompt = "\n".join(current_lines).strip()
-        asset_type, output_dir = infer_asset_type(
+        asset_type, inferred_output_dir = infer_asset_type(
             current_name,
             prompt,
             current_job_section_kind,
         )
+        output_dir = current_output_dir or inferred_output_dir
+        if current_output_dir in OUTPUT_DIR_ASSET_TYPES:
+            asset_type = OUTPUT_DIR_ASSET_TYPES[current_output_dir]
         depends_on, references = extract_references(prompt)
         jobs.append(
             ImageJob(
@@ -146,6 +156,8 @@ def build_jobs_from_asset_text(
         current_name = None
         current_lines = []
         current_job_section_kind = None
+        current_output_dir = None
+        collecting_bullet_prompt = False
 
     for raw_line in text.splitlines():
         stripped = raw_line.strip()
@@ -157,6 +169,8 @@ def build_jobs_from_asset_text(
             current_name = match.group(1).strip()
             current_lines = []
             current_job_section_kind = current_section_kind
+            current_output_dir = None
+            collecting_bullet_prompt = False
             continue
 
         if ASSET_BLOCK_RE.match(stripped):
@@ -176,9 +190,36 @@ def build_jobs_from_asset_text(
             in_asset_block = current_section_kind is not None
             continue
 
+        asset_name_match = ASSET_NAME_RE.match(raw_line)
+        if current_section_kind is not None and asset_name_match:
+            flush_current()
+            current_name = asset_name_match.group(1).strip()
+            current_lines = []
+            current_job_section_kind = current_section_kind
+            current_output_dir = None
+            collecting_bullet_prompt = False
+            in_asset_block = True
+            continue
+
         if not in_asset_block:
             continue
         if current_name is not None:
+            output_directory_match = OUTPUT_DIRECTORY_RE.match(raw_line)
+            if output_directory_match and not collecting_bullet_prompt:
+                current_output_dir = output_directory_match.group(1).strip()
+                continue
+
+            prompt_match = PROMPT_RE.match(raw_line)
+            if prompt_match:
+                current_lines = [prompt_match.group(1).strip()]
+                collecting_bullet_prompt = True
+                continue
+
+            if collecting_bullet_prompt:
+                if raw_line.startswith("    ") and not raw_line.lstrip().startswith("- "):
+                    current_lines.append(raw_line.strip())
+                continue
+
             current_lines.append(raw_line)
 
     flush_current()
@@ -238,6 +279,37 @@ def _strip_reference_line_prefix(line: str) -> str:
     return line
 
 
+def _reference_only_text(reference_text: str) -> str:
+    for marker in ("。GPT-image", ".GPT-image", " GPT-image"):
+        marker_index = reference_text.find(marker)
+        if marker_index >= 0:
+            return reference_text[:marker_index]
+    return reference_text
+
+
+def _parse_reference_part(part: str) -> tuple[str, str] | None:
+    stripped = part.strip()
+    if not stripped:
+        return None
+
+    purpose = ""
+    if stripped.endswith("）") and "（" in stripped:
+        asset_text, _, purpose_text = stripped.rpartition("（")
+        purpose = purpose_text[:-1].strip()
+    elif stripped.endswith(")") and "(" in stripped:
+        asset_text, _, purpose_text = stripped.rpartition("(")
+        purpose = purpose_text[:-1].strip()
+    else:
+        asset_text = stripped
+
+    if "=" in asset_text:
+        asset_text = asset_text.split("=", 1)[0]
+    asset_name = asset_text.strip(" ：:")
+    if not asset_name or not purpose:
+        return None
+    return asset_name, purpose
+
+
 def _has_scene_marker(value: str) -> bool:
     return any(marker in value for marker in ("母图", "空场景", "场景参考图"))
 
@@ -276,6 +348,11 @@ def _apply_phone_family_references(jobs: list[ImageJob]) -> None:
         if job is phone_job:
             continue
         if _needs_phone_mother_reference(job):
+            if any(
+                reference.asset_name == phone_job.asset_name
+                for reference in job.reference_images
+            ):
+                continue
             _prepend_reference(job, phone_job, PHONE_MOTHER_REFERENCE_PURPOSE)
 
 
