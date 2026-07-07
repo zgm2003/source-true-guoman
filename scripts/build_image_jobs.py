@@ -36,6 +36,8 @@ SCENE_OUTPUT_DIR = "场景资产"
 PROP_OUTPUT_DIR = "道具资产"
 SCENE_STYLE_BASELINE_PURPOSE = "场景风格基准参考"
 CHARACTER_STYLE_BASELINE_PURPOSE = "人设风格基准参考"
+PHONE_MOTHER_ASSET_NAME = "天机一型手机_三视图"
+PHONE_MOTHER_REFERENCE_PURPOSE = "手机母资产参考"
 
 SECTION_ASSET_TYPES = {
     "character": ("character", CHARACTER_OUTPUT_DIR),
@@ -181,6 +183,7 @@ def build_jobs_from_asset_text(
 
     flush_current()
     _resolve_reference_paths(jobs)
+    _apply_phone_family_references(jobs)
     if style_stage == "preview":
         jobs = _style_preview_jobs(jobs)
     elif style_stage == "confirmed":
@@ -240,7 +243,7 @@ def _has_scene_marker(value: str) -> bool:
 
 
 def _has_prop_marker(value: str) -> bool:
-    return any(marker in value for marker in ("单体", "道具", "界面", "系统界面"))
+    return any(marker in value for marker in ("单体", "道具", "界面", "系统界面", "手机"))
 
 
 def _section_kind(stripped_heading: str) -> str | None:
@@ -262,6 +265,54 @@ def _resolve_reference_paths(jobs: list[ImageJob]) -> None:
         for reference in job.reference_images:
             if not reference.path and reference.asset_name in paths_by_asset:
                 reference.path = paths_by_asset[reference.asset_name]
+
+
+def _apply_phone_family_references(jobs: list[ImageJob]) -> None:
+    phone_job = _find_phone_mother_job(jobs)
+    if phone_job is None:
+        return
+
+    for job in jobs:
+        if job is phone_job:
+            continue
+        if _needs_phone_mother_reference(job):
+            _prepend_reference(job, phone_job, PHONE_MOTHER_REFERENCE_PURPOSE)
+
+
+def _find_phone_mother_job(jobs: list[ImageJob]) -> ImageJob | None:
+    exact = next(
+        (job for job in jobs if job.asset_name == PHONE_MOTHER_ASSET_NAME),
+        None,
+    )
+    if exact is not None:
+        return exact
+    return next(
+        (
+            job
+            for job in jobs
+            if "天机一型手机" in job.asset_name and "三视图" in job.asset_name
+        ),
+        None,
+    )
+
+
+def _needs_phone_mother_reference(job: ImageJob) -> bool:
+    text = f"{job.asset_name}\n{job.prompt}"
+    if "抖音纯享版" in text:
+        return True
+    if "手机屏幕" in text or "屏幕正面朝镜头" in text:
+        return True
+    return "天机一型手机" in text and any(
+        marker in text
+        for marker in (
+            "系统商城",
+            "商城",
+            "手机商品",
+            "手机屏幕",
+            "手机机身",
+            "屏幕正面",
+        )
+    )
 
 
 def _style_preview_jobs(jobs: list[ImageJob]) -> list[ImageJob]:
